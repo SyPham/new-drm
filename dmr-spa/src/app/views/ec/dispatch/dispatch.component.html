@@ -1,0 +1,51 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{'Dispatch' | translate}} {{title}} - {{unitTitle | translate}}: {{mixedConsumption}}g</h4> 
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body p-0">
+
+  <ejs-grid #dispatchGrid [dataSource]='data' [allowSelection]='true' [allowSorting]='true'
+    [allowSorting]='true'
+    [toolbar]='toolbarOptions' allowResizing='true'
+    gridLines='Both' 
+    [editSettings]='editSettings'
+    (actionBegin)="actionBegin($event)" 
+    (actionComplete)="actionComplete($event)" 
+    (toolbarClick)='toolbarClick($event)'>
+    <e-columns>
+      <e-column field='line' headerText='Line' textAlign='Center' width='100'>
+          <ng-template #headerTemplate let-data>
+            <span>{{'Line' | translate}}</span>
+          </ng-template>
+          <ng-template let-data #editTemplate>
+            {{data.line}}
+          </ng-template>
+      </e-column>
+      <e-column field='real' headerText='Deliver' textAlign='Center' width='100'>
+          <ng-template #headerTemplate let-data>
+            {{'Amount' | translate}}
+          </ng-template>
+          <ng-template #template let-data>
+            {{data.real }} g
+          </ng-template>
+      </e-column>
+      <e-column field='deliveryTime' headerText='Deliver' textAlign='Center' width='100'>
+        <ng-template #headerTemplate let-data>
+          <span>{{'Deliver Time' | translate}}</span>
+        </ng-template>
+        <ng-template let-data #editTemplate>
+            {{ data.deliveryTime === null ? 'N/A' : data.deliveryTime | date: 'HH:mm:ss' }}
+        </ng-template>
+        <ng-template let-data #template>
+          {{ data.deliveryTime === null ? 'N/A' : data.deliveryTime | date: 'HH:mm:ss' }}
+        </ng-template>
+      </e-column>
+    </e-columns>
+  </ejs-grid>
+</div>
+<div class="modal-footer justify-content-center d-flex">
+  <button type="button" class="btn btn-warning" (click)="activeModal.close('Close click')"><i class="fa fa-remove"></i> {{'Close' | translate}}</button>
+  <button type="button" class="btn btn-success" (click)='save()' ><i class="fa fa-check"></i>{{'Finish' | translate}} </button>
+</div>

@@ -1,0 +1,52 @@
+.e-icons .e-columnmenu {
+    color: #ffffff;
+}
+.e-tooltip-wrap .e-tip-content {
+     color: #ffffff;
+    font-size: 16px;
+    font-weight: bold;
+}
+.e-headercelldiv {
+    font-size: 12px!important;
+}
+.e-grid .e-headercell ejs-tooltip {
+    font-weight: bold!important;
+}
+.cursor-pointer{
+  pointer-events: none !important;
+}
+
+.done {
+    background:  #545b62!important;
+    box-shadow: none!important;
+    color:  #f8f9fa!important;
+}
+
+.done > span {
+    color:  #f8f9fa!important;
+}
+.e-grid .e-altrow { 
+    background-color: #d6d8db; 
+} 
+
+
+.delay {
+    background:  #545b62!important;
+    box-shadow: none!important;
+    color:  #f8f9fa!important;
+}
+
+.delay > span {
+    color:  #f8f9fa!important;
+}
+
+
+.todo {
+    background:  #545b62!important;
+    box-shadow: none!important;
+    color:  #f8f9fa!important;
+}
+
+.todo > span {
+    color:  #f8f9fa!important;
+}
