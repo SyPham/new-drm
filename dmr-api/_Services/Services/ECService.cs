@@ -34,6 +34,12 @@ namespace DMR_API._Services.Services
             _repoEC.Add(item);
             return await _repoEC.SaveAll();
         }
+        public async Task<bool> AddRange(List<TDto> model)
+        {
+            var item = _mapper.Map<List<T>>(model);
+            _repoEC.AddRange(item);
+            return await _repoEC.SaveAll();
+        }
 
         public async Task<bool> Delete(object id)
         {

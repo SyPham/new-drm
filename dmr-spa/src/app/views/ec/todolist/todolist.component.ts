@@ -1,5 +1,5 @@
-import { AfterViewInit, Component, HostListener, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { AfterViewInit, Component, DoCheck, HostListener, OnDestroy, OnInit, QueryList, TemplateRef, ViewChild, ViewChildren } from '@angular/core';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { GridComponent, PageSettingsModel, RowDataBoundEventArgs } from '@syncfusion/ej2-angular-grids';
 import { Subscription } from 'rxjs';
 import { IBuilding } from 'src/app/_core/_model/building';
@@ -14,6 +14,7 @@ import { EmitType } from '@syncfusion/ej2-base/';
 import { Query } from '@syncfusion/ej2-data/';
 import { FilteringEventArgs } from '@syncfusion/ej2-angular-dropdowns';
 import * as signalr from '../../../../assets/js/ec-client.js';
+
 import { HubConnectionState } from '@microsoft/signalr';
 import { TranslateService } from '@ngx-translate/core';
 import { DataService } from 'src/app/_core/_service/data.service';
@@ -23,25 +24,62 @@ import { ClickEventArgs, ToolbarComponent } from '@syncfusion/ej2-angular-naviga
 import { ActivatedRoute, Router } from '@angular/router';
 import { Button } from '@syncfusion/ej2-angular-buttons';
 import { NgxSpinnerService } from 'ngx-spinner';
+import { DatePipe } from '@angular/common';
+import { PrintGlueDispatchListComponent } from '../print-glue-dispatch-list/print-glue-dispatch-list.component';
 declare var $: any;
 const ADMIN = 1;
 const SUPERVISOR = 2;
 const BUILDING_LEVEL = 2;
 const STAFF = 3;
+const WORKER = 4;
+const DISPATCHER = 6;
 @Component({
   selector: 'app-todolist',
   templateUrl: './todolist.component.html',
-  styleUrls: ['./todolist.component.css']
+  styleUrls: ['./todolist.component.css'],
+  providers: [DatePipe]
 })
 export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
+  // Start Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+  Glue: any = [];
+  dataAddition: any = [];
+  dataAdditionDispatch: any = [];
+  dataHistoryMixed: any = []; // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
+  @ViewChild('historyMixed', { static: true }) historyMixed: TemplateRef<any>;
+  @ViewChild('addition', { static: true }) addition: TemplateRef<any>;
+  @ViewChild('additionDispatch', { static: true }) additionDispatch: TemplateRef<any>;
+
+  modalReference: NgbModalRef;
+  public fieldsBPFC: object = { text: 'name', value: 'name' };
+  AddGlueNameID = 0;
+  AddGlueID = 0;
+  AddEstimatedStartTime = new Date();
+  AddEstimatedFinishTime = new Date();
+  startWorkingTime = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDay(), 7, 0, 0);
+  finishWorkingTime = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDay(), 16, 30, 0);
+  toolbarAddition = ['Add', 'Cancel'];
+  toolbarAdditionDispatch = ['Add', 'Cancel'];
+  // tslint:disable-next-line:variable-name
+  total_amount: string = null; // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
+  // tslint:disable-next-line:variable-name
+  glueMix_name: string = null; // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
+  // End Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+
+  @ViewChild('toolbar') toolbar: ToolbarComponent;
   @ViewChild('toolbarTodo') toolbarTodo: ToolbarComponent;
   @ViewChild('toolbarDone') toolbarDone: ToolbarComponent;
   @ViewChild('toolbarDelay') toolbarDelay: ToolbarComponent;
+  @ViewChild('toolbarDispatch') toolbarDispatch: ToolbarComponent;
+  @ViewChild('toolbarDispatchDelay') toolbarDispatchDelay: ToolbarComponent;
+
   @ViewChild('gridDone') gridDone: GridComponent;
+  @ViewChild('gridAdditionDispatch') gridAdditionDispatch: GridComponent;
   @ViewChildren('tooltip') tooltip: QueryList<any>;
 
   @ViewChild('gridTodo') gridTodo: GridComponent;
   @ViewChild('gridDelay') gridDelay: GridComponent;
+  @ViewChild('gridDispatch') gridDispatch: GridComponent;
+  @ViewChild('gridDispatchDelay') gridDispatchDelay: GridComponent;
   focusDone: string;
   @ViewChild('fullScreen') divRef;
   sortSettings: object;
@@ -53,7 +91,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   setFocus: any;
   data: IToDoList[];
   doneData: IToDoList[];
-  building: IBuilding;
+  building: IBuilding[];
   role: IRole;
   buildingID: number;
   isShowTodolistDone: string;
@@ -64,23 +102,40 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   glueName = '';
   todoTotal = 0;
   doneTotal = 0;
-  hasFullScreen: boolean;
   total = 0;
   percentageOfDone = 0;
+
+  doneTotalDispatch = 0;
+
+  dispatchTotal = 0;
+  todoDispatchTotal = 0;
+  delayDispatchTotal = 0;
+  percentageOfDoneDispatch = 0;
+
+  hasFullScreen: boolean;
   public mediaBtn: any;
   delayTotal = 0;
   TODO = 'todo';
   DONE = 'done';
   DELAY = 'delay';
+  DISPATCH = 'dispatch';
+  DISPATCH_DELAY = 'dispatchDelay';
+  dispatchData: any;
+  // tslint:disable-next-line:variable-name
+  current_Date_Time = this.datePipe.transform(new Date(), 'HH:mm');
+  doneDispatchTotal = 0;
+  glueDispatchList: {
+    id: number; planID: number;
+    name: string; glueID: number; glueNameID: number; supplier: string; estimatedStartTime: Date; estimatedFinishTime: Date;
+  }[];
+  glueNameIDDispatch: any;
   @HostListener('fullscreenchange', ['$event']) fullscreenchange(e) {
     if (document.fullscreenElement) {
       this.mediaBtn.iconCss = 'fas fa-compress-arrows-alt';
       this.mediaBtn.content = 'CloseScreen';
-      console.log(`Element: ${document.fullscreenElement.id} entered fullscreen mode.`);
     } else {
       this.mediaBtn.iconCss = 'fa fa-expand-arrows-alt';
       this.mediaBtn.content = 'FullScreen';
-      console.log('Leaving full-screen mode.');
     }
   }
   constructor(
@@ -91,19 +146,45 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     public dataService: DataService,
     private route: ActivatedRoute,
     private router: Router,
+    private datePipe: DatePipe,
     private spinner: NgxSpinnerService,
     public todolistService: TodolistService
-  ) { }
+  ) {
+    const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
+    this.role = ROLE;
+    this.building = JSON.parse(localStorage.getItem('building'));
+    this.buildingID = +localStorage.getItem('buildingID');
+  }
   ngOnDestroy() {
     this.subscription.forEach(subscription => subscription.unsubscribe());
   }
   ngAfterViewInit() {
-    this.checkRole();
   }
   ngOnInit() {
     this.hasFullScreen = false;
     this.focusDone = this.TODO;
     if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
+      signalr.CONNECTION_HUB.invoke('JoinReloadDispatch');
+      signalr.CONNECTION_HUB.invoke('JoinReloadTodo');
+
+      signalr.CONNECTION_HUB.on(
+        'ReloadDispatch',
+        () => {
+          if (this.focusDone === this.DISPATCH) {
+            this.loadData();
+            console.log('Reload dispatch', '');
+          }
+        }
+      );
+      signalr.CONNECTION_HUB.on(
+        'ReloadTodo',
+        () => {
+          if (this.focusDone === this.TODO) {
+            this.loadData();
+            console.log('Reload Todo', '');
+          }
+        }
+      );
       signalr.CONNECTION_HUB.on(
         'ReceiveTodolist',
         (buildingID: number) => {
@@ -115,43 +196,53 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       );
     }
     this.IsAdmin = false;
-    const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
-    const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
-    this.role = ROLE;
-    this.building = BUIDLING;
-    // this.buildingID = this.building.id;
     this.isShowTodolistDone = this.TODO;
     this.gridConfig();
     this.subscription.push(this.todolistService.getValue().subscribe(status => {
       if (status !== null) {
-        this.buildingID = this.building.id;
-        this.todo();
+        this.buildingID = this.building[0].id;
+        this.loadData();
       }
     }));
+    this.checkRole();
     this.onRouteChange();
   }
   onRouteChange() {
     this.route.data.subscribe(data => {
-      this.glueName = this.route.snapshot.params.glueName;
+      if (this.route.snapshot.params.glueName !== undefined) {
+        this.glueName = this.route.snapshot.params.glueName.includes('%2B')
+          ? this.route.snapshot.params.glueName.replace(/\%2B/g, '+')
+          : this.route.snapshot.params.glueName;
+      }
+      if (this.buildingID === 0) {
+        this.glueName = '';
+      }
       const tab = this.route.snapshot.params.tab;
       switch (tab) {
         case this.TODO:
-          this.buildingID = this.building.id;
           this.isShowTodolistDone = tab;
           this.focusDone = tab;
-          this.todo();
+          this.loadData();
           break;
         case this.DELAY:
-          this.buildingID = this.building.id;
           this.isShowTodolistDone = tab;
           this.focusDone = tab;
-          this.delay();
+          this.loadData();
           break;
         case this.DONE:
-          this.buildingID = this.building.id;
           this.isShowTodolistDone = tab;
           this.focusDone = tab;
-          this.done();
+          this.loadData();
+          break;
+        case this.DISPATCH:
+          this.isShowTodolistDone = tab;
+          this.focusDone = tab;
+          this.loadData();
+          break;
+        case this.DISPATCH_DELAY:
+          this.isShowTodolistDone = tab;
+          this.focusDone = tab;
+          this.loadData();
           break;
       }
     });
@@ -200,24 +291,39 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   onChangeBuilding(args) {
     this.buildingID = args.itemData.id;
+    this.buildingName = args.itemData.name;
+    const building = JSON.stringify([args.itemData]);
+    localStorage.setItem('buildingID', args.itemData.id);
+    localStorage.setItem('building', building);
+    this.building = [args.itemData];
+    this.loadData();
   }
   onSelectBuildingToDo(args: any): void {
     this.buildingID = args.itemData.id;
     this.buildingName = args.itemData.name;
+    const building = JSON.stringify([args.itemData]);
     localStorage.setItem('buildingID', args.itemData.id);
-    this.todo();
+    localStorage.setItem('building', building);
+    this.building = [args.itemData];
+    this.loadData();
   }
   onSelectBuildingDelay(args: any): void {
     this.buildingID = args.itemData.id;
     this.buildingName = args.itemData.name;
     localStorage.setItem('buildingID', args.itemData.id);
-    this.delay();
+    const building = JSON.stringify([args.itemData]);
+    localStorage.setItem('building', building);
+    this.building = [args.itemData];
+    this.loadData();
   }
   onSelectBuildingDone(args: any): void {
     this.buildingID = args.itemData.id;
     this.buildingName = args.itemData.name;
     localStorage.setItem('buildingID', args.itemData.id);
-    this.done();
+    const building = JSON.stringify([args.itemData]);
+    localStorage.setItem('building', building);
+    this.building = [args.itemData];
+    this.loadData();
   }
   loadData() {
     switch (this.isShowTodolistDone) {
@@ -230,28 +336,105 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       case this.DONE:
         this.done();
         break;
+      case this.DISPATCH_DELAY:
+        this.dispatchListDelay();
+        break;
+      case this.DISPATCH:
+        this.dispatchList();
+        break;
+      case this.DISPATCH_DELAY:
+        this.dispatchListDelay();
+        break;
     }
   }
+
+  isWorkerRole() {
+    if (this.role.id === WORKER) { return true; }
+    return false;
+  }
+  isDispatcherRole() {
+    if (this.role.id === DISPATCHER) { return true; }
+    return false;
+  }
+  isAdminRole() {
+    if (this.role.id === ADMIN) { return true; }
+    return false;
+  }
+  isStaffRole() {
+    if (this.role.id === STAFF) { return true; }
+    return false;
+  }
+  isSupervisorRole() {
+    if (this.role.id === SUPERVISOR) { return true; }
+    return false;
+  }
   checkRole(): void {
-    const roles = [ADMIN, SUPERVISOR, STAFF];
-    if (roles.includes(this.role.id)) {
-      this.IsAdmin = true;
-      const buildingId = +localStorage.getItem('buildingID');
-      if (buildingId === 0) {
-        this.alertify.message('Please select a building!', true);
-        this.getBuilding(() => { });
-      } else {
+    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
+    switch (this.role.id) {
+      case ADMIN:
+      case SUPERVISOR:
+      case STAFF:
+      case WORKER: // Chỉ hiện todolist
+        this.IsAdmin = true;
+        const buildingId = +localStorage.getItem('buildingID');
+        this.building = JSON.parse(localStorage.getItem('building'));
+        if (buildingId === 0) {
+          this.getBuilding(() => {
+            this.alertify.message('Please select a building!', true);
+          });
+        } else {
+          this.getBuilding(() => {
+            this.buildingID = buildingId;
+            this.loadData();
+            this.todoAddition();
+            this.dispatchAddition();
+          });
+        }
+        break;
+      case DISPATCHER: // Chỉ hiện dispatchlist
+        this.building = JSON.parse(localStorage.getItem('building'));
         this.getBuilding(() => {
-          this.buildingID = buildingId;
+          this.buildingID = this.building[0].id;
+          this.isShowTodolistDone = this.DISPATCH;
+          this.focusDone = this.DISPATCH;
           this.loadData();
+          this.todoAddition();
+          this.dispatchAddition();
         });
-      }
-    } else {
-      this.getBuilding(() => {
-        this.buildingID = this.building.id;
-        this.loadData();
-      });
+        break;
     }
+  }
+  dispatchList() {
+    this.todolistService.dispatchList(this.buildingID).subscribe((res: any) => {
+      this.dispatchData = res.data;
+      this.todoTotal = res.todoTotal;
+      this.doneTotal = res.doneTotal;
+      this.total = res.total;
+      this.delayTotal = res.delayTotal;
+      this.percentageOfDone = res.percentageOfDone;
+
+      this.dispatchTotal = res.dispatchTotal;
+      this.todoDispatchTotal = res.todoDispatchTotal;
+      this.delayDispatchTotal = res.delayDispatchTotal;
+      this.doneDispatchTotal = res.doneDispatchTotal;
+      this.percentageOfDoneDispatch = res.percentageOfDoneDispatch;
+    });
+  }
+  dispatchListDelay() {
+    this.todolistService.dispatchListDelay(this.buildingID).subscribe((res: any) => {
+      this.dispatchData = res.data;
+      this.todoTotal = res.todoTotal;
+      this.doneTotal = res.doneTotal;
+      this.total = res.total;
+      this.delayTotal = res.delayTotal;
+      this.percentageOfDone = res.percentageOfDone;
+
+      this.dispatchTotal = res.dispatchTotal;
+      this.todoDispatchTotal = res.todoDispatchTotal;
+      this.delayDispatchTotal = res.delayDispatchTotal;
+      this.doneDispatchTotal = res.doneDispatchTotal;
+      this.percentageOfDoneDispatch = res.percentageOfDoneDispatch;
+    });
   }
   todo() {
     this.todolistService.todo(this.buildingID).subscribe(res => {
@@ -261,6 +444,50 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       this.total = res.total;
       this.delayTotal = res.delayTotal;
       this.percentageOfDone = res.percentageOfDone;
+
+      this.dispatchTotal = res.dispatchTotal;
+      this.todoDispatchTotal = res.todoDispatchTotal;
+      this.delayDispatchTotal = res.delayDispatchTotal;
+      this.doneDispatchTotal = res.doneDispatchTotal;
+      this.percentageOfDoneDispatch = res.percentageOfDoneDispatch;
+    });
+  }
+  todoAddition() {
+    this.todolistService.todoAddition(this.buildingID).subscribe(res => {
+      //  Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+      this.Glue = res.data.map((item) => {
+        if (item.abnormalStatus === false) {
+          return {
+            id: item.id,
+            planID: item.planID,
+            name: `${item.glueName} | ${item.lineNames.join(',')}`,
+            glueID: item.glueID,
+            glueNameID: item.glueNameID,
+            supplier: item.supplier,
+            estimatedStartTime: item.estimatedStartTime,
+            estimatedFinishTime: item.estimatedFinishTime
+          };
+        }
+      });
+      console.log(this.Glue);
+    });
+  }
+  dispatchAddition() {
+    this.todolistService.dispatchAddition(this.buildingID).subscribe(res => {
+      //  Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+      this.glueDispatchList = res.data.map((item) => {
+        return {
+          id: item.id,
+          planID: item.planID,
+          name: `${item.glueName} | ${item.lineNames.join(',')}`,
+          glueID: item.glueID,
+          glueNameID: item.glueNameID,
+          supplier: item.supplier,
+          estimatedStartTime: item.estimatedStartTime,
+          estimatedFinishTime: item.estimatedFinishTime
+        };
+      });
+      console.log(this.glueDispatchList);
     });
   }
   delay() {
@@ -271,6 +498,13 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       this.delayTotal = res.delayTotal;
       this.total = res.total;
       this.percentageOfDone = res.percentageOfDone;
+
+      this.dispatchTotal = res.dispatchTotal;
+      this.todoDispatchTotal = res.todoDispatchTotal;
+      this.delayDispatchTotal = res.delayDispatchTotal;
+
+      this.doneDispatchTotal = res.doneDispatchTotal;
+      this.percentageOfDoneDispatch = res.percentageOfDoneDispatch;
     });
   }
   done() {
@@ -279,8 +513,14 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       this.todoTotal = res.todoTotal;
       this.doneTotal = res.doneTotal;
       this.delayTotal = res.delayTotal;
-      this.percentageOfDone = res.percentageOfDone;
       this.total = res.total;
+      this.percentageOfDone = res.percentageOfDone;
+
+      this.dispatchTotal = res.dispatchTotal;
+      this.todoDispatchTotal = res.todoDispatchTotal;
+      this.doneDispatchTotal = res.doneDispatchTotal;
+      this.delayDispatchTotal = res.delayDispatchTotal;
+      this.percentageOfDoneDispatch = res.percentageOfDoneDispatch;
     });
   }
   gridConfig(): void {
@@ -294,22 +534,51 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   dataBound() {
   }
+  createdDispatchGrid() {
+    if (this.glueName !== undefined) {
+      this.gridDispatch.search(this.glueName);
+    }
+  }
   createdTodoGrid() {
     if (this.glueName !== undefined) {
       this.gridTodo.search(this.glueName);
     }
   }
-  createdDelayGrid() {
-    if (this.glueName !== undefined) {
-      this.gridDelay.search(this.glueName);
-    }
-  }
   public cancelBtnGridTodoClick(args) {
     this.glueName = '';
-    this.gridTodo.searchSettings.key = '';
-    (this.gridTodo.element.querySelector(
-      '.e-input-group.e-search .e-input'
-    ) as any).value = '';
+    switch (this.isShowTodolistDone) {
+      case this.TODO:
+      case this.DELAY:
+        this.gridTodo.searchSettings.key = '';
+        break;
+      case this.DISPATCH:
+      case this.DISPATCH_DELAY: // Chỉ hiện todolist
+        this.gridDispatch.searchSettings.key = '';
+        break;
+      case this.DONE: // Chỉ hiện dispatchlist
+        this.gridDone.searchSettings.key = '';
+        break;
+    }
+  }
+  createdToolbar() {
+    this.mediaBtn = new Button(
+      {
+        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
+        iconCss: 'fa fa-expand-arrows-alt',
+        isToggle: true
+      });
+    this.mediaBtn.appendTo('#screenToolbar');
+    this.mediaBtn.element.onclick = (): void => {
+      if (this.mediaBtn.content === 'CloseScreen') {
+        this.mediaBtn.iconCss = 'fa fa-expand-arrows-alt';
+        this.mediaBtn.content = 'FullScreen';
+        this.closeFullscreen();
+      } else {
+        this.openFullscreen();
+        this.mediaBtn.iconCss = 'fas fa-compress-arrows-alt';
+        this.mediaBtn.content = 'CloseScreen';
+      }
+    };
   }
   createdTodo() {
     const toolbarTodo = this.toolbarTodo.element;
@@ -320,102 +589,103 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     toolbarTodo
       .querySelector('.e-toolbar-item .e-input-group')
       .appendChild(span);
-    this.mediaBtn = new Button(
-      {
-        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
-        iconCss: 'fa fa-expand-arrows-alt',
-        isToggle: true
-      });
-    this.mediaBtn.appendTo('#screen');
-    this.mediaBtn.element.onclick = (): void => {
-      if (this.mediaBtn.content === 'CloseScreen') {
-        this.mediaBtn.iconCss = 'fa fa-expand-arrows-alt';
-        this.mediaBtn.content = 'FullScreen';
-        this.closeFullscreen();
-      } else {
-        this.openFullscreen();
-        this.mediaBtn.iconCss = 'fas fa-compress-arrows-alt';
-        this.mediaBtn.content = 'CloseScreen';
-      }
-    };
     const todoButton: HTMLElement = (this.toolbarTodo.element as HTMLElement).querySelector('#todo');
-    todoButton?.classList.add('todo');
+    const delayButton: HTMLElement = (this.toolbarTodo.element as HTMLElement).querySelector('#delay');
+    const delayDispatchButton: HTMLElement = (this.toolbarTodo.element as HTMLElement).querySelector('#delayDispatchList');
+    const dispatchButton: HTMLElement = (this.toolbarTodo.element as HTMLElement).querySelector('#dispatch');
+    const doneButton: HTMLElement = (this.toolbarTodo.element as HTMLElement).querySelector('#done');
+    switch (this.isShowTodolistDone) {
+      case this.TODO:
+        todoButton?.classList.add('todo');
 
-  }
-  public cancelBtnGridDoneClick(args) {
-    this.glueName = '';
-    this.gridDone.searchSettings.key = '';
-    (this.gridDone.element.querySelector(
-      '.e-input-group.e-search .e-input'
-    ) as any).value = '';
-  }
-  createdDone() {
-    const toolbarDone = this.toolbarDone.element;
-    const span = document.createElement('span');
-    span.className = 'e-clear-icon';
-    span.id = toolbarDone.id + 'clear';
-    span.onclick = this.cancelBtnGridDoneClick.bind(this);
-    toolbarDone
-      .querySelector('.e-toolbar-item .e-input-group')
-      .appendChild(span);
-    this.mediaBtn = new Button(
-      {
-        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
-        iconCss: 'fa fa-expand-arrows-alt',
-        isToggle: true
-      });
-    this.mediaBtn.appendTo('#screen');
-    this.mediaBtn.element.onclick = (): void => {
-      if (this.mediaBtn.content === 'CloseScreen') {
-        this.mediaBtn.iconCss = 'fa fa-expand-arrows-alt';
-        this.mediaBtn.content = 'FullScreen';
-        this.closeFullscreen();
-      } else {
-        this.openFullscreen();
-        this.mediaBtn.iconCss = 'fas fa-compress-arrows-alt';
-        this.mediaBtn.content = 'CloseScreen';
-      }
-    };
-    const doneButton: HTMLElement = (this.toolbarDone.element as HTMLElement).querySelector('#done');
-    doneButton?.classList.add('done');
+        delayButton?.classList.remove('todo');
+        delayDispatchButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        break;
+      case this.DELAY:
+        delayButton?.classList.add('todo');
 
-  }
-  public cancelBtnGridDelayClick(args) {
-    this.glueName = '';
-    this.gridDelay.searchSettings.key = '';
-    (this.gridDelay.element.querySelector(
-      '.e-input-group.e-search .e-input'
-    ) as any).value = '';
-  }
-  createdDelay() {
-    const toolbarDelay = this.toolbarDelay.element;
-    const span = document.createElement('span');
-    span.className = 'e-clear-icon';
-    span.id = toolbarDelay.id + 'clear';
-    span.onclick = this.cancelBtnGridDelayClick.bind(this);
-    toolbarDelay
-      .querySelector('.e-toolbar-item .e-input-group')
-      .appendChild(span);
-    this.mediaBtn = new Button(
-      {
-        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
-        iconCss: 'fa fa-expand-arrows-alt',
-        isToggle: true
-      });
-    this.mediaBtn.appendTo('#screen');
-    this.mediaBtn.element.onclick = (): void => {
-      if (this.mediaBtn.content === 'CloseScreen') {
-        this.mediaBtn.iconCss = 'fa fa-expand-arrows-alt';
-        this.mediaBtn.content = 'FullScreen';
-        this.closeFullscreen();
-      } else {
-        this.openFullscreen();
-        this.mediaBtn.iconCss = 'fas fa-compress-arrows-alt';
-        this.mediaBtn.content = 'CloseScreen';
-      }
-    };
-    const delayButton: HTMLElement = (this.toolbarDelay.element as HTMLElement).querySelector('#delay');
-    delayButton?.classList.add('delay');
+        todoButton?.classList.remove('todo');
+        todoButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+        break;
+      case this.DISPATCH:
+        dispatchButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        delayButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        delayDispatchButton?.classList.remove('todo');
+        break;
+      case this.DISPATCH_DELAY:
+        delayDispatchButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        delayButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+        break;
+      case this.DONE:
+        doneButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        delayButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+        delayDispatchButton?.classList.remove('todo');
+        break;
+    }
+    if (todoButton !== null) {
+      todoButton.onclick = (): void => {
+        todoButton?.classList.add('todo');
+
+        delayButton?.classList.remove('todo');
+        delayDispatchButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+      };
+    }
+    if (delayButton !== null) {
+      delayButton.onclick = (): void => {
+        delayButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        todoButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+      };
+    }
+    if (dispatchButton !== null) {
+      dispatchButton.onclick = (): void => {
+        dispatchButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        delayButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        delayDispatchButton?.classList.remove('todo');
+      };
+    }
+    if (delayDispatchButton !== null) {
+      delayDispatchButton.onclick = (): void => {
+        delayDispatchButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        delayButton?.classList.remove('todo');
+        doneButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+      };
+    }
+    if (doneButton !== null) {
+      doneButton.onclick = (): void => {
+        doneButton?.classList.add('todo');
+
+        todoButton?.classList.remove('todo');
+        delayButton?.classList.remove('todo');
+        dispatchButton?.classList.remove('todo');
+        delayDispatchButton?.classList.remove('todo');
+      };
+    }
   }
   searchDone(args) {
     if (this.focusDone === this.DONE) {
@@ -423,7 +693,47 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     } else if (this.focusDone === this.TODO) {
       this.gridTodo.search(this.glueName);
     } else if (this.focusDone === this.DELAY) {
-      this.gridDelay.search(this.glueName);
+      this.gridTodo.search(this.glueName);
+    } else if (this.focusDone === this.DISPATCH) {
+      this.gridDispatch.search(this.glueName);
+    } else if (this.focusDone === this.DISPATCH_DELAY) {
+      this.gridDispatch.search(this.glueName);
+    }
+  }
+  onClickToolbarTop(args: ClickEventArgs): void {
+    // debugger;
+    const target: HTMLElement = (args.originalEvent.target as HTMLElement).closest('button'); // find clicked button
+    this.glueName = '';
+    switch (target?.id) {
+      case 'excelExport':
+        this.spinner.show();
+        this.todolistService.exportExcel(this.buildingID).subscribe((data: any) => {
+          const blob = new Blob([data],
+            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+          const downloadURL = window.URL.createObjectURL(data);
+          const link = document.createElement('a');
+          link.href = downloadURL;
+          link.download = 'doneListReport.xlsx';
+          link.click();
+          this.spinner.hide();
+        });
+        break;
+      case 'excelExport2':
+        this.spinner.show();
+        this.todolistService.exportExcel2(this.buildingID).subscribe((data: any) => {
+          const blob = new Blob([data],
+            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const downloadURL = window.URL.createObjectURL(data);
+          const link = document.createElement('a');
+          link.href = downloadURL;
+          link.download = 'report(new).xlsx';
+          link.click();
+          this.spinner.hide();
+        });
+        break;
+      default:
+        break;
     }
   }
   onClickToolbar(args: ClickEventArgs): void {
@@ -431,6 +741,9 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     const target: HTMLElement = (args.originalEvent.target as HTMLElement).closest('button'); // find clicked button
     this.glueName = '';
     switch (target?.id) {
+      case 'addition':
+        this.openAddition();
+        break;
       case 'done':
         this.isShowTodolistDone = this.DONE;
         this.focusDone = this.DONE;
@@ -461,6 +774,26 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
         ]);
         // target.focus();
         break;
+      case 'delayDispatchList':
+        this.isShowTodolistDone = this.DISPATCH_DELAY;
+        this.focusDone = this.DISPATCH_DELAY;
+        // this.glueName = '';
+        this.dispatchListDelay();
+        this.router.navigate([
+          `/ec/execution/todolist-2/`, { tab: this.DISPATCH_DELAY, glueName: this.glueName }
+        ]);
+        // target.focus();
+        break;
+      case 'dispatch':
+        this.isShowTodolistDone = this.DISPATCH;
+        this.focusDone = this.DISPATCH;
+        // this.glueName = '';
+        this.dispatchList();
+        this.router.navigate([
+          `/ec/execution/todolist-2/`, { tab: this.DISPATCH, glueName: this.glueName }
+        ]);
+        // target.focus();
+        break;
       case 'excelExport':
         this.spinner.show();
         this.todolistService.exportExcel(this.buildingID).subscribe((data: any) => {
@@ -475,20 +808,19 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
           this.spinner.hide();
         });
         break;
-        case 'excelExport2':
-          this.spinner.show();
-          this.todolistService.exportExcel2(this.buildingID).subscribe((data: any) => {
-            const blob = new Blob([data],
-              { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  
-            const downloadURL = window.URL.createObjectURL(data);
-            const link = document.createElement('a');
-            link.href = downloadURL;
-            link.download = 'report(new).xlsx';
-            link.click();
-            this.spinner.hide();
-          });
-          break;
+      case 'excelExport2':
+        this.spinner.show();
+        this.todolistService.exportExcel2(this.buildingID).subscribe((data: any) => {
+          const blob = new Blob([data],
+            { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+          const downloadURL = window.URL.createObjectURL(data);
+          const link = document.createElement('a');
+          link.href = downloadURL;
+          link.download = 'report(new).xlsx';
+          link.click();
+          this.spinner.hide();
+        });
+        break;
       default:
         break;
     }
@@ -507,6 +839,10 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
         this.isShowTodolistDone = this.DELAY;
         this.todo();
         break;
+      case 'Dispatch':
+        this.isShowTodolistDone = this.DISPATCH;
+        this.dispatchList();
+        break;
       default:
         break;
     }
@@ -523,13 +859,53 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   rowDB(args: RowDataBoundEventArgs): void {
     const data = args.data as any;
+    if (data.abnormalStatus === true) {
+      args.row.classList.add('bgcolor');
+    }
+  }
+  rowDBDispatch(args: RowDataBoundEventArgs): void {
+    const data = args.data as any;
+    const colorCode = `color-code-${data.colorCode}`;
+    if (data.abnormalStatus === true) {
+      const abnormalColorCode = `color-code-abnormal`;
+      args.row.classList.add(abnormalColorCode);
+    } else {
+      args.row.classList.add(colorCode);
+    }
+  }
+  rowDBDispatchDelay(args: RowDataBoundEventArgs): void {
+    const data = args.data as any;
+    const colorCode = `color-code-${data.colorCode}`;
+    if (data.abnormalStatus === true) {
+      const abnormalColorCode = `color-code-abnormal`;
+      args.row.classList.add(abnormalColorCode);
+    } else {
+      args.row.classList.add(colorCode);
+    }
   }
   onDoubleClickDone(args: any): void {
-    if (args.column.field === 'deliveredConsumption') {
+    if (args.column.field === 'deliveredAmount') {
       const value = args.rowData as IToDoList;
       this.openDispatchModal(value);
     }
+
+    if (args.column.field === 'mixedConsumption') {
+      const value = args.rowData as IToDoList;
+      this.openMixHistory(value); // <!--Thêm bởi Quỳnh (Leo 2/2/2021 11:46)-->
+    }
   }
+  // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
+  openMixHistory(value) {
+    this.modalReference = this.modalService.open(this.historyMixed, { size: 'lg', backdrop: 'static', keyboard: false });
+    this.todolistService.MixedHistory(value.mixingInfoID).subscribe((res: any) => {
+      this.glueMix_name = value.glueName;
+      this.total_amount = value.mixedConsumption;
+      if (res.status) {
+        this.dataHistoryMixed = res.result;
+      }
+    });
+  }
+  // End Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
   actionBegin(args) {
     if (args.requestType === 'cancel') {
     }
@@ -568,7 +944,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   goToMixing(data: IToDoList) {
     return [`/ec/execution/todolist-2/mixing/${this.isShowTodolistDone}/${data.glueID}/${data.estimatedStartTime}/${data.estimatedFinishTime}/${data.standardConsumption}`];
   }
-  openDispatchModal(value: IToDoList) {
+  openDispatchModal(value: any) {
     if (value.printTime === null && value.glueName.includes(' + ')) {
       this.alertify.warning('Hãy thực hiện bước in keo trước!', true);
       return;
@@ -599,11 +975,18 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       });
     });
   }
-  lockDispatch(data: IToDoList): string {
-    let classList = '';
-    if (data.deliveredConsumption === data.mixedConsumption && data.mixedConsumption > 0 && data.deliveredConsumption > 0) {
-      classList = 'disabled cursor-pointer';
-    }
+  openPrintModalDispatchList(value: IToDoList) {
+    const modalRef = this.modalService.open(PrintGlueDispatchListComponent, { size: 'md', backdrop: 'static', keyboard: false });
+    modalRef.componentInstance.value = value;
+    modalRef.result.then((result) => {
+    }, (reason) => {
+    });
+  }
+  lockDispatch(data: any): string {
+    const classList = ''; // loai bo khong dung nua nhe
+    // if (data.deliveredAmount > 0) {
+    //   classList = 'disabled cursor-pointer';
+    // }
     return classList;
   }
   // config screen
@@ -636,4 +1019,75 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   reloadPage() {
     window.location.reload();
   }
+  // Start Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+  onChangeGlue(args) {
+    this.AddGlueNameID = args.itemData.glueNameID,
+      this.AddGlueID = args.itemData.glueID,
+      this.AddEstimatedStartTime = args.itemData.estimatedStartTime,
+      this.AddEstimatedFinishTime = args.itemData.estimatedFinishTime;
+    this.startWorkingTime = new Date(args.itemData.estimatedStartTime);
+    this.finishWorkingTime = new Date(args.itemData.estimatedFinishTime);
+
+  }
+  onChangeGlueDispatch(args) {
+    this.glueNameIDDispatch = args.itemData.glueNameID;
+  }
+  actionBeginAddition(args) {
+    if (args.requestType === 'save') {
+      this.todolistService.addition(this.AddGlueNameID, this.AddGlueID, this.AddEstimatedStartTime, this.AddEstimatedFinishTime)
+        .subscribe((res: any) => {
+          if (res) {
+            this.alertify.success(res.message);
+            this.modalReference.dismiss();
+            this.loadData();
+          }
+          else {
+            this.alertify.error(res.message);
+            args.cancel = true;
+          }
+        });
+    }
+  }
+  actionBeginAdditionDispatch(args) {
+    if (args.requestType === 'save') {
+      this.todolistService.additionDispatch(this.glueNameIDDispatch)
+        .subscribe(() => {
+          this.alertify.success('Success!');
+          this.modalReference.dismiss();
+          this.dataAdditionDispatch = [];
+          this.loadData();
+        }, err => {
+          this.alertify.error(err);
+          args.cancel = true;
+          this.dataAdditionDispatch = [];
+        });
+    }
+  }
+  public onFiltering: EmitType<FilteringEventArgs> = (
+    e: FilteringEventArgs
+  ) => {
+    let query: Query = new Query();
+    // frame the query based on search string with filter type.
+    query =
+      e.text !== '' ? query.where('name', 'contains', e.text, true) : query;
+    // pass the filter data source, filter query to updateData method.
+    // e.updateData(this.BPFCs, query);
+  }
+  public onFilteringGlueDispatch: EmitType<FilteringEventArgs> = (
+    e: FilteringEventArgs
+  ) => {
+    let query: Query = new Query();
+    // frame the query based on search string with filter type.
+    query =
+      e.text !== '' ? query.where('name', 'contains', e.text, true) : query;
+    // pass the filter data source, filter query to updateData method.
+    // e.updateData(this.BPFCs, query);
+  }
+  openAddition() {
+    this.modalReference = this.modalService.open(this.addition, { size: 'lg', backdrop: 'static', keyboard: false });
+  }
+  openAdditionDispatch() {
+    this.modalReference = this.modalService.open(this.additionDispatch, { size: 'lg', backdrop: 'static', keyboard: false });
+  }
+  // End Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
 }

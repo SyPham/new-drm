@@ -90,6 +90,23 @@ namespace DMR_API
                        ValidateIssuer = false,
                        ValidateAudience = false
                    };
+                   //options.Events = new JwtBearerEvents
+                   //{
+                   //    OnMessageReceived = context =>
+                   //    {
+                   //        var accessToken = context.Request.Query["access_token"];
+                   //        var token = context.Request.Headers.FirstOrDefault(x => x.Key == "Authorization");
+                   //        // If the request is for our hub...
+                   //        var path = context.HttpContext.Request.Path;
+                   //        if (!string.IsNullOrEmpty(accessToken) &&
+                   //            (path.StartsWithSegments("/ec-hub")))
+                   //        {
+                   //            // Read the token out of the query string
+                   //            context.Token = accessToken;
+                   //        }
+                   //        return Task.CompletedTask;
+                   //    }
+                   //};
                });
 
             services.AddSwaggerGen(c =>
@@ -169,6 +186,7 @@ namespace DMR_API
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IScaleMachineRepository, ScaleMachineRepository>();
             services.AddScoped<IDispatchRepository, DispatchRepository>();
+            services.AddScoped<IDispatchListRepository, DispatchListRepository>();
             services.AddScoped<IGlueTypeRepository, GlueTypeRepository>();
             services.AddScoped<IToDoListRepository, ToDoListRepository>();
             services.AddScoped<IGlueNameRepository, GlueNameRepository>();
@@ -176,7 +194,9 @@ namespace DMR_API
             services.AddScoped<ILunchTimeRepository, LunchTimeRepository>();
             services.AddScoped<IMailingRepository, MailingRepository>();
             services.AddScoped<IPeriodRepository, PeriodRepository>();
-            
+            services.AddScoped<IPeriodRepository, PeriodRepository>();
+            services.AddScoped<IDispatchListDetailRepository, DispatchListDetailRepository>();
+
 
             //Services
             services.AddScoped<IMixingService, MixingService>();

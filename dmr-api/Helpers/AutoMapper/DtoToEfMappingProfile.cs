@@ -58,6 +58,7 @@ namespace DMR_API.Helpers.AutoMapper
             CreateMap<RoleDto, Role>();
             CreateMap<MaterialDto, Material>();
             CreateMap<ToDoListDto, ToDoList>();
+            CreateMap<DispatchListDto, DispatchList>();
             CreateMap<MixingInfoDto, MixingInfo>();
             CreateMap<MixingInfo, MixingInfoForCreateDto>();
             CreateMap<IngredientInfo, IngredientInfoDto>();

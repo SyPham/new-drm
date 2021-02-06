@@ -9,6 +9,5 @@ namespace DMR_API._Repositories.Interface
 {
    public interface IToDoListRepository : IECRepository<ToDoList>
     {
-        void UpdateRange(List<ToDoList> toDoLists);
     }
 }

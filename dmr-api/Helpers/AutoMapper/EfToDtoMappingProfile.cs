@@ -46,7 +46,7 @@ namespace DMR_API.Helpers.AutoMapper
                 .ForMember(d => d.GlueName, o => o.MapFrom(x => x.Glue.GlueName.Name));
             CreateMap<Plan, PlanDto>()
                  .ForMember(d => d.Glues, o => o.MapFrom(x => x.BPFCEstablish.Glues.Where(x => x.isShow).Select(x => x.Name)))
-                 .ForMember(d => d.StartTime, o => o.MapFrom(x => new TimeDto(x.StartWorkingTime)))
+                 .ForMember(d => d.StartTime, o => o.MapFrom(x => new TimeDto(x.StartWorkingTime)))// 16:30 >= 16:30
                  .ForMember(d => d.EndTime, o => o.MapFrom(x => new TimeDto(x.FinishWorkingTime)))
                  .ForMember(d => d.IsGenerate, o => o.MapFrom(x => x.ToDoList.Count > 0))
                  .ForMember(d => d.ModelName, o => o.MapFrom(x => x.BPFCEstablish.ModelName.Name))
@@ -97,7 +97,8 @@ namespace DMR_API.Helpers.AutoMapper
              .ForMember(d => d.RealTotal, o => o.MapFrom(real => real.MixingInfoDetails.Sum(x => x.Amount)));
 
             CreateMap<MixingInfoForCreateDto, MixingInfo>();
-
+            CreateMap<DispatchList, DispatchListDto>();
+            
             CreateMap<BPFCEstablish, BPFCEstablish>()
              .ForMember(d => d.ModelName, o => o.MapFrom(x => x.ModelName.Name))
              .ForMember(d => d.ModelNo, o => o.MapFrom(x => x.ModelNo.Name))

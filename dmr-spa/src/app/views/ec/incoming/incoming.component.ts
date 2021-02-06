@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, Renderer2, ElementRef, QueryList, Query, HostListener, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, Renderer2, ElementRef, QueryList, HostListener, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { DisplayTextModel } from '@syncfusion/ej2-angular-barcode-generator';
@@ -8,7 +8,13 @@ import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { Subject, Subscription } from 'rxjs';
 import { IScanner } from 'src/app/_core/_model/IToDoList';
 import { debounceTime } from 'rxjs/operators';
+import { IBuilding } from 'src/app/_core/_model/building';
 
+import { DropDownListComponent, FilteringEventArgs } from '@syncfusion/ej2-angular-dropdowns';
+import { Query } from '@syncfusion/ej2-data/';
+import { EmitType } from '@syncfusion/ej2-base';
+import { BuildingService } from 'src/app/_core/_service/building.service';
+const BUILDING_LEVEL = 2;
 @Component({
   selector: 'app-incoming',
   templateUrl: './incoming.component.html',
@@ -17,7 +23,9 @@ import { debounceTime } from 'rxjs/operators';
     DatePipe
   ]
 })
-export class IncomingComponent implements OnInit, OnDestroy {
+export class IncomingComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('ddlelement')
+  public dropDownListObject: DropDownListComponent;
   @ViewChild('scanQRCode') scanQRCodeElement: ElementRef;
   public displayTextMethod: DisplayTextModel = {
     visibility: false
@@ -41,21 +49,60 @@ export class IncomingComponent implements OnInit, OnDestroy {
   filterSettings = { type: 'Excel' };
   subject = new Subject<IScanner>();
   subscription: Subscription[] = [];
+
+  buildings: IBuilding[];
+  fieldsBuildings: object = { text: 'name', value: 'id' };
+  buildingID = 0;
+  buildingName = '';
   constructor(
     public modalService: NgbModal,
     private alertify: AlertifyService,
     private datePipe: DatePipe,
+    private buildingService: BuildingService,
     public ingredientService: IngredientService,
-  ) { }
+    private cdr: ChangeDetectorRef
+  ) {
+  }
+  ngAfterViewInit(): void {
+    this.cdr.detectChanges();
+  }
   ngOnDestroy(): void {
     this.subscription.forEach(item => item.unsubscribe());
   }
   public ngOnInit(): void {
-    this.getIngredientInfo();
+    // this.getIngredientInfo();
     this.getAllIngredient();
     this.checkQRCode();
+    this.getBuilding(() => {
+      this.buildingID = +localStorage.getItem('buildingID');
+    });
   }
-
+  getBuilding(callback): void {
+    this.buildingService.getBuildings().subscribe(async (buildingData) => {
+      this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
+      callback();
+    });
+  }
+  onFilteringBuilding: EmitType<FilteringEventArgs> = (
+    e: FilteringEventArgs
+  ) => {
+    let query: Query = new Query();
+    // frame the query based on search string with filter type.
+    query =
+      e.text !== '' ? query.where('name', 'contains', e.text, true) : query;
+    // pass the filter data source, filter query to updateData method.
+    e.updateData(this.buildings as any, query);
+  }
+  onChangeBuilding(args) {
+    this.buildingID = args.itemData.id;
+    this.buildingName = args.itemData.name;
+    this.getAllIngredientInfoByBuilding();
+  }
+  onSelectBuilding(args: any): void {
+    this.buildingID = args.itemData.id;
+    this.buildingName = args.itemData.name;
+    this.getAllIngredientInfoByBuilding();
+  }
   NO(index) {
     return (this.ingredientinfoGrid.pageSettings.currentPage - 1) * this.ingredientinfoGrid.pageSettings.pageSize + Number(index) + 1;
   }
@@ -66,13 +113,13 @@ export class IncomingComponent implements OnInit, OnDestroy {
     this.checkin = false;
     this.checkout = true;
     // this.qrcodeChange = null ;
-    this.getIngredientInfoOutput();
+    this.getAllIngredientInfoOutputByBuilding();
   }
 
   InputChange(args) {
     this.checkin = true;
     this.checkout = false;
-    this.getIngredientInfo();
+    this.getAllIngredientInfoByBuilding();
     // this.qrcodeChange = null ;
   }
   toolbarClick(args): void {
@@ -105,9 +152,9 @@ export class IncomingComponent implements OnInit, OnDestroy {
         if (this.checkin === true) {
           if (this.checkCode === true) {
             const userID = JSON.parse(localStorage.getItem('user')).User.ID;
-            this.ingredientService.scanQRCodeFromChemicalWareHouse(res.QRCode, buildingName, userID).subscribe((status: any) => {
+            this.ingredientService.scanQRCodeFromChemicalWareHouse(res.QRCode, this.buildingName, userID).subscribe((status: any) => {
               if (status === true) {
-                this.getIngredientInfo();
+                this.getAllIngredientInfoByBuilding();
               }
             });
           } else {
@@ -116,9 +163,9 @@ export class IncomingComponent implements OnInit, OnDestroy {
         } else {
           if (this.checkCode === true) {
             const userID = JSON.parse(localStorage.getItem('user')).User.ID;
-            this.ingredientService.scanQRCodeOutput(res.QRCode, buildingName, userID).subscribe((status: any) => {
+            this.ingredientService.scanQRCodeOutput(res.QRCode, this.buildingName, userID).subscribe((status: any) => {
               if (status === true) {
-                this.getIngredientInfoOutput();
+                this.getAllIngredientInfoOutputByBuilding();
               } else {
                 this.alertify.error(status.message);
               }
@@ -153,7 +200,19 @@ export class IncomingComponent implements OnInit, OnDestroy {
       // this.ConvertClass(res);
     });
   }
+  getAllIngredientInfoByBuilding() {
+    this.ingredientService.getAllIngredientInfoByBuilding(this.buildingName).subscribe((res: any) => {
+      this.data = res;
+      // this.ConvertClass(res);
+    });
+  }
 
+  getAllIngredientInfoOutputByBuilding() {
+    this.ingredientService.getAllIngredientInfoOutputByBuilding(this.buildingName).subscribe((res: any) => {
+      this.data = res;
+      // this.ConvertClass(res);
+    });
+  }
   // tim Qrcode dang scan co ton tai khong
   findIngredientCode(code) {
     for (const item of this.ingredients) {

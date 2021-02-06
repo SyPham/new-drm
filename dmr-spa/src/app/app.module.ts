@@ -82,7 +82,6 @@ export function HttpLoaderFactory(http: HttpClient) {
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
-    MultiSelectAllModule,
     DropDownListAllModule,
     MultiSelectModule,
     HttpClientModule,

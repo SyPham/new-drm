@@ -25,6 +25,9 @@ namespace DMR_API.Models
         public DateTime EstimatedStartTime { get; set; }
         public DateTime EstimatedFinishTime { get; set; }
         public Glue Glue { get; set; }
+        public int GlueNameID { get; set; }
+        [ForeignKey("GlueNameID")]
+        public GlueName GlueLibrary { get; set; }
         public ICollection<Stir> Stirs { get; set; }
         public ICollection<MixingInfoDetail> MixingInfoDetails { get; set; }
         public ICollection<Dispatch> Dispatches { get; set; }

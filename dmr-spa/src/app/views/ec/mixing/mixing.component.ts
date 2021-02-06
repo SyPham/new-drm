@@ -73,6 +73,7 @@ export class MixingComponent implements OnInit, OnDestroy {
   scaleStatus = true;
   checkedSmallScale: boolean;
   tab: string;
+  BUIDLING_ID = 0;
   constructor(
     private route: ActivatedRoute,
     private alertify: AlertifyService,
@@ -94,9 +95,11 @@ export class MixingComponent implements OnInit, OnDestroy {
     this.checkQRCode();
     this.checkedSmallScale = false;
     const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
+    this.BUIDLING_ID = Number(JSON.parse(localStorage.getItem('buildingID')));
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
     this.building = BUIDLING;
+    this.buildingID = this.BUIDLING_ID;
     this.scalingKG = BIG_MACHINE_UNIT;
     this.startTime = new Date();
     this.getScalingSetting();
@@ -250,7 +253,8 @@ export class MixingComponent implements OnInit, OnDestroy {
             valid: false,
             info: '',
             batch: '',
-            unit: ''
+            unit: '',
+            time_start: new Date() // leo update 11:13 AM 2/2/2021
           };
         });
         this.glueName = res.name;
@@ -415,6 +419,7 @@ export class MixingComponent implements OnInit, OnDestroy {
       if (this.ingredients[i].position === position) {
         this.ingredients[i].real = actual;
         this.ingredients[i].unit = unit;
+        this.ingredients[i].time_start = new Date(); // leo update
         break; // Stop this loop, we found it!
       }
     }
@@ -1065,11 +1070,11 @@ export class MixingComponent implements OnInit, OnDestroy {
   // api
   back() {
     this.router.navigate([
-      `/ec/execution/todolist-2/`, { tab: this.tab, glueName: this.glueName}
+      `/ec/execution/todolist-2/${this.tab}/${this.glueName}`
     ]);
   }
   private getScalingSetting() {
-    this.buildingID = this.building.id;
+    this.buildingID = this.BUIDLING_ID;
     this.settingService.getMachineByBuilding(this.buildingID).subscribe((data: any) => {
       this.scalingSetting = data.map(item => item.machineID);
     });
@@ -1112,13 +1117,14 @@ export class MixingComponent implements OnInit, OnDestroy {
         ingredientID: item.id,
         batch: item.batch,
         mixingInfoID: 0,
-        position: item.position
+        position: item.position,
+        time_start: item.time_start // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
       };
     });
     const mixing = {
       glueID: this.glueID,
       glueName: this.glueName,
-      buildingID: this.building.id,
+      buildingID: this.BUIDLING_ID,
       mixBy: JSON.parse(localStorage.getItem('user')).User.ID,
       estimatedStartTime: this.estimatedStartTime,
       estimatedFinishTime: this.estimatedFinishTime,

@@ -42,7 +42,26 @@ public class ConnectionMapping<T>
 
         return Enumerable.Empty<string>();
     }
+    public HashSet<string> FindConnection(T key)
+    {
+        HashSet<string> connections;
+        if (_connections.TryGetValue(key, out connections))
+        {
+            return connections;
+        }
 
+        return null;
+    }
+    public string FindKeyByValue(string value)
+    {
+        var result = _connections.FirstOrDefault(x => x.Value.Any(a => a == value));
+        if (result.Key != null)
+        {
+            return result.Key.ToString();
+        }
+
+        return null;
+    }
     public void Remove(T key, string connectionId)
     {
         lock (_connections)
@@ -64,7 +83,32 @@ public class ConnectionMapping<T>
             }
         }
     }
+    /// <summary>
+    /// Only remove a value of current key
+    /// </summary>
+    /// <param name="key">This is a userID</param>
+    /// <param name="connectionId">This is clientId of signalr client</param>
+    public void RemoveKeyAndValue(T key, string connectionId)
+    {
+        lock (_connections)
+        {
+            HashSet<string> connections;
+            if (!_connections.TryGetValue(key, out connections))
+            {
+                return;
+            }
 
+            lock (connections)
+            {
+                connections.RemoveWhere(x=> x == connectionId);
+
+                if (connections.Count == 0)
+                {
+                    _connections.Remove(key);
+                }
+            }
+        }
+    }
     public string ToJson()
     {
         var entries = _connections.Select(d =>

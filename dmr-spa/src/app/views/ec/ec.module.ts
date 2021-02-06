@@ -12,12 +12,12 @@ import { GlueComponent } from './glue/glue.component';
 import { IngredientComponent } from './ingredient/ingredient.component';
 import { GlueModalComponent } from './glue/glue-modal/glue-modal.component';
 import { IngredientModalComponent } from './ingredient/ingredient-modal/ingredient-modal.component';
-import { DropDownListModule } from '@syncfusion/ej2-angular-dropdowns';
+import { DropDownListModule, MultiSelectModule } from '@syncfusion/ej2-angular-dropdowns';
 import { NgbModalModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 // Import ngx-barcode module
 import { BarcodeGeneratorAllModule, DataMatrixGeneratorAllModule } from '@syncfusion/ej2-angular-barcode-generator';
 import { ChartAllModule, AccumulationChartAllModule, RangeNavigatorAllModule } from '@syncfusion/ej2-angular-charts';
-import { SwitchModule, RadioButtonModule } from '@syncfusion/ej2-angular-buttons';
+import { SwitchModule, RadioButtonModule, CheckBoxModule } from '@syncfusion/ej2-angular-buttons';
 
 import { ModalNameComponent } from './modal-name/modal-name.component';
 import { ButtonModule } from '@syncfusion/ej2-angular-buttons';
@@ -89,6 +89,8 @@ import { CountdownModule } from 'ngx-countdown';
 import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
 import { BuildingLunchTimeComponent } from './buildingLunchTime/building-lunch-Time.component';
+import { PrintGlueDispatchListComponent } from './print-glue-dispatch-list/print-glue-dispatch-list.component';
+import { MailingComponent } from './mailing/mailing.component';
 declare var require: any;
 let defaultLang: string;
 const lang = localStorage.getItem('lang');
@@ -143,6 +145,8 @@ if (lang === 'vi') {
     DateTimePickerModule,
     CountdownModule,
     ToolbarModule,
+    CheckBoxModule,
+    MultiSelectModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -205,6 +209,8 @@ if (lang === 'vi') {
     GlueTypeModalComponent,
     GlueTypeComponent,
     BuildingLunchTimeComponent,
+    PrintGlueDispatchListComponent,
+    MailingComponent,
     StationComponent
   ]
 })

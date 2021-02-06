@@ -37,6 +37,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   public STAFF = 3;
   public WORKER = 4;
   public WORKER2 = 6;
+  public DISPATCHER = 6;
   public pageSize: number;
   public currentUser: string;
   public currentTime: any;
@@ -66,6 +67,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     public translate: TranslateService
 
   ) {
+    this.role = JSON.parse(localStorage.getItem('level'));
     const lang = localStorage.getItem('lang');
     if (lang) {
       this.value = lang;
@@ -87,7 +89,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.navEc = new Nav().getNavEc();
     // this.checkTask();
     this.getAvatar();
-    this.role = JSON.parse(localStorage.getItem('level'));
     this.currentUser = JSON.parse(localStorage.getItem('user')).User.Username;
     this.page = 1;
     this.pageSize = 10;
@@ -107,9 +108,43 @@ export class HeaderComponent implements OnInit, AfterViewInit {
       this.avatar = this.sanitizer.bypassSecurityTrustResourceUrl('data:image/png;base64, ' + img);
     }
   }
+  areOtherRoles() {
+    const roles = [this.ADMIN, this.SUPERVISOR, this.STAFF];
+    return roles.includes(this.role.id);
+  }
+  isAdminRole() {
+    if (this.role.id === this.ADMIN) {
+      return true;
+    }
+    return false;
+  }
+  isSupervisorRole() {
+    if (this.role.id === this.SUPERVISOR) {
+      return true;
+    }
+    return false;
+  }
+  isDispatcherRole() {
+    if (this.role.id === this.DISPATCHER) {
+      return true;
+    }
+    return false;
+  }
+  isWorkerRole() {
+    if (this.role.id === this.WORKER) {
+      return true;
+    }
+    return false;
+  }
+  isAdminCostingRole() {
+    if (this.role.id === this.ADMIN_COSTING) {
+      return true;
+    }
+    return false;
+  }
   home() {
     if (this.role.id === this.STAFF) {
-      return '/ec/establish/bpfc';
+      return '/ec/execution/todolist-2';
     } else {
       return'/ec/execution/todolist-2';
     }

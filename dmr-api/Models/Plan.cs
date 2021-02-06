@@ -29,7 +29,9 @@ namespace DMR_API.Models
         public int WorkingHour { get; set; }
         public bool IsGenarateTodo { get; set; }
         public bool IsRefreshTodo { get; set; }
+        public bool IsChangeBPFC { get; set; }
         public bool IsDelete { get; set; }
+        public bool IsOvertime { get; set; }
         public DateTime DeleteTime { get; set; }
         public DateTime ModifyTime { get; set; }
         public int DeleteBy { get; set; }

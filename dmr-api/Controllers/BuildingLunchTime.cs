@@ -48,10 +48,9 @@ namespace DMR_API.Controllers
         {
             update.StartTime = update.StartTime.ToLocalTime();
             update.EndTime = update.EndTime.ToLocalTime();
-            var status = await _buildingLunchTimeService.UpdatePeriod(update);
-            if (status) return NoContent();
-            else
-                throw new Exception("Creating or updating the Period failed on save");
+            var res = await _buildingLunchTimeService.UpdatePeriod(update);
+            if (res.Status) return NoContent();
+            return BadRequest(res.Message);
         }
 
 

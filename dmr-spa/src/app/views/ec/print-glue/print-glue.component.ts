@@ -153,32 +153,6 @@ export class PrintGlueComponent implements OnInit, OnDestroy {
     };
     this.subject.next(scanner);
   }
-  async onNgModelChangeScanQRCode2(value) {
-    const input = value.split('-') || [];
-    const valid = await this.validateQRCode(input);
-    if (valid.status === false) { return; }
-    const mixing = {
-      glueName: this.value.glueName,
-      glueID: this.value.glueID,
-      buildingID: this.building.id,
-      mixBy: this.user.ID,
-      estimatedStartTime: this.value.estimatedStartTime,
-      estimatedFinishTime: this.value.estimatedFinishTime,
-      details: [{
-        amount: this.value.standardConsumption,
-        ingredientID: valid.ingredient.id,
-        batch: input[1],
-        mixingInfoID: 0,
-        position: 'A'
-      }]
-    };
-    this.makeGlueService.add(mixing).subscribe((item: IMixingInfo) => {
-      this.alertify.success('Success!');
-      this.isShow = false;
-      this.todolistService.setValue(true);
-      this.data = item;
-    }, error => this.alertify.error(error));
-  }
   printData() {
     // <li class='subInfo' style='font-size: 18px ;'>${this.data.code}</li>
     // <li class='subInfo' style='font-size: 15px ;'> Batch: ${this.chemicalA?.batch === undefined ? 'N/A' : this.chemicalA?.batch}</li>
@@ -195,7 +169,6 @@ export class PrintGlueComponent implements OnInit, OnDestroy {
           <div class='info'>
           <ul>
               <li class='subInfoTo'>${this.data.glueName}</li>
-              
               <li class='subInfoNho' >MFG: ${this.datePipe.transform(new Date(this.data.createdTime), 'MMdd HH:mm')}</li>
               <li class='subInfoNho' >EXP: ${exp}</li>
           </ul>

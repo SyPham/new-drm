@@ -23,6 +23,7 @@ const ADMIN = 1;
 const BUILDING_LEVEL = 2;
 const SUPERVISOR = 2;
 const STAFF = 3;
+const DISPATCHER = 6;
 @Component({
   selector: 'app-plan-output-quantity',
   templateUrl: './plan-output-quantity.component.html',
@@ -30,7 +31,7 @@ const STAFF = 3;
 })
 export class PlanOutputQuantityComponent implements OnInit {
   role: IRole;
-  building: IBuilding;
+  building: IBuilding[];
   @ViewChild('cloneModal') public cloneModal: TemplateRef<any>;
   @ViewChild('planForm')
   public orderForm: FormGroup;
@@ -109,14 +110,13 @@ export class PlanOutputQuantityComponent implements OnInit {
     this.date = new Date();
     this.endDate = new Date();
     this.endDate = new Date();
-    const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
+    const BUIDLING: IBuilding[] = JSON.parse(localStorage.getItem('building'));
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
     this.building = BUIDLING;
     this.gridConfig();
     this.checkRole();
     this.getAllBPFC();
-    this.getAllLine(this.building.id);
     this.ClearForm();
   }
 
@@ -163,26 +163,34 @@ export class PlanOutputQuantityComponent implements OnInit {
     this.getAll();
   }
   checkRole(): void {
-    const roles = [ADMIN, SUPERVISOR, STAFF];
-    if (roles.includes(this.role.id)) {
-      this.IsAdmin = true;
-      const buildingId = +localStorage.getItem('buildingID');
-      if (buildingId === 0) {
-        this.alertify.message('Please select a building!', true);
-        this.getBuilding(() => { });
-      } else {
+    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
+    switch (this.role.id) {
+      case ADMIN:
+      case SUPERVISOR:
+      case STAFF:
+      case WORKER: // Chỉ hiện todolist
+        this.IsAdmin = true;
+        const buildingId = +localStorage.getItem('buildingID');
+        if (buildingId === 0) {
+          this.getBuilding(() => {
+            this.alertify.message('Please select a building!', true);
+          });
+        } else {
+          this.getBuilding(() => {
+            this.buildingID = buildingId;
+            this.getAll();
+            this.getAllLine(this.buildingID);
+          });
+        }
+        break;
+      case DISPATCHER: // Chỉ hiện dispatchlist
+        this.building = JSON.parse(localStorage.getItem('building'));
         this.getBuilding(() => {
-          this.buildingID = buildingId;
+          this.buildingID = this.building[0].id;
           this.getAll();
           this.getAllLine(this.buildingID);
         });
-      }
-    } else {
-      this.getBuilding(() => {
-        this.buildingID = this.building.id;
-        this.getAll();
-        this.getAllLine(this.buildingID);
-      });
+        break;
     }
   }
   getReport(obj: { startDate: Date, endDate: Date }) {
@@ -395,7 +403,7 @@ export class PlanOutputQuantityComponent implements OnInit {
   }
 
   search() {
-    this.planService.search(this.building.id, this.startDate.toDateString(), this.endDate.toDateString()).subscribe((res: any) => {
+    this.planService.search(this.buildingID, this.startDate.toDateString(), this.endDate.toDateString()).subscribe((res: any) => {
       this.data = res.map(item => {
         return {
           id: item.id,

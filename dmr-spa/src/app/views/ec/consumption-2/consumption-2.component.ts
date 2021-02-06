@@ -16,7 +16,6 @@ import { FilteringEventArgs } from '@syncfusion/ej2-angular-dropdowns';
 import { Query } from '@syncfusion/ej2-data/';
 import { IRole } from 'src/app/_core/_model/role';
 const BUILDING_LEVEL = 2;
-const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
 const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
 @Component({
   selector: 'app-consumption-2',
@@ -74,17 +73,22 @@ export class Consumption2Component implements OnInit {
     public datePipe: DatePipe,
     private spinner: NgxSpinnerService,
     private buildingService: BuildingService,
-  ) { }
+  ) { this.buildingID = +localStorage.getItem('buildingID'); }
   ngOnInit(): void {
-    this.building = BUIDLING;
     this.role = ROLE;
     this.startDate = new Date();
     this.endDate = new Date();
     this.level = JSON.parse(localStorage.getItem('level')).level;
     this.gridConfig();
-    this.getBuilding();
-    this.buildingID = JSON.parse(localStorage.getItem('building')).id;
-    this.consumptionByLineCase2();
+    if (this.buildingID === 0) {
+      this.getBuilding(() => {
+        this.alertify.message('Please select a building!', true);
+      });
+    } else {
+      this.getBuilding(() => {
+        this.consumptionByLineCase2();
+      });
+    }
   }
   gridConfig(): void {
     this.pageSettings = { pageCount: 20, pageSizes: ['All', 100], pageSize: 100 };
@@ -106,9 +110,10 @@ export class Consumption2Component implements OnInit {
     this.consumptionByLineCase2();
   }
 
-  private getBuilding(): void {
+  private getBuilding(callback): void {
     this.buildingService.getBuildings().subscribe(async (buildingData) => {
       this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
+      callback();
     });
   }
   consumptionByLineCase2() {

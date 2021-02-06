@@ -21,7 +21,8 @@ export class AlertifyService {
   confirm(title: string, message: string, okCallback: () => void) {
     Swal.fire({
       title,
-      text: message,
+      // text: message,
+      html: message,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Yes',
@@ -35,6 +36,22 @@ export class AlertifyService {
           'Your imaginary file is safe :)',
           'error'
         );
+      }
+    });
+  }
+  confirm2(title: string, message: string, okCallback: () => void, cancelCallback: () => void) {
+    Swal.fire({
+      title,
+      html: message,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes',
+      cancelButtonText: 'No'
+    }).then((result) => {
+      if (result.value) {
+        okCallback();
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        cancelCallback();
       }
     });
   }

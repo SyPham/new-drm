@@ -26,6 +26,9 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
   }
   constructor(private host: ElementRef) { }
   ngAfterViewInit() {
+    setTimeout(() => {
+      this.host.nativeElement.focus();
+    }, 300);
   }
   ngOnInit() {
     this.subscription.push(this.subject

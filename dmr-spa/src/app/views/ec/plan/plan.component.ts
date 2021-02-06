@@ -19,11 +19,15 @@ import { TodolistService } from 'src/app/_core/_service/todolist.service';
 import { Tooltip } from '@syncfusion/ej2-angular-popups';
 import { StationComponent } from './station/station.component';
 import { StationService } from 'src/app/_core/_service/station.service';
+import * as introJs from 'intro.js/intro.js';
+import { AuthService } from 'src/app/_core/_service/auth.service';
 declare var $;
 const ADMIN = 1;
 const BUILDING_LEVEL = 2;
 const SUPERVISOR = 2;
 const STAFF = 3;
+const WORKER = 4;
+const DISPATCHER = 6;
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
@@ -34,6 +38,7 @@ const STAFF = 3;
   ]
 })
 export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
+  introJS = introJs();
   @ViewChild('cloneModal') public cloneModal: TemplateRef<any>;
   @ViewChild('stationModal') public stationModal: TemplateRef<any>;
   @ViewChild('planForm')
@@ -44,15 +49,16 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   pageSettings: PageSettingsModel;
   toolbarOptions: object;
   editSettings: object;
-  sortSettings = { columns: [{ field: 'dueDate', direction: 'Ascending' }] };
+  sortSettings = { columns: [{ field: 'buildingName', direction: 'Ascending' }] };
   startDate: Date;
   endDate: Date;
   date: Date;
   bpfcID: number;
+  changebpfcID: number;
   level: number;
   hasWorker: boolean;
   role: IRole;
-  building: IBuilding;
+  building: IBuilding[];
   bpfcData: object;
   plansSelected: any;
   editparams: object;
@@ -63,6 +69,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   data: IPlan[];
   plan: IPlan;
   searchSettings: any = { hierarchyMode: 'Parent' };
+  BPFCsForChangeModal: any;
   modalPlan: Plan = {
     id: 0,
     buildingID: 0,
@@ -83,6 +90,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     }
 
   };
+  buildingNameForChangeModal = '';
   public textLine = 'Select a line name';
   public fieldsGlue: object = { text: 'name', value: 'name' };
   public fieldsLine: object = { text: 'name', value: 'name' };
@@ -108,6 +116,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   IsAdmin: boolean;
   buildingID: number;
   period: any;
+  planID: number;
   constructor(
     private alertify: AlertifyService,
     public modalService: NgbModal,
@@ -115,6 +124,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     private todolistService: TodolistService,
     private buildingService: BuildingService,
     private stationSevice: StationService,
+    private authService: AuthService,
     private dataService: DataService,
     private bPFCEstablishService: BPFCEstablishService,
     public datePipe: DatePipe
@@ -132,12 +142,11 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.endDate = new Date();
     this.startDate = new Date();
     this.hasWorker = false;
-    const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
+    const BUIDLING: IBuilding[] = JSON.parse(localStorage.getItem('building'));
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
     this.building = BUIDLING;
     this.watch();
-    this.getStartTimeFromPeriod();
     this.gridConfig();
     this.getAllBPFC();
     this.checkRole();
@@ -166,24 +175,33 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscription.push(watchAction);
   }
   checkRole(): void {
-    const roles = [ADMIN, SUPERVISOR, STAFF];
-    if (roles.includes(this.role.id)) {
-      this.IsAdmin = true;
-      const buildingId = +localStorage.getItem('buildingID');
-      if (buildingId === 0) {
-        this.alertify.message('Please select a building!', true);
-        this.getBuilding(() => { });
-      } else {
+    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
+    switch (this.role.id) {
+      case ADMIN:
+      case SUPERVISOR:
+      case STAFF:
+      case WORKER: // Chỉ hiện todolist
+        this.IsAdmin = true;
+        const buildingId = +localStorage.getItem('buildingID');
+        if (buildingId === 0) {
+          this.getBuilding(() => {
+            this.alertify.message('Please select a building!', true);
+          });
+        } else {
+          this.getBuilding(() => {
+            this.buildingID = buildingId;
+            this.getAll();
+            this.getStartTimeFromPeriod();
+          });
+        }
+        break;
+      case DISPATCHER: // Chỉ hiện dispatchlist
+        this.building = JSON.parse(localStorage.getItem('building'));
         this.getBuilding(() => {
-          this.buildingID = buildingId;
+          this.buildingID = this.building[0].id;
           this.getAll();
         });
-      }
-    } else {
-      this.getBuilding(() => {
-        this.buildingID = this.building.id;
-        this.getAll();
-      });
+        break;
     }
   }
   ngOnDestroy() {
@@ -262,6 +280,13 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.buildingID = this.buildingID === undefined ? 0 : this.buildingID;
     this.getAllLine(this.buildingID);
   }
+  getBuildingWorker(callback) {
+    const userID = +JSON.parse(localStorage.getItem('user')).User.ID;
+    this.authService.getBuildingUserByUserID(userID).subscribe((res) => {
+      this.buildings = res.data;
+      callback();
+    });
+  }
   getBuilding(callback): void {
     this.buildingService.getBuildings().subscribe(async (buildingData) => {
       this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
@@ -279,7 +304,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       if (data.buildingID !== this.buildingNameEdit) {
         this.buildingNameEdit = data.buildingID;
         this.grid.refresh();
-        this.alertify.warning(`Không được cập nhật chuyền cho kế hoạch làm việc này! <br />
+        this.alertify.warning(`Không được cập nhật chuyền cho kế hoạch làm việc này! <br>
         Lý Do: Kế hoạch làm việc này đã tạo danh sách việc làm rồi! `, true);
         return;
       }
@@ -291,7 +316,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       if (data.buildingID !== this.buildingNameEdit) {
         this.buildingNameEdit = data.buildingID;
         this.grid.refresh();
-        this.alertify.warning(`Không được cập nhật ngày thực thi cho kế hoạch làm việc này! <br />
+        this.alertify.warning(`Không được cập nhật ngày thực thi cho kế hoạch làm việc này! <br>
         Lý Do: Kế hoạch làm việc này đã tạo danh sách việc làm rồi! `, true);
         return;
       }
@@ -306,7 +331,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.bpfcEdit = args.itemData.id;
     if (data.isGenerate) {
       if (data.bpfcEstablishID !== this.bpfcEdit) {
-        this.alertify.warning(`Không được cập nhật BPFC cho kế hoạch làm việc này! <br />
+        this.alertify.warning(`Không được cập nhật BPFC cho kế hoạch làm việc này! <br>
         Lý Do: Kế hoạch làm việc này đã tạo danh sách việc làm rồi!
         `, true);
         this.bpfcEdit = data.bpfcEstablishID;
@@ -377,7 +402,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
         const data = args.data;
         if (args.data.isGenerate) {
           if (previousData.hourlyOutput !== data.hourlyOutput) {
-            this.alertify.warning(`Không được cập nhật sản lượng hàng giờ cho kế hoạch làm việc này! <br />
+            this.alertify.warning(`Không được cập nhật sản lượng hàng giờ cho kế hoạch làm việc này! <br>
         Lý Do: Kế hoạch làm việc này đã tạo danh sách việc làm rồi!`, true);
             this.grid.refresh();
             return;
@@ -518,15 +543,16 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       });
     });
   }
+
   getStartTimeFromPeriod() {
-    this.planService.getStartTimeFromPeriod(this.building.id).subscribe(res => {
+    this.planService.getStartTimeFromPeriod(this.buildingID).subscribe(res => {
       if (res.status === true) {
         this.period = res.data;
         console.log(this.period);
       } else {
         this.alertify.warning(res.message);
       }
-    }, err => this.alertify.warning(err.message) );
+    }, err => this.alertify.warning(err.message));
   }
 
   getAll() {
@@ -545,9 +571,12 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
           finishWorkingTime: new Date(item.finishWorkingTime),
           startTime: item.startTime,
           endTime: item.endTime,
+          isChangeBPFC: item.isChangeBPFC,
           bpfcEstablishID: item.bpfcEstablishID,
           glues: item.glues || [],
-          isGenerate: item.isGenerate
+          isGenerate: item.isGenerate,
+          isOvertime: item.isOvertime,
+          isShowOvertimeOption: item.isShowOvertimeOption
         };
       });
     });
@@ -562,6 +591,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       });
     });
   }
+
   delete(id) {
     this.alertify.confirm('Delete Plan <br> Xóa kế hoạc làm việc', 'Are you sure you want to delete this Plans ?<br> Bạn có chắc chắn muốn xóa không?', () => {
       this.planService.deleteRange([id]).subscribe(() => {
@@ -619,6 +649,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       //   break;
       case 'Update':
         this.generateTodolist();
+        // this.generateDispatchList();
         break;
       case 'ExcelExport':
         this.grid.excelExport();
@@ -663,15 +694,29 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
           finishWorkingTime: new Date(item.finishWorkingTime),
           startTime: item.startTime,
           endTime: item.endTime,
+          isOvertime: item.isOvertime,
+          isChangeBPFC: item.isChangeBPFC,
           bpfcEstablishID: item.bpfcEstablishID,
           isGenerate: item.isGenerate,
-          glues: item.glues || []
+          glues: item.glues || [],
+          isShowOvertimeOption: item.isShowOvertimeOption
         } as IPlan;
       });
     });
   }
 
-
+  changeOvertime(args, data) {
+    const plans = [data.id];
+    if (args.checked) {
+      this.addOvertime(plans, () => {
+        this.grid.refresh();
+      });
+    } else {
+      this.removeOvertime(plans, () => {
+        this.grid.refresh();
+      });
+    }
+  }
   onClickDefault() {
     this.startDate = new Date();
     this.endDate = new Date();
@@ -730,6 +775,33 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       }
     }, err => this.alertify.error(err, true));
   }
+  generateDispatchList() {
+    const selectedRecords = this.grid.dataSource as any[];
+    const data = selectedRecords.filter(x => x.isGenerate === false);
+    if (data.length === 0) {
+      this.alertify.warning(`Tất cả các kế hoạch làm việc đã được tạo nhiệm vụ!<br>
+      All work plans have been created with tasks !`, true);
+      return;
+    }
+    const plansSelected: number[] = data.map((item: any) => {
+      return item.id;
+    });
+    this.todolistService.generateDispatchList(plansSelected).subscribe((res: any) => {
+      if (res.status) {
+        this.alertify.success('Tạo nhiệm vụ thành công!<br>Success!', true);
+        this.getAll();
+      } else {
+        this.alertify.error(res.message, true);
+      }
+    }, err => this.alertify.error(err, true));
+  }
+  changeBPFC() {
+    this.planService.changeBPFC(this.planID, this.changebpfcID).subscribe(() => {
+      this.alertify.success('Tạo nhiệm vụ thành công!<br>Success!', true);
+      this.getAll();
+      this.modalReference.dismiss();
+    }, err => this.alertify.error(err, true));
+  }
   // End API
 
   // modal
@@ -740,5 +812,105 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     }, (reason) => {
     });
   }
+  openChangeBPFCModalComponent(name, data) {
+    this.planID = data.id;
+    this.buildingNameForChangeModal = data.buildingName;
+    this.modalReference = this.modalService.open(name, { size: 'lg' });
+    this.modalReference.result.then((result) => {
+    }, (reason) => {
+    });
+  }
   // end modal
+
+  public onFilteringChangeBPFCModal: EmitType<FilteringEventArgs> = (
+    e: FilteringEventArgs
+  ) => {
+    let query: Query = new Query();
+    // frame the query based on search string with filter type.
+    query =
+      e.text !== '' ? query.where('name', 'contains', e.text, true) : query;
+    // pass the filter data source, filter query to updateData method.
+    e.updateData(this.BPFCs, query);
+  }
+  onChangeBPFCModal(args) {
+    this.changebpfcID = args.itemData.id;
+  }
+  startSteps(): void {
+    this.introJS
+      .setOptions({
+        steps: [
+          {
+            element: '.step1-li',
+            intro: 'Bước 1: Chọn vào nút đổi mã BPFC!'
+          },
+          {
+            element: '.step2-li',
+            intro: 'Bước 2: Chọn 1 BPFC khác!'
+          },
+          // {
+          //   element: '#step3-li',
+          //   intro: 'let\'s keep going'
+          // },
+          // {
+          //   element: '#step4-li',
+          //   intro: 'More features, more fun.'
+          // },
+          // {
+          //   // As you can see, thanks to the element ID
+          //   // I can set a step in an element in an other component
+          //   element: '#step1',
+          //   intro: 'Accessed and element in another component'
+          // }
+        ],
+        hidePrev: true,
+        hideNext: false
+      })
+      .start();
+  }
+  created() { this.getAllBPFCForChangeModal(); }
+  getAllBPFCForChangeModal() {
+    this.bPFCEstablishService.filterByApprovedStatus().subscribe((res: any) => {
+      this.BPFCsForChangeModal = res.map((item) => {
+        return {
+          id: item.id,
+          name: `${item.modelName} - ${item.modelNo} - ${item.articleNo} - ${item.artProcess}`,
+        };
+      });
+    });
+  }
+
+
+  // them code ngay 1 thang 2 2021
+  addOvertime(plans, cancelCallback) {
+    this.alertify.confirm2('Add Overtime! <br> Cài đặt giờ tăng ca!', 'Are you sure you want to add overtime of this Plans ?<br> Bạn có chắc chắn muốn cài đặt giờ ăn ca không?', () => {
+      this.todolistService.addOvertime(plans).subscribe((res: any) => {
+        if (res.status === true) {
+          this.getAll();
+          this.alertify.success(res.message);
+        } else {
+          this.alertify.error(res.message);
+        }
+      }, error => {
+        this.alertify.error('Lỗi máy chủ!');
+      });
+    }, () => {
+        cancelCallback();
+    });
+  }
+  removeOvertime(plans, cancelCallback) {
+    this.alertify.confirm2('remove overtime of this plan <br> Xóa giờ tăng ca của kế hoạc làm việc', 'Are you sure you want to remove overtime of this Plans ?<br> Bạn có chắc chắn muốn hủy giờ tăng cả của kế hoạch làm việc này không?', () => {
+      this.todolistService.removeOvertime(plans).subscribe((res: any) => {
+        if (res.status === true) {
+          this.getAll();
+          this.alertify.success(res.message);
+        } else {
+          this.alertify.error(res.message);
+        }
+      }, error => {
+        this.alertify.error('Lỗi máy chủ!');
+      });
+    }, () => {
+      cancelCallback();
+    });
+  }
 }

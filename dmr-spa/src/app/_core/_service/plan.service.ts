@@ -129,5 +129,8 @@ export class PlanService {
   getStartTimeFromPeriod(buildingID) {
     return this.http.get<ResponseDetail<any>>(this.baseUrl + 'Plan/GetStartTimeFromPeriod/' + buildingID);
   }
+  changeBPFC(planID: number, bpfcID: number) {
+    return this.http.get(`${this.baseUrl}Plan/ChangeBPFC/${planID}/${bpfcID}` );
+  }
 }
 

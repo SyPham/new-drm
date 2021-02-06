@@ -9,6 +9,5 @@ namespace DMR_API._Repositories.Interface
 {
   public  interface IDispatchRepository : IECRepository<Dispatch>
     {
-        void UpdateRange(List<Dispatch> dispatches);
     }
 }

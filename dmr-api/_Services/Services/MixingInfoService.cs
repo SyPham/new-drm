@@ -311,7 +311,7 @@ namespace DMR_API._Services.Services
             // var model = _rowDataRepository.AsQueryable().Select(x => new {x.MachineID, x.RPM, x.CreatedDateTime }).OrderByDescending(x=>x.CreatedDateTime).ToList();
             return model;
         }
-
+        // Đã chỉnh sửa ngày 1/29/2021 4:29PM
         public MixingInfo AddMixingInfo(MixingInfoForAddDto mixing)
         {
           
@@ -333,9 +333,8 @@ namespace DMR_API._Services.Services
                     };
                     var glue = _repoGlue.FindAll(x => x.ID == mixing.GlueID)
                         .Include(x => x.GlueIngredients)
-                        .ThenInclude(x => x.Ingredient)
-                        .SelectMany(x => x.GlueIngredients).ToList();
-                    var checmicalA = glue.FirstOrDefault().Ingredient.ExpiredTime;
+                        .ThenInclude(x => x.Ingredient).FirstOrDefault();
+                    var checmicalA = glue.GlueIngredients.FirstOrDefault().Ingredient.ExpiredTime;
                     mixingInfo.CreatedTime = DateTime.Now;
                     mixingInfo.ExpiredTime = DateTime.Now.AddHours(checmicalA);
                     string code = CodeUtility.RandomString(8);
@@ -352,9 +351,18 @@ namespace DMR_API._Services.Services
                         }
                     }
                     mixingInfo.Code = code;
+                    mixingInfo.GlueNameID = glue.GlueNameID.Value;
                     _repoMixingInfor.Add(mixingInfo);
                     _repoMixingInfor.Save();
+
                     var details = _mapper.Map<List<MixingInfoDetail>>(mixing.Details.ToList());
+                    // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
+                    foreach (var item in details)
+                    {
+                        item.Time_Start = item.Time_Start.ToLocalTime();
+                        item.Amount = Math.Round(item.Amount, 2);
+                    }
+                    // End Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
                     details.ForEach(x => x.MixingInfoID = mixingInfo.ID);
                     _repoMixingInfoDetail.AddRange(details);
                     _repoMixingInfoDetail.Save();
@@ -370,83 +378,6 @@ namespace DMR_API._Services.Services
                         Amount = details.Sum(x => x.Amount)
                     };
                     _toDoListService.UpdateMixingTimeRange(todo);
-
-
-                    var todolistModel = _repoToDoList.FindAll(x =>
-                        x.EstimatedFinishTime == mixing.EstimatedFinishTime
-                        && x.EstimatedStartTime == mixing.EstimatedStartTime
-                        && x.GlueName == mixing.GlueName)
-                             .Include(x => x.Plan)
-                                 .ThenInclude(x => x.Stations)
-                                 .ThenInclude(x => x.Glue)
-                         .Select(x => new
-                         {
-                             x.EstimatedFinishTime,
-                             x.EstimatedStartTime,
-                             x.StandardConsumption,
-                             x.LineID,
-                             x.GlueID,
-                             x.GlueNameID,
-                             x.MixingInfoID,
-                             x.GlueName,
-                             x.LineName,
-                             x.MixedConsumption,
-                             x.PlanID,
-                             x.Plan,
-                              Stations = x.Plan.Stations.Where(x=> !x.IsDelete).ToList()
-                         }).ToList();
-                  
-                    var todolist = todolistModel.GroupBy(x => new { x.GlueNameID, x.EstimatedFinishTime, x.EstimatedStartTime }).ToList();
-
-                    foreach (var todolistGroup in todolist)
-                    {
-                        var dispatchModel = new List<DispatchTodolistDto>();
-                        foreach (var data in todolistGroup)
-                        {
-                            var count = data.Stations.Count;
-                            var stationModel = data.Stations.FirstOrDefault(x => x.Glue.GlueNameID == data.GlueNameID);
-                            if (count > 0)
-                            {
-                                int stationAmount = stationModel is null ? 0 : stationModel.Amount;
-                                for (int i = 1; i <= stationAmount; i++)
-                                {
-                                    dispatchModel.Add(new DispatchTodolistDto
-                                    {
-                                        ID = 0,
-                                        Glue = data.GlueName,
-                                        Line = data.LineName,
-                                        LineID = data.LineID,
-                                        MixingInfoID = data.MixingInfoID,
-                                        CreatedTime = DateTime.Now.ToLocalTime(),
-                                        CreateBy = userID,
-                                        StationID = stationModel.ID,
-                                    });
-                                }
-                                if (stationAmount == 0)
-                                {
-                                    dispatchModel.Add(new DispatchTodolistDto
-                                    {
-                                        ID = 0,
-                                        Glue = data.GlueName,
-                                        Line = data.LineName,
-                                        LineID = data.LineID,
-                                        MixingInfoID = data.MixingInfoID,
-                                        CreatedTime = DateTime.Now.ToLocalTime(),
-                                        StationID = stationModel.ID,
-                                        CreateBy = userID,
-                                    });
-                                }
-                            }
-                            else
-                            {
-                                scope.Dispose();
-                                return null;
-                            }
-                        }
-                        var dispatch = _mapper.Map<List<Dispatch>>(dispatchModel);
-                        _repoDispatch.AddRange(dispatch);
-                        _repoDispatch.Save();
-                    }
                     scope.Complete();
                     return mixingInfo;
                 }

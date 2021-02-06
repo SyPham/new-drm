@@ -182,4 +182,13 @@ export class IngredientService {
   checkIncoming(ingredient, batch, building) {
     return this.http.get(`${this.baseUrl}ingredient/CheckIncoming/${ingredient}/${batch}/${building}`, {});
   }
+
+
+  getAllIngredientInfoByBuilding(building) {
+    return this.http.get(this.baseUrl + `ingredient/GetAllIngredientInfoByBuilding/${building}`, {});
+  }
+
+  getAllIngredientInfoOutputByBuilding(building) {
+    return this.http.get(this.baseUrl + `ingredient/GetAllIngredientInfoOutputByBuilding/${building}`, {});
+  }
 }

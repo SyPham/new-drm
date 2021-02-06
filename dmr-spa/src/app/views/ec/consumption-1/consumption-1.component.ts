@@ -19,7 +19,6 @@ import { Tooltip } from '@syncfusion/ej2-angular-popups';
 import { IRole } from 'src/app/_core/_model/role';
 const BUILDING_LEVEL = 2;
 const WORKER = 4;
-const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
 const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
 @Component({
   selector: 'app-consumption-1',
@@ -35,7 +34,7 @@ export class Consumption1Component implements OnInit {
   public editSettings: object;
   level: number;
   public role: IRole;
-  public building: IBuilding;
+  public building: IBuilding[];
   @ViewChild('grid')
   public grid: GridComponent;
   modalReference: NgbModalRef;
@@ -82,18 +81,25 @@ export class Consumption1Component implements OnInit {
     public datePipe: DatePipe,
     private spinner: NgxSpinnerService,
     private buildingService: BuildingService,
-  ) { }
+  ) {
+    this.buildingID = +localStorage.getItem('buildingID');
+  }
   ngOnInit(): void {
     this.startDate = new Date();
     this.endDate = new Date();
-    this.building = BUIDLING;
     this.role = ROLE;
     this.level = JSON.parse(localStorage.getItem('level')).level;
     this.pageSettings = { pageCount: 20, pageSizes: ['All', 100], pageSize: 100 };
     this.toolbarOptions = ['ExcelExport', 'Search'];
-    this.getBuilding();
-    this.buildingID = JSON.parse(localStorage.getItem('building')).id;
-    this.consumptionByLineCase1();
+    if (this.buildingID === 0) {
+      this.getBuilding(() => {
+        this.alertify.message('Please select a building!', true);
+      });
+    } else {
+      this.getBuilding(() => {
+        this.consumptionByLineCase1();
+      });
+    }
   }
   headerCellInfo(args) {
     if (args.cell.column.field === 'totalConsumption') {
@@ -129,11 +135,6 @@ export class Consumption1Component implements OnInit {
     e.updateData(this.buildings as any, query);
   }
   onChangeBuilding(args) {
-    if (args.isInteracted) {
-      alert('Changes happened by Interaction');
-    } else {
-      alert('Changes happened by programmatic');
-    }
     this.buildingID = args.itemData.id;
     localStorage.setItem('buildingID', args.itemData.id);
     this.consumptionByLineCase1();
@@ -144,9 +145,10 @@ export class Consumption1Component implements OnInit {
     this.consumptionByLineCase1();
   }
 
-  private getBuilding(): void {
+  private getBuilding(callback): void {
     this.buildingService.getBuildings().subscribe(async (buildingData) => {
       this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
+      callback();
     });
   }
   consumptionByLineCase1() {

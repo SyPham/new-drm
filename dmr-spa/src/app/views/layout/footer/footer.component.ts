@@ -8,11 +8,13 @@ import * as signalr from '../../../../assets/js/ec-client.js';
 })
 export class FooterComponent implements OnInit {
   online: number;
-  constructor() { }
+  userID: number;
+  constructor() {
+    this.userID = +JSON.parse(localStorage.getItem('user')).User.ID;
+   }
   ngOnInit(): void {
-    console.log('footer connected');
     if (signalr.CONNECTION_HUB.state === 'Connected') {
-      signalr.CONNECTION_HUB.invoke('CheckOnline').catch(err => console.error(err));
+      signalr.CONNECTION_HUB.invoke('CheckOnline', this.userID).catch(err => console.error(err));
       signalr.CONNECTION_HUB.on('Online', (users) => {
         this.online = users;
       });

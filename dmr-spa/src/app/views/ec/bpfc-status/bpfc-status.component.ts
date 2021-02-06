@@ -16,6 +16,7 @@ import { AuthService } from 'src/app/_core/_service/auth.service';
 import { BPFCEstablishService } from 'src/app/_core/_service/bpfc-establish.service';
 import { count } from 'console';
 import { UserService } from 'src/app/_core/_service/user.service';
+import { IRole } from 'src/app/_core/_model/role';
 @Component({
   selector: 'app-bpfc-status',
   templateUrl: './bpfc-status.component.html',
@@ -80,17 +81,19 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
+    const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
+    this.level = ROLE.id;
     this.getBuilding();
   }
 
   getBuilding() {
     const userID = JSON.parse(localStorage.getItem('user')).User.ID;
-    this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
-      res = res || {};
-      if (res !== {}) {
-        this.level = res.level;
-      }
-    });
+    // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
+    //   res = res || {};
+    //   if (res !== {}) {
+    //     this.level = res.level;
+    //   }
+    // });
   }
 
   dataBound() {

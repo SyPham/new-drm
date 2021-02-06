@@ -40,6 +40,7 @@
     "To Do List 2": "To Do List 2",
     "ADDITION": "Addition",
     "Addition": "Addition",
+    "Addition Dispatch": "Addition Dispatch",
     "ESTABLISHED_RECORD": "Established Record",
     "Established Record": "Established Record",
     "CONSUMPTION": "Std.Con. (g)",
@@ -222,6 +223,8 @@
     "Refresh": "Refresh",
     "Refresh Todolist": "Refresh",
     "Notify": "After 12:00 PM please press the Refresh button on to-do-list-2 page to update your to do list!",
-    "Manual": "Manual"
+    "Manual": "Manual",
+    "Overtime": "Overtime",
+    "No overtime": "No overtime"
 
 }

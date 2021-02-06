@@ -44,6 +44,7 @@ namespace DMR_API._Services.Interface
         MixingInfo PrintGlue(int mixingÌnoID);
         Task<object> Finish(int mixingÌnoID);
         PlanDto FindByID(int ID);
+        Task<int?> FindBuildingByLine(int lineID);
         Task<bool> DeletePlan(int id);
         // Lấy thời gian bắt đầu sequence = 1 trong bảng period theo lunchtime
         Task<ResponseDetail<Period>> GetStartTimeFromPeriod(int buildingID);
@@ -51,6 +52,9 @@ namespace DMR_API._Services.Interface
         Task<bool> CheckExistTimeRange(int lineID, DateTime statTime, DateTime endTime, DateTime dueDate);
         Task<bool> CheckDuplicate(int lineID, int BPFCEstablishID, DateTime dueDate);
         bool DeleteRangePlan(List<int> plans);
+
+        Task<ResponseDetail<object>> ChangeBPFC(int planID, int bpfcID);
+
 
     }
 }

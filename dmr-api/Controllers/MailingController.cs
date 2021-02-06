@@ -6,6 +6,7 @@ using DMR_API._Services.Interface;
 using DMR_API.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace DMR_API.Controllers
 {
@@ -56,7 +57,20 @@ namespace DMR_API.Controllers
 
             throw new Exception("Creating the mailing failed on save");
         }
-
+        [HttpPost]
+        public async Task<IActionResult> CreateRange(List<MailingDto> create)
+        {
+            var check = await _mailingService.CheckExists(create[0].Frequency, create[0].Report);
+            if (check)
+            {
+                return BadRequest($"The {create[0].Frequency} and {create[0].Report} option already exists!");
+            }
+            if (await _mailingService.AddRange(create))
+            {
+                return NoContent();
+            }
+            throw new Exception("Creating the mailing failed on save");
+        }
         [HttpPut]
         public async Task<IActionResult> Update(MailingDto update)
         {
@@ -64,7 +78,13 @@ namespace DMR_API.Controllers
                 return NoContent();
             return BadRequest($"Updating Mailing {update.ID} failed on save");
         }
-
+        [HttpPut]
+        public async Task<IActionResult> UpdateRange(List<MailingDto> update)
+        {
+            if (await _mailingService.UpdateRange(update))
+                return NoContent();
+            return BadRequest($"Updating Mailing failed on save");
+        }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {

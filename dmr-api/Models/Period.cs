@@ -10,6 +10,7 @@ namespace DMR_API.Models
         public int ID { get; set; }
         public int LunchTimeID { get; set; }
         public int Sequence { get; set; }
+        public bool IsOvertime { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
     }

@@ -96,7 +96,29 @@ namespace DMR_API.Data
 
         public void UpdateRange(List<T> entities)
         {
-            _context.Set<List<T>>().Update(entities);
+            var set = _context.Set<T>();
+
+            var entityType = _context.Model.FindEntityType(typeof(T));
+            var primaryKey = entityType.FindPrimaryKey();
+            var keyValues = new object[primaryKey.Properties.Count];
+
+            foreach (T e in entities)
+            {
+                for (int i = 0; i < keyValues.Length; i++)
+                    keyValues[i] = primaryKey.Properties[i].GetGetter().GetClrValue(e);
+
+                var obj = set.Find(keyValues);
+
+                if (obj == null)
+                {
+                    set.Add(e);
+                }
+                else
+                {
+                    _context.Entry(obj).CurrentValues.SetValues(e);
+                }
+            }
+            //_context.Set<T>().UpdateRange(entities);
         }
     }
 }

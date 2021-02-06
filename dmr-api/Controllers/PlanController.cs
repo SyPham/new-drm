@@ -54,7 +54,7 @@ namespace DMR_API.Controllers
             var plans = await _planService.GetGlueByBuildingModelName(buildingID, modelName);
             return Ok(plans);
         }
-        
+
         [HttpGet("{buildingID}")]
         public async Task<IActionResult> GetStartTimeFromPeriod(int buildingID)
         {
@@ -98,35 +98,43 @@ namespace DMR_API.Controllers
             var lists = await _planService.GetLines(buildingID);
             return Ok(lists);
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> Create(PlanDto create)
         {
-            var startTime = create.DueDate.Date.Add(new TimeSpan(create.StartTime.Hour, create.StartTime.Minute, 0)).ToRemoveSecond();
-            var endTime = create.DueDate.Date.Add(new TimeSpan(create.EndTime.Hour, create.EndTime.Minute, 0)).ToRemoveSecond();
+            var buildingID = await _planService.FindBuildingByLine(create.BuildingID);
+            var period = await _planService.GetStartTimeFromPeriod(buildingID.Value);
+            if (period.Status == false)
+            {
+                return BadRequest(period.Message);
+            }
+            var start = period.Data.StartTime;
+            await _hubContext.Clients.All.SendAsync("ReceiveCreatePlan");
+            var startTime = create.DueDate.Date.Add(new TimeSpan(start.Hour, start.Minute, 0)).ToRemoveSecond();
+            var endTime = create.DueDate.Date.Add(new TimeSpan(16, 30, 0)).ToRemoveSecond();
 
             DateTime timeNow = DateTime.Now.ToLocalTime().ToRemoveSecond();
             create.StartWorkingTime = startTime;
             create.FinishWorkingTime = endTime;
 
             var dateNow = DateTime.Now.Date;
-            if (startTime >= endTime)
-                return BadRequest("The start time must be less than or equal to the end time!<br> Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc! ");
+            //if (startTime >= endTime)
+            //    return BadRequest("The start time must be less than or equal to the end time!<br> Thời gian bắt đầu phải nhỏ hơn hoặc bằng thời gian kết thúc! ");
 
-            if (startTime < timeNow)
-                return BadRequest("The start time must be greater than or equal to the current time!<br> Thời gian bắt đầu phải lớn hơn hoặc bằng thời gian hiện tại! ");
+            //if (startTime < timeNow)
+            //    return BadRequest("The start time must be greater than or equal to the current time!<br> Thời gian bắt đầu phải lớn hơn hoặc bằng thời gian hiện tại! ");
 
-            if (create.DueDate.Date < dateNow) 
-                return BadRequest("The duedate must be greater than or equal to the current date!<br> Ngày hết hạn phải lớn hơn hoặc bằng ngày hiện tại! ");
+            //if (create.DueDate.Date < dateNow) 
+            //    return BadRequest("The duedate must be greater than or equal to the current date!<br> Ngày hết hạn phải lớn hơn hoặc bằng ngày hiện tại! ");
 
-            if (await _planService.CheckDuplicate(create.BuildingID, create.BPFCEstablishID, create.DueDate))
-                return BadRequest("Plan already exists!<br> Kế hoạch làm việc này đã tồn tại! ");
+            //if (await _planService.CheckDuplicate(create.BuildingID, create.BPFCEstablishID, create.DueDate))
+            //    return BadRequest("Plan already exists!<br> Kế hoạch làm việc này đã tồn tại! ");
 
-            if (_planService.GetById(create.ID) != null)
-                return BadRequest("Plan ID already exists!<br> Kế hoạch làm việc này đã tồn tại!");
+            //if (_planService.GetById(create.ID) != null)
+            //    return BadRequest("Plan ID already exists!<br> Kế hoạch làm việc này đã tồn tại!");
 
-            if (await _planService.CheckExistTimeRange(create.BuildingID, startTime, endTime, create.DueDate))
-                return BadRequest("The time range of plans already exists!<br> Khoảng thời gian này đã trùng lắp với 1 khoảng thời gian khác.!");
+            //if (await _planService.CheckExistTimeRange(create.BuildingID, startTime, endTime, create.DueDate))
+            //    return BadRequest("The time range of plans already exists!<br> Khoảng thời gian này đã trùng lắp với 1 khoảng thời gian khác.!");
 
             var model = await _planService.Add(create);
             if (model)
@@ -168,6 +176,18 @@ namespace DMR_API.Controllers
                 return NoContent();
             }
             throw new Exception("Error deleting the work plan");
+        }
+        [HttpGet("{planID}/{bpfcID}")]
+        public async Task<IActionResult> ChangeBPFC(int planID, int bpfcID)
+        {
+            var model = await _planService.ChangeBPFC(planID, bpfcID);
+
+            if (model.Status)
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveCreatePlan");
+                return NoContent();
+            }
+            return BadRequest(model.Message);
         }
         [AllowAnonymous]
         [HttpGet("{buildingID}")]
@@ -253,7 +273,7 @@ namespace DMR_API.Controllers
             var bin = await _planService.Report(startDate, endDate);
             return File(bin, "application/octet-stream", "report.xlsx");
         }
-       
+
         [HttpPost]
         public async Task<IActionResult> ReportConsumptionCase1(ReportParams reportParams)
         {
@@ -315,7 +335,7 @@ namespace DMR_API.Controllers
             var bin = await _planService.GetNewReportByBuilding(getReportDto.StartDate, getReportDto.EndDate, getReportDto.BuildingID);
             return File(bin, "application/octet-stream", "report(new).xlsx");
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> Dispatch([FromBody] DispatchParams todolistDto)
         {

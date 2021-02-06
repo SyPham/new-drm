@@ -20,10 +20,5 @@ namespace DMR_API._Repositories.Repositories
             _context = context;
             _mapper = mapper;
         }
-
-        public void UpdateRange(List<ToDoList> toDoLists)
-        {
-            _context.ToDoList.UpdateRange(toDoLists);
-        }
     }
 }

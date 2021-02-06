@@ -39,7 +39,8 @@
     "Todolist": "Danh Sách Việc Làm",
     "To Do List 2": "Danh Sách Việc Làm 2",
     "ADDITION": "Pha Trộn",
-    "Addition": "Pha Trộn",
+    "Addition": "Pha Thêm",
+    "Addition Dispatch": "Giao Thêm",
     "ESTABLISHED_RECORD": "Lịch Trình Tạo Hồ Sơ",
     "Established Record": "Lịch Trình Tạo Hồ Sơ",
     "CONSUMPTION": "Tiêu Thụ (g)",
@@ -211,7 +212,7 @@
     "End Time": "Kết Thúc",
     "Deliver Time": "Giao Lúc",
     "Duration" : "Thời Gian Quay",
-    "% of Done": "Tỷ Lệ Hoàn Thành",
+    "% of Done": "% Hoàn Thành",
     "Amount": "Khối Lượng",
     "Select a date": "Chọn ngày",
     "Select a model": "Chọn BPFC",
@@ -221,7 +222,9 @@
     "Big Scale": "Cân To",
     "Refresh": "Làm Lại",
     "Refresh Todolist": "Tải Lại Trang",
-    "Notify": "Sau 12 giờ trưa vui lòng nhấn nút 'Tải Lại Trang' ở trang 'Danh Sách Việc Làm' để cập nhật lại danh sách việc làm của anh/chị!",
-    "Manual": "Thủ công"
+    "Notify": "Sau 12 giờ trưa vui lòng nhấn nút 'Tải Lại Trang' ở trang 'Danh Sách Việc Làm' để cập nhật lại danh sách việc làm của anh/chị! Vui lòng tạo kế hoạch làm việc của ngày mai vào buổi chiều hôm nay lúc 3 giờ 30 phút!",
+    "Manual": "Thủ công",
+    "Overtime": "Tăng ca",
+    "No overtime": "Không tăng ca"
 
 }

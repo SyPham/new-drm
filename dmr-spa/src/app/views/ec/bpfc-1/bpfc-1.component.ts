@@ -47,6 +47,7 @@ import { PartService } from 'src/app/_core/_service/part.service';
 import { MaterialService } from 'src/app/_core/_service/material.service';
 import { BuildingUserService } from 'src/app/_core/_service/building.user.service';
 import { SwitchComponent } from '@syncfusion/ej2-angular-buttons';
+import { IRole } from 'src/app/_core/_model/role';
 
 declare const $: any;
 const LEVEL_1 = 3;
@@ -459,6 +460,8 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   onCreatedGridGlue() { }
   ngAfterViewInit() {
     $('[data-toggle="tooltip"]').tooltip();
+    const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
+    this.level = ROLE.id;
     this.getBuilding();
   }
   /// Begin Grid Glue Event ------------------------------------------------------------------------------
@@ -1658,12 +1661,12 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
   getBuilding() {
     const userID = JSON.parse(localStorage.getItem('user')).User.ID;
-    this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
-      res = res || {};
-      if (res !== {}) {
-        this.level = res.level;
-      }
-    });
+    // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
+    //   res = res || {};
+    //   if (res !== {}) {
+    //     this.level = res.level;
+    //   }
+    // });
   }
   getAllIngredient() {
     this.ingredientService.getAllIngredient().subscribe((res: any) => {

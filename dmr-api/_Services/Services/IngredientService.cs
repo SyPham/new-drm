@@ -194,7 +194,7 @@ namespace DMR_API._Services.Services
         {
             var resultStart = DateTime.Now;
             var resultEnd = DateTime.Now;
-            return await _repoIngredientInfo.FindAll().Where(x => x.CreatedDate >= resultStart.Date && x.CreatedDate <= resultEnd.Date).ProjectTo<IngredientInfoDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            return await _repoIngredientInfo.FindAll().Where(x => x.CreatedDate.Date >= resultStart.Date && x.CreatedDate.Date <= resultEnd.Date).ProjectTo<IngredientInfoDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
 
         // Lấy toàn bộ danh sách IngredientInfo
@@ -202,7 +202,7 @@ namespace DMR_API._Services.Services
         {
             var resultStart = DateTime.Now;
             var resultEnd = DateTime.Now;
-            return await _repoIngredientInfo.FindAll().Where(x => x.CreatedDate >= resultStart.Date && x.CreatedDate <= resultEnd.Date).ProjectTo<IngredientInfoDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            return await _repoIngredientInfo.FindAll().Where(x => x.CreatedDate.Date >= resultStart.Date && x.CreatedDate.Date <= resultEnd.Date).ProjectTo<IngredientInfoDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
 
         // Lấy toàn bộ danh sách IngredientInfo theo building
@@ -210,7 +210,7 @@ namespace DMR_API._Services.Services
         {
             var resultStart = DateTime.Now;
             var resultEnd = DateTime.Now;
-            return await _repoIngredientInfo.FindAll().Where(x => x.CreatedDate >= resultStart.Date && x.CreatedDate <= resultEnd.Date && x.BuildingName == name).ProjectTo<IngredientInfoDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            return await _repoIngredientInfo.FindAll().Where(x => x.CreatedDate.Date >= resultStart.Date && x.CreatedDate.Date <= resultEnd.Date && x.BuildingName == name).ProjectTo<IngredientInfoDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
 
         // Lấy toàn bộ danh sách IngredientReport
@@ -218,7 +218,7 @@ namespace DMR_API._Services.Services
         {
             var resultStart = DateTime.Now;
             var resultEnd = DateTime.Now;
-            return await _repoIngredientInfoReport.FindAll().Where(x => x.CreatedDate >= resultStart.Date && x.CreatedDate <= resultEnd.Date && x.Qty > 0).ProjectTo<IngredientInfoReportDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            return await _repoIngredientInfoReport.FindAll().Where(x => x.CreatedDate.Date >= resultStart.Date && x.CreatedDate.Date <= resultEnd.Date && x.Qty > 0).ProjectTo<IngredientInfoReportDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
 
         //Hàm Lấy toàn bộ danh sách IngredientReport theo building
@@ -226,7 +226,7 @@ namespace DMR_API._Services.Services
         {
             var resultStart = DateTime.Now;
             var resultEnd = DateTime.Now;
-            return await _repoIngredientInfoReport.FindAll().Where(x => x.CreatedDate >= resultStart.Date && x.CreatedDate <= resultEnd.Date && x.BuildingName == name).ProjectTo<IngredientInfoReportDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            return await _repoIngredientInfoReport.FindAll().Where(x => x.CreatedDate.Date >= resultStart.Date && x.CreatedDate.Date <= resultEnd.Date && x.BuildingName == name).ProjectTo<IngredientInfoReportDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
 
         // Filter Ingredient Report theo ngay
@@ -401,7 +401,7 @@ namespace DMR_API._Services.Services
             if (await _repoIngredientInfo.CheckBarCodeExists(Barcode))
             {
                 // check tiep trong bang ingredientReport xem co du lieu chua 
-                var checkStatus = _repoIngredientInfo.FindAll().Where(x => x.Code == Barcode && x.BuildingName == building && x.Batch == Batch && x.CreatedDate == currentDay.Date && x.Status == false).OrderBy(y => y.CreatedTime).FirstOrDefault();
+                var checkStatus = _repoIngredientInfo.FindAll().Where(x => x.Code == Barcode && x.BuildingName == building && x.Batch == Batch && x.CreatedDate.Date == currentDay.Date && x.Status == false).OrderBy(y => y.CreatedTime).FirstOrDefault();
                 // nếu khác Null thi update lai
                 if (checkStatus != null)
                 {
@@ -593,7 +593,7 @@ namespace DMR_API._Services.Services
                 if (await _repoIngredientInfoReport.CheckBarCodeExists(entity.qrCode))
                 {
                     var currentDay = DateTime.Now;
-                    var result = _repoIngredientInfoReport.FindAll().FirstOrDefault(x => x.Code == entity.qrCode && x.Batch == entity.batch && x.BuildingName == entity.buildingName && x.CreatedDate == currentDay.Date);
+                    var result = _repoIngredientInfoReport.FindAll().FirstOrDefault(x => x.Code == entity.qrCode && x.Batch == entity.batch && x.BuildingName == entity.buildingName && x.CreatedDate.Date == currentDay.Date);
                     result.Consumption = entity.consump;
                     // if (result.Qty != 0)
                     // {
@@ -658,7 +658,37 @@ namespace DMR_API._Services.Services
             var from = DateTime.Now.AddDays(-5).Date;
             var to = DateTime.Now.Date;
             return await _repoIngredientInfo.FindAll()
-            .Where(x => x.CreatedDate >= from && x.CreatedDate >= to).AnyAsync(x => x.BuildingName.Equals(building) && x.Name.Trim().Equals(ingredientName.Trim()) && x.Batch.Equals(batch));
+            .Where(x => x.CreatedDate.Date >= from && x.CreatedDate.Date >= to).AnyAsync(x => x.BuildingName.Equals(building) && x.Name.Trim().Equals(ingredientName.Trim()) && x.Batch.Equals(batch));
+        }
+
+        // them boi henry
+
+        public async Task<List<IngredientInfoDto>> GetAllIngredientInfoByBuildingAsync(string building)
+        {
+            var resultStart = DateTime.Now;
+            var resultEnd = DateTime.Now;
+            return await _repoIngredientInfo.FindAll()
+                                            .Where(x => x.CreatedDate.Date >= resultStart.Date 
+                                                        && x.CreatedDate.Date <= resultEnd.Date
+                                                        && x.BuildingName == building
+                                                        )
+                                            .ProjectTo<IngredientInfoDto>(_configMapper)
+                                            .OrderByDescending(x => x.ID)
+                                            .ToListAsync();
+        }
+
+        public async Task<List<IngredientInfoDto>> GetAllIngredientInfoOutputByBuildingAsync(string building)
+        {
+            var resultStart = DateTime.Now;
+            var resultEnd = DateTime.Now;
+            return await _repoIngredientInfo.FindAll()
+                                            .Where(x => x.CreatedDate.Date >= resultStart.Date 
+                                                     && x.CreatedDate.Date <= resultEnd.Date
+                                                     && x.BuildingName == building
+                                                     )
+                                            .ProjectTo<IngredientInfoDto>(_configMapper)
+                                            .OrderByDescending(x => x.ID)
+                                            .ToListAsync();
         }
     }
 }

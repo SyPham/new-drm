@@ -104,7 +104,9 @@ export interface IPlan {
     hourlyOutput: number;
     buildingName: string;
     buildingID: number;
+    isOvertime: boolean;
     startWorkingTime: Date;
+    isShowOvertimeOption: boolean;
     finishWorkingTime: Date;
     bpfcEstablishID: number;
     glues: string[];

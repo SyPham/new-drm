@@ -3,7 +3,7 @@ import { HubConnectionState } from '@microsoft/signalr';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { IBuilding } from 'src/app/_core/_model/building.js';
-import { IToDoList } from 'src/app/_core/_model/IToDoList.js';
+import { IDispatchListDetail, IDispatchListForUpdate, IToDoList } from 'src/app/_core/_model/IToDoList.js';
 import { DispatchParams, IDispatch, IDispatchForCreate } from 'src/app/_core/_model/plan';
 import { IRole } from 'src/app/_core/_model/role.js';
 import { AbnormalService } from 'src/app/_core/_service/abnormal.service.js';
@@ -24,7 +24,7 @@ const UNIT_SMALL_MACHINE = 'g';
 export class DispatchComponent implements OnInit {
   @ViewChild('dispatchGrid')
   dispatchGrid: GridComponent;
-  @Input() value: IToDoList;
+  @Input() value: any;
   @Input() buildingSetting: any;
   toolbarOptions: any;
   filterSettings: { type: string; };
@@ -32,7 +32,7 @@ export class DispatchComponent implements OnInit {
   editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: false, allowDeleting: false, mode: 'Normal' };
   setFocus: any;
   title: string;
-  data: IDispatch[];
+  data: any[];
   buildingID: number;
   role: IRole;
   building: IBuilding;
@@ -44,6 +44,8 @@ export class DispatchComponent implements OnInit {
   qrCode: string;
   user: any;
   isShow: boolean;
+  isSingleGlue: boolean;
+  sortSettings = { columns: [{ field: 'lineName', direction: 'Ascending' }] };
   constructor(
     public activeModal: NgbActiveModal,
     public settingService: SettingService,
@@ -55,6 +57,7 @@ export class DispatchComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.isSingleGlue = !this.value.glueName.includes(' + ');
     this.toolbarOptions = [
       'Edit', 'Cancel', 'Search'];
     this.title = this.value.glueName;
@@ -77,140 +80,70 @@ export class DispatchComponent implements OnInit {
   }
   actionBegin(args) {
     if (args.requestType === 'save' && args.action === 'edit') {
-      // const check = this.mixedConsumption + data.real - data.real
-      const previousData = args.previousData as IDispatch;
-      const data = args.data as IDispatch;
-      const check = (previousData.real + this.mixedConsumption) - data.real;
-      if (check < 0 && this.value.glueName.includes(' + ')) {
-        this.alertify.warning('Không được thêm quá số gram!', true);
-        this.dispatchGrid.refresh();
-        return;
-      }
-      this.update(data);
+      const data = args.data;
+      const obj =
+        {
+          id: data.id,
+          amount: data.amount,
+          glueNameID: this.value.glueNameID,
+          estimatedStartTime: this.value.estimatedStartTime,
+          estimatedFinishTime: this.value.estimatedFinishTime,
+          startTimeOfPeriod: this.value.startTimeOfPeriod,
+          finishTimeOfPeriod: this.value.finishTimeOfPeriod,
+          lineID: data.lineID
+        }
+      ;
+      this.updateDispatchDetail(obj);
     }
   }
-  actionComplete(e){
-    if (e.requestType === 'beginEdit') {
-      const input = (e.form.elements.namedItem('real') as HTMLInputElement);
-      input.focus();
-      if (input.value === '0') {
-        input.select();
-      }
-    }
+  actionComplete(e) {
+    // if (e.requestType === 'beginEdit') {
+    //   const input = (e.form.elements.namedItem('amount') as HTMLInputElement);
+    //   input.focus();
+    //   if (input.value === '0') {
+    //     input.select();
+    //   }
+    // }
   }
   toolbarClick(args) {
   }
   loadData() {
-    const obj: DispatchParams = {
-      id: this.value.id,
-      glue: this.value.glueName,
-      lines: this.value.lineNames,
-      mixingInfoID: this.value.mixingInfoID,
-      estimatedTime: this.value.estimatedFinishTime,
+    this.todolistService.getDispatchDetail(this.value.buildingID, this.value.glueNameID,
+      this.value.estimatedStartTime, this.value.estimatedFinishTime).subscribe((data: any) => {
+        this.data = data;
+      });
+  }
+  finishDispatch() {
+    const lines = this.data.map( x => {
+      return x.lineID;
+    });
+    const obj = {
+      glueNameID: this.value.glueNameID,
       estimatedStartTime: this.value.estimatedStartTime,
       estimatedFinishTime: this.value.estimatedFinishTime,
+      lines
     };
-    this.todolistService.dispatch(obj).subscribe(data => {
-      this.data = data.map(item => {
-        const itemData: IDispatch = {
-          id: item.id,
-          lineID: item.lineID,
-          line: item.line,
-          standardAmount: item.standardAmount,
-          mixingInfoID: item.mixingInfoID,
-          mixedConsumption: item.mixedConsumption,
-          glue: item.glue,
-          stationID: item.stationID,
-          real: item.real * 1000,
-          warningStatus: false,
-          scanStatus: false,
-          isLock: false,
-          isNew: false,
-          createdTime: item.createdTime,
-          deliveryTime: item.deliveryTime
-        };
-        return itemData;
-      });
-      if (this.value.glueName.includes(' + ')) {
-        this.unitTitle = 'Actual Consumption';
-        this.mixedConsumption = +(this.value.mixedConsumption * 1000).toFixed(0);
-      } else {
-        this.unitTitle = 'Standard Consumption';
-        this.mixedConsumption = +(this.value.standardConsumption * 1000).toFixed(0);
-      }
-      const deliverTotal = this.data.reduce((a, b) => a + (b.real || 0), 0);
-      const res = this.mixedConsumption - deliverTotal;
-      this.mixedConsumption = res ;
-      let id = 0;
-      const dataID = this.data.map(item => item.id);
-      id = Math.min(...dataID);
-      this.updateStartDispatchingTime(id);
-    });
-  }
-  add(data: IDispatch) {
-    const obj: IDispatchForCreate = {
-      id: 0,
-      mixingInfoID: data.mixingInfoID,
-      lineID: data.lineID,
-      amount: data.real / 1000,
-      createdTime: new Date(),
-      stationID: data.stationID,
-      standardAmount: this.value.standardConsumption,
-      estimatedTime: this.value.estimatedFinishTime,
-      startDispatchingTime: this.startDispatchingTime,
-      finishDispatchingTime: this.finishDispatchingTime
-    };
-    this.dispatchService.add(obj).subscribe((res) => {
-      this.loadData();
-      this.alertify.success('Success');
-    }, error => {
-        this.alertify.warning('error');
-    });
-  }
-  update(data: IDispatch) {
-    this.dispatchService.updateAmount(data.id, data.real / 1000).subscribe((res) => {
-      this.loadData();
-      this.alertify.success('Success');
-    }, error => {
-      this.alertify.warning('error');
-    });
-  }
-  addDispatch() {
-    const obj: IDispatchForCreate[] = this.data.map(data => {
-        const item: IDispatchForCreate = {
-          id: data.id,
-          mixingInfoID: data.mixingInfoID,
-          lineID: data.lineID,
-          amount: data.real / 1000,
-          createdTime: new Date(),
-          stationID: data.stationID,
-          standardAmount: this.value.standardConsumption,
-          estimatedTime: this.value.estimatedFinishTime,
-          startDispatchingTime: this.startDispatchingTime,
-          finishDispatchingTime: this.finishDispatchingTime
-        };
-        return item;
-    });
-    this.dispatchService.addDispatch(obj).subscribe((res: any) => {
-      if (res.status) {
-        this.loadData();
-        this.alertify.success('Success');
+    this.todolistService.finishDispatch(obj).subscribe((data: any) => {
         this.todolistService.setValue(true);
+        this.alertify.success('Success');
         this.activeModal.dismiss();
-      } else {
-        this.alertify.warning(res.message, true);
-      }
+      });
+  }
+  updateDispatchDetail(obj) {
+    this.todolistService.updateDispatchDetail(obj).subscribe((res: any) => {
+      this.loadData();
+      this.alertify.success('Success');
     }, error => {
-        this.alertify.warning(error);
+      this.alertify.warning(error);
     });
   }
   updateStartDispatchingTime(id: number) {
     this.dispatchService.updateStartDispatchingTime(id).subscribe((res) => {
     }, error => {
-        this.alertify.warning(error);
+      this.alertify.warning(error);
     });
   }
   save() {
-    this.addDispatch();
+    this.finishDispatch();
   }
 }

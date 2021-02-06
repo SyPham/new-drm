@@ -30,7 +30,7 @@
               <ng-template #template let-data>
                 <div class="btn-group" *ngIf="data.lunchTimeID > 0">
                   <button type="button" (click)='showModal(periodModal,data)' class="btn btn-xs btn-info"> <i
-                      class="fa fa-plus"></i> Add period </button>
+                      class="fa fa-plus"></i> period </button>
                 </div>
               </ng-template>
             </e-column>
@@ -70,7 +70,7 @@
               </ng-template>
               <ng-template #editTemplate let-data>
                 <kendo-timepicker style="width: 100px;" [(ngModel)]="data.startTime"[steps]="steps" (valueChange)="onChangeStartTime($event)"
-                  [format]="'HH:mm'"></kendo-timepicker>
+                 [readOnlyInput]="true" [format]="'HH:mm'"></kendo-timepicker>
               </ng-template>
             </e-column>
             <e-column field='endTime' editType='timepickeredit' format='HH:mm' textAlign='Center' headerText='End Time' width='120'>
@@ -79,7 +79,7 @@
               </ng-template>
               <ng-template #editTemplate let-data>
                 <kendo-timepicker style="width: 100px;"[steps]="steps" (valueChange)="onChangeEndTime($event)"
-                  [(ngModel)]="data.endTime" [format]="'HH:mm'"></kendo-timepicker>
+                  [(ngModel)]="data.endTime" [readOnlyInput]="true" [format]="'HH:mm'"></kendo-timepicker>
               </ng-template>
             </e-column>
           </e-columns>

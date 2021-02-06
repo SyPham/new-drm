@@ -8,5 +8,6 @@ namespace TodolistScheduleService
     public class Appsettings
     {
         public string DefaultConnection { get; set; }
+        public string SignalRConnection { get; set; }
     }
 }

@@ -73,80 +73,81 @@ namespace DMR_API._Services.Services
             return await _repoStation.SaveAll();
         }
 
+        // khong su dung
         public async Task<bool> Update(StationDto model)
         {
-            string token = _accessor.HttpContext.Request.Headers["Authorization"];
-            var userID = JWTExtensions.GetDecodeTokenByProperty(token, "nameid").ToInt();
-            using var transaction = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    var item = _mapper.Map<Station>(model);
-                    if (item.Amount > 0 && item.ModifyTime is null || item.Amount > 0 && item.ModifyTime != null)
-                    {
-                        item.ModifyTime = DateTime.Now.ToLocalTime();
-                    }
-                    _repoStation.Update(item);
-                    await _repoStation.SaveAll();
-                    // update station thi xoa het dispatch // tao lai dispatch
-                    var dispatchList = await _repoDispatch.FindAll(x => !x.IsDelete && x.StationID == item.ID).ToListAsync();
-                    dispatchList.ForEach(x =>
-                    {
-                        x.IsDelete = true;
-                        x.DeleteBy = userID;
-                        x.DeleteTime = DateTime.Now.ToLocalTime();
-                    });
-                    _repoDispatch.UpdateRange(dispatchList);
-                    await _repoDispatch.SaveAll();
-                    if (dispatchList.Count > 0)
-                    {
-                        var dispatchTemp = dispatchList.First();
-                        var dispatchModel = new List<DispatchTodolistDto>();
+            //string token = _accessor.HttpContext.Request.Headers["Authorization"];
+            //var userID = JWTExtensions.GetDecodeTokenByProperty(token, "nameid").ToInt();
+            //using var transaction = new TransactionScopeAsync().Create();
+            //{
+            //    try
+            //    {
+            //        var item = _mapper.Map<Station>(model);
+            //        if (item.Amount > 0 && item.ModifyTime is null || item.Amount > 0 && item.ModifyTime != null)
+            //        {
+            //            item.ModifyTime = DateTime.Now.ToLocalTime();
+            //        }
+            //        _repoStation.Update(item);
+            //        await _repoStation.SaveAll();
+            //        // update station thi xoa het dispatch // tao lai dispatch
+            //        var dispatchList = await _repoDispatch.FindAll(x => !x.IsDelete ).ToListAsync();
+            //        dispatchList.ForEach(x =>
+            //        {
+            //            x.IsDelete = true;
+            //            x.DeleteBy = userID;
+            //            x.DeleteTime = DateTime.Now.ToLocalTime();
+            //        });
+            //        _repoDispatch.UpdateRange(dispatchList);
+            //        await _repoDispatch.SaveAll();
+            //        if (dispatchList.Count > 0)
+            //        {
+            //            var dispatchTemp = dispatchList.First();
+            //            var dispatchModel = new List<DispatchTodolistDto>();
 
-                        int stationAmount = item.Amount;
-                        if (stationAmount == 0)
-                        {
-                            dispatchModel.Add(new DispatchTodolistDto
-                            {
-                                ID = 0,
-                                LineID = dispatchTemp.LineID,
-                                MixingInfoID = dispatchTemp.MixingInfoID,
-                                CreatedTime = DateTime.Now.ToLocalTime(),
-                                StationID = item.ID,
-                                CreateBy = userID,
-                            });
-                        }
-                        else
-                        {
-                            for (int i = 1; i <= stationAmount; i++)
-                            {
-                                dispatchModel.Add(new DispatchTodolistDto
-                                {
-                                    ID = 0,
-                                    LineID = dispatchTemp.LineID,
-                                    MixingInfoID = dispatchTemp.MixingInfoID,
-                                    CreatedTime = DateTime.Now.ToLocalTime(),
-                                    StationID = item.ID,
-                                    CreateBy = userID,
-                                });
-                            }
-                        }
+            //            int stationAmount = item.Amount;
+            //            if (stationAmount == 0)
+            //            {
+            //                dispatchModel.Add(new DispatchTodolistDto
+            //                {
+            //                    ID = 0,
+            //                    LineID = dispatchTemp.LineID,
+            //                    MixingInfoID = dispatchTemp.MixingInfoID,
+            //                    CreatedTime = DateTime.Now.ToLocalTime(),
+            //                    StationID = item.ID,
+            //                    CreateBy = userID,
+            //                });
+            //            }
+            //            else
+            //            {
+            //                for (int i = 1; i <= stationAmount; i++)
+            //                {
+            //                    dispatchModel.Add(new DispatchTodolistDto
+            //                    {
+            //                        ID = 0,
+            //                        LineID = dispatchTemp.LineID,
+            //                        MixingInfoID = dispatchTemp.MixingInfoID,
+            //                        CreatedTime = DateTime.Now.ToLocalTime(),
+            //                        StationID = item.ID,
+            //                        CreateBy = userID,
+            //                    });
+            //                }
+            //            }
 
-                        var dispatch = _mapper.Map<List<Dispatch>>(dispatchModel);
-                        _repoDispatch.AddRange(dispatch);
-                        await _repoDispatch.SaveAll();
-                    }
+            //            var dispatch = _mapper.Map<List<Dispatch>>(dispatchModel);
+            //            _repoDispatch.AddRange(dispatch);
+            //            await _repoDispatch.SaveAll();
+            //        }
 
-                    transaction.Complete();
-                    return true;
-                }
-                catch 
-                {
-                    transaction.Dispose();
-                    throw;
-                }
-            }
-
+            //        transaction.Complete();
+            //        return true;
+            //    }
+            //    catch 
+            //    {
+            //        transaction.Dispose();
+            //        throw;
+            //    }
+            //}
+            throw new NotImplementedException();
 
         }
 

@@ -14,6 +14,7 @@ const SUPERVISOR = 2;
 const STAFF = 3;
 const WORKER = 4;
 const WORKER2 = 6;
+const DISPATCHER = 6;
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -112,16 +113,27 @@ export class LoginComponent implements OnInit {
   ];
   routerLinkWorker = [
     // Excution
-    '/execution/todolist',
-    '/execution/incoming',
-    '/execution/workplan',
-  ];
-  routerLinkWorker2 = [
-    // Excution
-    '/execution/todolist',
+    '/execution/todolist-2',
     '/execution/output-quantity',
     '/execution/incoming',
     '/execution/workplan',
+    '/setting/ingredient',
+  ];
+  routerLinkWorker2 = [
+    // Excution
+    '/execution/todolist-2',
+    '/execution/output-quantity',
+    '/execution/incoming',
+    '/execution/workplan',
+    '/setting/ingredient',
+  ];
+  routerLinkDispatcher = [
+    // Excution
+    '/execution/todolist-2',
+    '/execution/output-quantity',
+    '/execution/incoming',
+    '/execution/workplan',
+    '/setting/ingredient',
   ];
   remember = false;
   constructor(
@@ -274,68 +286,84 @@ export class LoginComponent implements OnInit {
     });
     return flag;
   }
+  checkRouteDispatcher(uri) {
+    let flag = false;
+    this.routerLinkDispatcher.forEach(element => {
+      if (uri.includes(element)) {
+        flag = true;
+      }
+    });
+    return flag;
+  }
   checkRole() {
     const uri = decodeURI(this.uri);
-    if (this.level === ADMIN_COSTING) {
-      if (uri !== 'undefined') {
-        if (this.checkRouteAdminCosting(uri)) {
-          this.router.navigate([uri]);
-        } else {
-          this.router.navigate(['/ec/setting/costing']);
+    switch (this.level) {
+      case ADMIN:
+        if (uri === 'undefined') {
+          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
         }
-      } else {
-        this.router.navigate(['/ec/setting/costing']);
-      }
-    } else if (this.level === ADMIN) {
-      if (uri !== 'undefined') {
         if (this.checkRouteAdmin(uri)) {
           this.router.navigate([uri]);
-        } else {
-          this.router.navigate(['/ec/establish/bpfc-1']);
+          break;
         }
-      } else {
-        this.router.navigate(['/ec/establish/bpfc-1']);
-      }
-    } else if (this.level === SUPERVISOR) {
-      if (uri !== 'undefined') {
+        this.authService.logOut();
+        break;
+      case SUPERVISOR:
+        if (uri === 'undefined') {
+          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
+        }
         if (this.checkRouteSupervisor(uri)) {
           this.router.navigate([uri]);
-        } else {
-          this.router.navigate(['/ec/establish/bpfc-1']);
+          break;
         }
-      } else {
-        this.router.navigate(['/ec/establish/bpfc-1']);
-      }
-    } else if (this.level === STAFF) {
-      if (uri !== 'undefined') {
+        this.authService.logOut();
+        break;
+      case STAFF:
+        if (uri === 'undefined') {
+          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
+        }
         if (this.checkRouteStaff(uri)) {
           this.router.navigate([uri]);
-        } else {
-          this.router.navigate(['/ec/establish/bpfc-1']);
+          break;
         }
-      } else {
-        this.router.navigate(['/ec/establish/bpfc-1']);
-      }
-    } else if (this.level === WORKER) {
-      if (uri !== 'undefined') {
+        this.authService.logOut();
+        break;
+      case ADMIN_COSTING:
+        if (uri === 'undefined') {
+          this.router.navigate(['/ec/setting/costing']);
+          break;
+        }
+        if (this.checkRouteAdminCosting(uri)) {
+          this.router.navigate([uri]);
+          break;
+        }
+        this.authService.logOut();
+        break;
+      case WORKER:
+        if (uri === 'undefined') {
+          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
+        }
         if (this.checkRouteWorker(uri)) {
           this.router.navigate([uri]);
-        } else {
-          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
         }
-      } else {
-        this.router.navigate(['/ec/execution/todolist-2']);
-      }
-    } else if (this.level === WORKER2) {
-      if (uri !== 'undefined') {
-        if (this.checkRouteWorker(uri)) {
+        this.authService.logOut();
+        break;
+      case DISPATCHER:
+        if (uri !== 'undefined') {
+          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
+        }
+        if (this.checkRouteDispatcher(uri)) {
           this.router.navigate([uri]);
-        } else {
-          this.router.navigate(['/ec/execution/todolist-2']);
+          break;
         }
-      } else {
-        this.router.navigate(['/ec/execution/todolist-2']);
-      }
+        this.authService.logOut();
+        break;
     }
   }
 }

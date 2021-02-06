@@ -11,9 +11,9 @@ export const CONNECTION_HUB = new HubConnectionBuilder()
 start();
 function start() {
     CONNECTION_HUB.start().then(function () {
+
         CONNECTION_HUB.on('UserConnected', (conId) => {
             console.log("UserConnected", conId);
-
         });
         CONNECTION_HUB.on('UserDisconnected', (conId) => {
             console.log("UserDisconnected", conId);
@@ -25,6 +25,10 @@ function start() {
         setTimeout(() => start(), 5000);
     });
 }
+// CONNECTION_HUB.onclose((error) => {
+//     CONNECTION_HUB.start();
+//     console.error(`Something went wrong: ${error}`);
+// });
 // export const SCALING_CONNECTION_HUB = new HubConnectionBuilder()
 //     .withUrl(environment.scalingHub)
 //     .withAutomaticReconnect([1000, 3000, 5000, 10000, 30000])

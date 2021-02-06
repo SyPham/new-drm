@@ -16,4 +16,6 @@ export interface IIngredient {
     info: string;
     batch: string;
     unit: string;
+    time_start: Date; // Thêm bởi Quỳnh (Leo 2/2/2021 11:46)
+
 }

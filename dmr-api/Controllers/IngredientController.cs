@@ -410,6 +410,20 @@ namespace DMR_API.Controllers
         {
             return Ok(await _ingredientService.CheckIncoming(ingredientName, batch, building));
         }
+        // them boi henry
 
+        [HttpGet("{building}")]
+        public async Task<IActionResult> GetAllIngredientInfoByBuilding(string building)
+        {
+            var ingredientsInfo = await _ingredientService.GetAllIngredientInfoByBuildingAsync(building);
+            return Ok(ingredientsInfo);
+        }
+
+        [HttpGet("{building}")]
+        public async Task<IActionResult> GetAllIngredientInfoOutputByBuilding(string building)
+        {
+            var ingredientsInfo = await _ingredientService.GetAllIngredientInfoOutputByBuildingAsync(building);
+            return Ok(ingredientsInfo);
+        }
     }
 }

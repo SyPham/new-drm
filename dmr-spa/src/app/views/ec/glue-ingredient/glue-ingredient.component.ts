@@ -37,6 +37,7 @@ import { KindService } from 'src/app/_core/_service/kind.service';
 import { PartService } from 'src/app/_core/_service/part.service';
 import { MaterialService } from 'src/app/_core/_service/material.service';
 import { constants } from 'crypto';
+import { IRole } from 'src/app/_core/_model/role';
 
 declare const $: any;
 const LEVEL_1 = 3;
@@ -364,16 +365,18 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
   }
   ngAfterViewInit() {
     $('[data-toggle="tooltip"]').tooltip();
+    const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
+    this.level = ROLE.id;
     this.getBuilding();
   }
   getBuilding() {
     const userID = JSON.parse(localStorage.getItem('user')).User.ID;
-    this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
-      res = res || {};
-      if (res !== {}) {
-        this.level = res.level;
-      }
-    });
+    // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
+    //   res = res || {};
+    //   if (res !== {}) {
+    //     this.level = res.level;
+    //   }
+    // });
   }
   dataBound() {
     document.querySelectorAll('button[aria-label=Update] > span.e-tbar-btn-text')[0].innerHTML = 'Save';

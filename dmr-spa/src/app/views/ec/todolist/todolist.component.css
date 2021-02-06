@@ -16,37 +16,62 @@
   pointer-events: none !important;
 }
 
-.done {
+.done, 
+.delay,
+.todo,
+.dispatch,
+.dispatch-delay {
     background:  #545b62!important;
     box-shadow: none!important;
     color:  #f8f9fa!important;
 }
 
-.done > span {
+.done > span ,
+.delay > span,
+.todo > span,
+.dispatch > span,
+.dispatch-delay > span
+{
     color:  #f8f9fa!important;
 }
-.e-grid .e-altrow { 
+#gridTodo .e-grid .e-altrow,
+#gridDone .e-grid .e-altrow,
+#gridDelay .e-grid .e-altrow
+ { 
     background-color: #d6d8db; 
 } 
 
-
-.delay {
-    background:  #545b62!important;
-    box-shadow: none!important;
-    color:  #f8f9fa!important;
+.color-code-0 {
+ background-color: #DDEBF7;
 }
 
-.delay > span {
-    color:  #f8f9fa!important;
+.color-code-1 {
+ background-color: #FFF2CC;
+    
+}
+.color-code-2{
+ background-color: #E2EFDA;
+    
+}
+.color-code-3 {
+ background-color: #C9C9C9;
+    
+}
+.color-code-4 {
+    
+ background-color: #FCE4D6; /*lightorange*/
+}
+.color-code-5 {
+    background-color: lightpink;
+}
+.color-code-6 {
+    background-color: lightpink;
 }
 
-
-.todo {
-    background:  #545b62!important;
-    box-shadow: none!important;
-    color:  #f8f9fa!important;
+.color-code-abnormal {
+    background-color:  #a5a549;
 }
 
-.todo > span {
-    color:  #f8f9fa!important;
+.bgcolor td{
+  background-color: #a5a549;
 }

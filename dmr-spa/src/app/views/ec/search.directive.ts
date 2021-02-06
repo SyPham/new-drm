@@ -26,4 +26,14 @@ export class SearchDirective implements AfterViewInit {
         this.host.nativeElement.select();
       }, 300);
     }
+  @HostListener('document:keydown.enter', ['$event'])
+  onKeydownHandler(event: KeyboardEvent) {
+    event.preventDefault();
+    this.host.nativeElement.value = this.host.nativeElement.value + '    ';
+  }
+  @HostListener('document:keydown.tab', ['$event'])
+  onKeydownTabHandler(event: KeyboardEvent) {
+    event.preventDefault();
+    this.host.nativeElement.value = this.host.nativeElement.value + '    ';
+  }
 }

@@ -18,13 +18,5 @@ namespace DMR_API._Repositories.Repositories
         {
             _context = context;
         }
-
-        public void UpdateRange(List<Dispatch> dispatches)
-        {
-            _context.Dispatches.UpdateRange(dispatches);
-        }
-
-
-        //Login khi them repo
     }
 }

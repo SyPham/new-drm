@@ -28,6 +28,8 @@ namespace DMR_API.DTO
         public int ArticleNoID { get; set; }
         public int ArtProcessID { get; set; }
         public bool IsGenerate { get; set; }
+        public bool IsChangeBPFC { get; set; }
+        public bool IsOvertime { get; set; }
         public TimeDto StartTime { get; set; }
         public TimeDto EndTime { get; set; }
 

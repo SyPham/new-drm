@@ -103,7 +103,7 @@ export class BuildingLunchTimeComponent implements OnInit {
     }, error => {
       this.alertify.error(error);
     });
-  }
+  }// Vui long cap nhat ke hoach lam viec cua ngay hom sau vao cuoi ngay hom nay
   getAllPeriodByLunchTime() {
     this.buildingLunchTimeService.getAllPeriodByLunchTime(this.lunchTimeID).subscribe((res: any) => {
       this.periods = res.map(item => {

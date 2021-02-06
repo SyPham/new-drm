@@ -11,6 +11,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { AlertifyService } from './alertify.service';
 import { IBuilding } from '../_model/building';
 import { IRole } from '../_model/role';
+import { ResponseDetail } from '../_model/responseDetail';
 
 @Injectable({
   providedIn: 'root'
@@ -47,19 +48,19 @@ export class AuthService {
           //   this.role = res as IRole;
           //   this.levelSource.next(res);
           // });
-          this.getBuildingByUserID(data.user.User.ID)
-            .subscribe((line: any) => {
-              localStorage.setItem('building', JSON.stringify(line));
-              this.setBuildingValue(line as IBuilding);
+          this.getBuildingUserByUserID(data.user.User.ID)
+            .subscribe((res) => {
+              localStorage.setItem('building', JSON.stringify(res.data));
+              this.setBuildingValue(res.data);
           });
         }
       })
     );
   }
 
-  getBuildingByUserID(userID) {
-    const url = `${environment.apiUrlEC}BuildingUser/GetBuildingByUserID/${userID}`;
-    return this.http.get<IBuilding>(url, {});
+  getBuildingUserByUserID(userID) {
+    const url = `${environment.apiUrlEC}BuildingUser/GetBuildingUserByUserID/${userID}`;
+    return this.http.get<ResponseDetail<IBuilding[]>>(url, {});
   }
   loggedIn() {
     const token = localStorage.getItem('token');

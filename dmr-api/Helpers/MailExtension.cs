@@ -208,7 +208,6 @@ namespace DMR_API.Helpers
             BinaryFormatter binForm = new BinaryFormatter();
             memStream.Write(file, 0, file.Length);
             memStream.Seek(0, SeekOrigin.Begin);
-            //Object obj = (Object)binForm.Deserialize(memStream);
             Attachment attachment = new Attachment(memStream, name, "application/vnd.ms-excel");
             mailMessage.Attachments.Add(attachment);
             foreach (var email in emails)
@@ -221,12 +220,12 @@ namespace DMR_API.Helpers
                 client.Send(mailMessage);
                 Console.BackgroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("Send email successfully!");
-
             }
             catch(Exception ex)
             {
                 Console.BackgroundColor = ConsoleColor.Red;
                 Console.WriteLine("Send email failed!" + ex.Message);
+                throw;
             }
             return Task.CompletedTask;
         }

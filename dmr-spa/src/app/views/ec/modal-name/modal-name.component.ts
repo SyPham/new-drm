@@ -13,6 +13,7 @@ import { CommentService } from 'src/app/_core/_service/comment.service';
 import { BuildingUserService } from 'src/app/_core/_service/building.user.service';
 import { CalendarsService } from 'src/app/_core/_service/calendars.service';
 import { AuthService } from 'src/app/_core/_service/auth.service';
+import { IRole } from 'src/app/_core/_model/role';
 @Component({
   selector: 'app-modal-name',
   templateUrl: './modal-name.component.html',
@@ -74,16 +75,18 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     this.getAllUsers();
   }
   ngAfterViewInit() {
+    const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
+    this.level = ROLE.id;
     this.getBuilding();
   }
   getBuilding() {
     const userID = JSON.parse(localStorage.getItem('user')).User.ID;
-    this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
-      res = res || {};
-      if (res !== {}) {
-        this.level = res.level;
-      }
-    });
+    // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
+    //   res = res || {};
+    //   if (res !== {}) {
+    //     this.level = res.level;
+    //   }
+    // });
   }
   dataBound() {
   }
@@ -287,7 +290,7 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
           name: item.name,
           partNameID: item.partNameID,
           pathName: item.pathName
-        }
+        };
       });
     });
   }
@@ -360,7 +363,7 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     if (id === 0) {
       return '#N/A';
     }
-    let result = (this.users.filter((item: any) => item.ID === id)[0] as any);
+    const result = (this.users.filter((item: any) => item.ID === id)[0] as any);
     if (result !== undefined) {
       return result.Username;
     } else {

@@ -16,14 +16,15 @@ namespace DMR_API._Services.Services
     public class BuildingLunchTimeService : IBuildingLunchTimeService
     {
         private readonly IPeriodRepository _repoPeriod;
+        private readonly ILunchTimeRepository _repoLunchTime;
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configMapper;
-        public BuildingLunchTimeService(IPeriodRepository repoPeriod,  IMapper mapper, MapperConfiguration configMapper)
+        public BuildingLunchTimeService(IPeriodRepository repoPeriod, ILunchTimeRepository repoLunchTime, IMapper mapper, MapperConfiguration configMapper)
         {
             _configMapper = configMapper;
             _mapper = mapper;
             _repoPeriod = repoPeriod;
-
+            _repoLunchTime = repoLunchTime;
         }
 
         public async Task<bool> Add(Period model)
@@ -40,11 +41,24 @@ namespace DMR_API._Services.Services
         }
 
         //Cập nhật Period
-        public async Task<bool> UpdatePeriod(Period model)
+        public async Task<ResponseDetail<object>> UpdatePeriod(Period model)
         {
             var period = _mapper.Map<Period>(model);
+            var lunchTime = await _repoLunchTime.FindAll(x => x.ID == model.LunchTimeID).FirstOrDefaultAsync();
+            var startLunchTime = lunchTime.StartTime.TimeOfDay;
+            var endLunchTime = lunchTime.EndTime.TimeOfDay;
+            // lunchTime 12:30-13:30
+            // 12:30 >= 12:30 and 13:00 <= 13:30
+            if (period.StartTime.TimeOfDay >= startLunchTime && period.EndTime.TimeOfDay <= endLunchTime)
+            {
+                return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu và thời gian kết thúc không được giao với giờ ăn trưa!" };
+            }
+            if (period.StartTime.TimeOfDay > period.EndTime.TimeOfDay)
+            {
+                return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc!" };
+            }
             _repoPeriod.Update(period);
-            return await _repoPeriod.SaveAll();
+            return new ResponseDetail<object>() { Status = await _repoPeriod.SaveAll() };
         }
       
 

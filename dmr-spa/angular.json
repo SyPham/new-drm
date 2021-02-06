@@ -31,7 +31,7 @@
               "./node_modules/bootstrap4-toggle/css/bootstrap4-toggle.min.css",
               "./node_modules/alertifyjs/build/css/alertify.min.css",
               "./node_modules/alertifyjs/build/css/themes/bootstrap.min.css",
-              "./node_modules/@syncfusion/ej2-angular-dropdowns/styles/multi-select/bootstrap.css"
+              "./node_modules/intro.js/introjs.css"
             ],
             "scripts": [
               "./node_modules/admin-lte/plugins/jquery/jquery.min.js",
@@ -39,7 +39,8 @@
               "./node_modules/admin-lte/dist/js/adminlte.min.js",
               "./node_modules/alertifyjs/build/alertify.min.js",
               "./node_modules/sweetalert2/dist/sweetalert2.js",
-              "./node_modules/bootstrap4-toggle/js/bootstrap4-toggle.min.js"
+              "./node_modules/bootstrap4-toggle/js/bootstrap4-toggle.min.js",
+              "./node_modules/intro.js/intro.js"
             ]
           },
           "configurations": {

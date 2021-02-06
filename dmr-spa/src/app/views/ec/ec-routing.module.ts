@@ -18,7 +18,6 @@ import { PrintQRCodeComponent } from './ingredient/print-qrcode/print-qrcode.com
 import { PartComponent } from './part/part.component';
 import { KindComponent } from './kind/kind.component';
 import { MaterialComponent } from './material/material.component';
-import { BpfcComponent } from './bpfc/bpfc.component';
 import { BpfcStatusComponent } from './bpfc-status/bpfc-status.component';
 import { GlueHistoryComponent } from './summary/glue-history/glue-history.component';
 import { DeliveredHistoryComponent } from './delivered-history/delivered-history.component';
@@ -37,6 +36,7 @@ import { BpfcDetailComponent } from './bpfc-detail/bpfc-detail.component';
 import { Bpfc1Component } from './bpfc-1/bpfc-1.component';
 import { GlueTypeComponent } from './glue-type/glue-type.component';
 import { BuildingLunchTimeComponent } from './buildingLunchTime/building-lunch-Time.component';
+import { MailingComponent } from './mailing/mailing.component';
 
 const routes: Routes = [
   {
@@ -187,6 +187,14 @@ const routes: Routes = [
               breadcrumb: 'Glue'
             }
           },
+          {
+            path: 'mailing',
+            component: MailingComponent,
+            data: {
+              title: 'mailing',
+              breadcrumb: 'Mailing'
+            }
+          }
         ]
       },
        // end setting

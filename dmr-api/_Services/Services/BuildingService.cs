@@ -18,12 +18,18 @@ namespace DMR_API._Services.Services
 
         private readonly IBuildingRepository _repoBuilding;
         private readonly IPeriodRepository _repoPeriod;
+        private readonly IJWTService _jwtService;
+        private readonly IUserRoleRepository _userRoleRepository;
+        private readonly IBuildingUserRepository _buildingUserRepository;
         private readonly ILunchTimeRepository _repoLunchTime;
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configMapper;
         public BuildingService(
             IBuildingRepository repoBuilding,
             IPeriodRepository repoPeriod,
+            IJWTService jwtService,
+            IUserRoleRepository userRoleRepository,
+            IBuildingUserRepository buildingUserRepository,
             ILunchTimeRepository repoLunchTime,
             IMapper mapper, MapperConfiguration configMapper)
         {
@@ -31,6 +37,9 @@ namespace DMR_API._Services.Services
             _mapper = mapper;
             _repoBuilding = repoBuilding;
             _repoPeriod = repoPeriod;
+            _jwtService = jwtService;
+            _userRoleRepository = userRoleRepository;
+            _buildingUserRepository = buildingUserRepository;
             _repoLunchTime = repoLunchTime;
         }
 
@@ -85,7 +94,26 @@ namespace DMR_API._Services.Services
 
         public async Task<List<BuildingDto>> GetBuildings()
         {
-            return await _repoBuilding.FindAll().Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
+            var userid = _jwtService.GetUserID();
+            var role = await _userRoleRepository.FindAll(x => x.UserID == userid).FirstOrDefaultAsync();
+            switch (role.RoleID)
+            {
+                case (int)Enums.Role.Admin:
+                case (int)Enums.Role.Supervisor:
+                case (int)Enums.Role.Staff:
+                    return await _repoBuilding.FindAll().Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
+                case (int)Enums.Role.Worker:
+                case (int)Enums.Role.Dispatcher:
+                    return await _buildingUserRepository.FindAll(x => x.UserID == userid).Include(x => x.Building).Select(x => new BuildingDto
+                    {
+                        ID = x.Building.ID,
+                        Level = x.Building.Level,
+                        ParentID = x.Building.ParentID,
+                        Name = x.Building.Name
+                    }).ToListAsync();
+                default:
+                    return new List<BuildingDto>();
+            }
 
         }
 
@@ -207,6 +235,14 @@ namespace DMR_API._Services.Services
                         StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
                         EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
 
+                    }},
+                        {new Period
+                    {
+                             LunchTimeID = lunchTime.ID,
+                        Sequence = 6,
+                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
+                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
+
                     }}
                 };
                         _repoPeriod.AddRange(periodList);
@@ -220,7 +256,7 @@ namespace DMR_API._Services.Services
                         if (lunchTimeDto.Content == "N/A")
                         {
                             _repoLunchTime.Remove(lunchTime);
-                             await _repoLunchTime.SaveAll();
+                            await _repoLunchTime.SaveAll();
 
                             _repoPeriod.RemoveMultiple(_repoPeriod.FindAll(x => x.LunchTimeID == lunchTime.ID).ToList());
                             await _repoPeriod.SaveAll();
@@ -231,7 +267,7 @@ namespace DMR_API._Services.Services
                             item.EndTime = lunchTimeDto.EndTime.ToLocalTime();
                             item.StartTime = lunchTimeDto.StartTime.ToLocalTime();
                             _repoLunchTime.Update(item);
-                             await _repoLunchTime.SaveAll();
+                            await _repoLunchTime.SaveAll();
                             var periodList = _repoPeriod.FindAll(x => x.LunchTimeID == lunchTime.ID).ToList();
                             periodList.ForEach(item =>
                             {
@@ -250,9 +286,9 @@ namespace DMR_API._Services.Services
                     transaction.Dispose();
                     return false;
                 }
-              
+
             }
-           
+
         }
     }
 }

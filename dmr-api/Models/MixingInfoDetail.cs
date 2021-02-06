@@ -16,6 +16,7 @@ namespace DMR_API.Models
         public string Position { get; set; }
         public double Amount { get; set; }
         public int IngredientID { get; set; }
+        public DateTime Time_Start { get; set; }
         public int MixingInfoID { get; set; }
         public Ingredient Ingredient { get; set; }
         public MixingInfo MixingInfo { get; set; }

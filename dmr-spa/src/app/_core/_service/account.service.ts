@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
 import { Tutorial } from '../_model/tutorial';
 import { PaginatedResult } from '../_model/pagination';
 import { IUserRole } from '../_model/role';
+import { ResponseDetail } from '../_model/responseDetail';
 const httpOptions = {
   headers: new HttpHeaders({
     'Content-Type': 'application/json',
@@ -54,4 +55,15 @@ export class AccountService {
   getBuildingUsers() {
       return this.http.get(`${this.baseUrl}BuildingUser/GetAllBuildingUsers`);
   }
+  mapLineUser(userid, buildingid) { return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/mapLineUser/${userid}/${buildingid}`); }
+  getLineByUserID(userid: number, buildingID: number) {
+    return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/GetLineByUserID/${userid}/${buildingID}`);
+  }
+  removeLineUser(create) { return this.http.post(`${this.baseUrl}BuildingUser/RemoveLineUser`, create); }
+
+  mapMultipleBuildingUser(userid, buildingid) { return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/MapMultipleBuildingUser/${userid}/${buildingid}`); }
+  getBuildingByUserID(userid: number) {
+    return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/GetBuildingByUserID/${userid}`);
+  }
+  removeMultipleBuildingUser(create) { return this.http.post(`${this.baseUrl}BuildingUser/RemoveMultipleBuildingUser`, create); }
 }

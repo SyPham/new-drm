@@ -17,6 +17,9 @@ namespace DMR_API._Services.Interface
         Task<bool> UpdatePrint(QrPrintDto entity);
         Task<IngredientDto> ScanQRCode(string qrCode);
         Task<List<IngredientInfoDto>> GetAllIngredientInfoAsync();
+        Task<List<IngredientInfoDto>> GetAllIngredientInfoByBuildingAsync(string building);
+        Task<List<IngredientInfoDto>> GetAllIngredientInfoOutputByBuildingAsync(string building);
+
         Task<List<IngredientInfoDto>> GetAllIngredientInfoOutputAsync();
         Task<List<IngredientInfoDto>> GetAllIngredientInfoByBuildingNameAsync(string name);
         Task<List<IngredientInfoReportDto>> GetAllIngredientInfoReportAsync();

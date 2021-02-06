@@ -9,6 +9,7 @@ namespace DMR_API.DTO
     {
         public int ID { get; set; }
         public int PlanID { get; set; }
+        public int JobType { get; set; }
         public int MixingInfoID { get; set; }
         public int GlueID { get; set; }
         public int BuildingID { get; set; }
@@ -33,16 +34,40 @@ namespace DMR_API.DTO
         public DateTime? FinishDispatchingTime { get; set; }
 
         public DateTime? PrintTime { get; set; }
+        public DateTime? DispatchTime { get; set; }
 
         public double StandardConsumption { get; set; }
         public double MixedConsumption { get; set; }
         public double DeliveredConsumption { get; set; }
-
+        public double DeliveredAmount { get; set; }
         public DateTime EstimatedStartTime { get; set; }
         public DateTime EstimatedFinishTime { get; set; }
     }
     public class ToDoListForReturnDto
     {
+        public ToDoListForReturnDto()
+        {
+        }
+        public void DispatcherDetail(List<ToDoListDto> data, int doneTotal = 0, int todoTotal = 0, int delayTotal = 0, int total = 0)
+        {
+            Data = data;
+            DispatchTotal = total;
+            TodoDispatchTotal = todoTotal;
+            DelayDispatchTotal = delayTotal;
+            DoneDispatchTotal = doneTotal;
+            var val = Math.Round(((double)doneTotal / total) * 100, 0);
+            PercentageOfDoneDispatch = Double.IsNaN(val) ? 0 : val;
+        }
+        public void TodoDetail(List<ToDoListDto> data, int doneTotal = 0, int todoTotal = 0, int delayTotal = 0, int total = 0)
+        {
+            Data = data;
+            DoneTotal = doneTotal;
+            Total = total;
+            TodoTotal = todoTotal;
+            DelayTotal = delayTotal;
+            var val = Math.Round(((double)doneTotal / total) * 100, 0);
+            PercentageOfDone = Double.IsNaN(val) ? 0 : val;
+        }
         public ToDoListForReturnDto(List<ToDoListDto> data, int doneTotal = 0, int todoTotal = 0, int delayTotal = 0, int total = 0)
         {
             Data = data;
@@ -59,6 +84,12 @@ namespace DMR_API.DTO
         public double TodoTotal { get; set; }
         public double DelayTotal { get; set; }
         public double PercentageOfDone { get; set; }
+
+        public double DispatchTotal { get; set; }
+        public double TodoDispatchTotal { get; set; }
+        public double DelayDispatchTotal { get; set; }
+        public double DoneDispatchTotal { get; set; }
+        public double PercentageOfDoneDispatch { get; set; }
 
     }
 }

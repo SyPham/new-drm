@@ -20,6 +20,7 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 export class AccountComponent implements OnInit {
   userData: any;
   buildings: IBuilding[];
+  buildingDatas: IBuilding[];
   fieldsBuilding: object = { text: 'name', value: 'name' };
   fieldsRole: object = { text: 'name', value: 'name' };
   editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
@@ -150,11 +151,25 @@ export class AccountComponent implements OnInit {
   }
   getBuildings() {
     this.accountService.getBuildings().subscribe((result: any) => {
-      this.buildings = result || [];
-      const data = this.buildings.filter((item: any) => item.level === 2);
-      this.buildings = data;
-      const lines = result.filter( item => item.level === 3);
+      this.buildingDatas = result || [];
+      const data = this.buildingDatas.filter((item: any) => item.level === 2);
+      this.buildingDatas = data;
+    }, error => {
+      this.alertify.error(error);
+    });
+  }
+  getLineByUserID() {
+    this.accountService.getLineByUserID(this.userID, this.buildingID).subscribe(result => {
+      const lines = result.data;
       this.lines = lines;
+    }, error => {
+      this.alertify.error(error);
+    });
+  }
+  getBuildingByUserID() {
+    this.accountService.getBuildingByUserID(this.userID).subscribe(result => {
+      const buildings = result.data;
+      this.buildings = buildings;
     }, error => {
       this.alertify.error(error);
     });
@@ -260,12 +275,58 @@ export class AccountComponent implements OnInit {
   NO(index) {
     return (this.grid.pageSettings.currentPage - 1) * this.pageSettings.pageSize + Number(index) + 1;
   }
-  actionBeginLineGrid(args) {}
-  showLineModal(name, value) {
-    if (value.building) {
-      const buildingID = this.buildings.filter(x => x.name === value.building)[0].id;
-      this.lines = this.lines.filter(item => item.parentID === buildingID);
+  checkboxChange(args, data) {
+    console.log('checkboxChange', args);
+    const checked = args.checked;
+    if (checked === true) {
+      this.accountService.mapLineUser(this.userID, data.id).subscribe(res => {
+        if (res.status) {
+          this.alertify.success(res.message);
+          this.getLineByUserID();
+        } else {
+          this.alertify.warning(res.message);
+        }
+      }, err => this.alertify.error(err));
+    } else {
+      const obj = {
+        userID: this.userID, buildingID: data.id
+      };
+      this.accountService.removeLineUser(obj).subscribe(res => {
+          this.alertify.success('Thành công!');
+          this.getLineByUserID();
+      }, err => this.alertify.error(err));
     }
+  }
+  checkboxChangeBuilding(args, data) {
+    const checked = args.checked;
+    if (checked === true) {
+      this.accountService.mapMultipleBuildingUser(this.userID, data.id).subscribe(res => {
+        if (res.status) {
+          this.alertify.success(res.message);
+          this.getBuildingByUserID();
+        } else {
+          this.alertify.warning(res.message);
+        }
+      }, err => this.alertify.error(err));
+    } else {
+      const obj = {
+        userID: this.userID, buildingID: data.id
+      };
+      this.accountService.removeMultipleBuildingUser(obj).subscribe(res => {
+        this.alertify.success('Thành công!');
+        this.getLineByUserID();
+      }, err => this.alertify.error(err));
+    }
+  }
+  showLineModal(name, value) {
+    this.userID = value.id;
+    this.buildingID = this.buildingDatas.filter(item => item.name  === value.building)[0].id;
+    this.getLineByUserID();
+    this.modalReference = this.modalService.open(name, { size: 'md' });
+  }
+  showBuildingModal(name, value) {
+    this.userID = value.id;
+    this.getBuildingByUserID();
     this.modalReference = this.modalService.open(name, { size: 'md' });
   }
 }

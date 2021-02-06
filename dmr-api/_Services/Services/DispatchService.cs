@@ -64,8 +64,6 @@ namespace DMR_API._Services.Services
                     var item = new ToDoListForUpdateDto()
                     {
                         GlueName = mixing.GlueName,
-                        StartTime = model.StartDispatchingTime,
-                        FinishTime = model.FinishDispatchingTime,
                         EstimatedFinishTime = mixing.EstimatedFinishTime,
                         EstimatedStartTime = mixing.EstimatedStartTime,
                     };
@@ -78,6 +76,7 @@ namespace DMR_API._Services.Services
             {
                 return false;
             }
+            throw new NotImplementedException();
         }
         public async Task<bool> Update(Dispatch model)
         {
@@ -128,7 +127,8 @@ namespace DMR_API._Services.Services
 
             foreach (var item in dispatch)
             {
-                var station = _repoStation.FindById(item.StationID);
+                // xoa bo
+                var station = _repoStation.FindById(1);
                 if (station != null && station.Amount == 0)
                 {
                     var mixingModel = _repoMixingInfo.FindAll(x => x.ID == item.MixingInfoID).Include(x => x.Glue).ThenInclude(x => x.GlueName).FirstOrDefault();
@@ -167,14 +167,11 @@ namespace DMR_API._Services.Services
             {
                 try
                 {
-                    lastDispatch.FinishDispatchingTime = DateTime.Now.ToLocalTime();
                     _repoDispatch.Update(lastDispatch);
                     _repoDispatch.Save();
                     var item = new ToDoListForUpdateDto()
                     {
                         GlueName = mixing.GlueName,
-                        StartTime = firstDispatch.StartDispatchingTime,
-                        FinishTime = lastDispatch.FinishDispatchingTime,
                         EstimatedFinishTime = mixing.EstimatedFinishTime,
                         EstimatedStartTime = mixing.EstimatedStartTime,
                         MixingInfoID = firstDispatch.MixingInfoID,
@@ -199,6 +196,7 @@ namespace DMR_API._Services.Services
                 status = flags.All(x => x == true),
                 message = flags.All(x => x == true) is true ? "" : "Vui lòng thử lại!"
             };
+            throw new NotImplementedException();
         }
 
         public async Task<bool> UpdateAmount(int id, double amount)
@@ -216,8 +214,6 @@ namespace DMR_API._Services.Services
         {
             var item = _repoDispatch.FindById(id);
             if (item is null) return false;
-            if (item.StartDispatchingTime is null)
-                item.StartDispatchingTime = DateTime.Now.ToLocalTime();
             try
             {
                 _repoDispatch.Update(item);
