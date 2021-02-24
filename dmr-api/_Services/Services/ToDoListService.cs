@@ -26,6 +26,7 @@ namespace DMR_API._Services.Services
 {
     public class ToDoListService : IToDoListService
     {
+        #region Constructor
         private readonly IToDoListRepository _repoToDoList;
         private readonly IGlueRepository _repoGlue;
         private readonly IMixingInfoRepository _repoMixingInfo;
@@ -88,373 +89,11 @@ namespace DMR_API._Services.Services
             _repoDispatchList = repoDispatchList;
             _repoDispatchListDetail = repoDispatchListDetail;
             _jwtService = jwtService;
-        }
+        } 
+        #endregion
 
-        //Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
-        public async Task<object> MixedHistory(int MixingInfoID)
-        {
-            var result = await _repoMixingInfoDetail.FindAll().Include(x => x.Ingredient).Where(x => x.MixingInfoID == MixingInfoID).Select(x => new
-            {
-                ID = x.ID,
-                Amount = x.Amount,
-                Batch = x.Batch,
-                Ingredient_ID = x.IngredientID,
-                Ingredient_Name = x.Ingredient.Name,
-                MixingInfo_ID = x.MixingInfoID,
-                Time_Start = x.Time_Start
-
-            }).ToListAsync();
-            return new
-            {
-                status = true,
-                result
-            };
-        }
-        //Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
-        public async Task<bool> AddRange(List<ToDoList> toDoList)
-        {
-            _repoToDoList.AddRange(toDoList);
-            try
-            {
-                return await _repoToDoList.SaveAll();
-            }
-            catch (Exception)
-            {
-                return false;
-                throw;
-            }
-        }
-
-        public async Task<bool> CancelRange(List<ToDoListForCancelDto> todolistList)
-        {
-            var flag = new List<bool>();
-            foreach (var todolist in todolistList)
-            {
-                var model = _repoToDoList.FindAll(x => x.ID == todolist.ID && todolist.LineNames.Contains(x.LineName)).ToList();
-                if (model is null) flag.Add(false);
-                _repoToDoList.RemoveMultiple(model);
-                flag.Add(await _repoToDoList.SaveAll());
-            }
-            return flag.All(x => x is true);
-        }
-
-        public async Task<bool> Cancel(ToDoListForCancelDto todolist)
-        {
-            var model = _repoToDoList.FindAll(x => x.ID == todolist.ID && todolist.LineNames.Contains(x.LineName)).ToList();
-            if (model is null) return false;
-            _repoToDoList.RemoveMultiple(model);
-            return await _repoToDoList.SaveAll();
-        }
-
-        //public async Task<ToDoListForReturnDto> Done(int buildingID)
-        //{
-        //    // var date = new DateTime(2021, 1, 23, 6, 00,00);
-        //    // var date2 = new DateTime(2021, 1, 23, 13, 00,00);
-        //    // var rawDataModel = _repoRawData.AsQueryable().Where(x => x.MachineID == 162 && x.CreatedDateTime >= date && x.CreatedDateTime <= date2).ToList();
-        //    // var g = rawDataModel.GroupBy(x => x.Sequence).ToList();
-        //    // var sequence = rawDataModel.DistinctBy(x => x.Sequence).Select(x => x.Sequence).ToList();
-        //    // var rawData = rawDataModel
-        //    //    .Where(x => x.RPM >= 250 && sequence.Contains(x.Sequence))
-        //    //    .Select(x => new { x.RPM, x.CreatedDateTime, x.Sequence })
-        //    //    .OrderByDescending(x => x.CreatedDateTime).ToList();
-
-        //    // var standardRPMTotal = rawData.Where(x => x.RPM >= 250).Count();
-        //    // var RPM = rawData.Average(x => x.RPM);
-        //    // var min = rawData.LastOrDefault().CreatedDateTime;
-        //    // var max = rawData.FirstOrDefault().CreatedDateTime;
-        //    //var temp = (max - min).TotalSeconds;
-        //    var currentTime = DateTime.Now.ToLocalTime();
-        //    var currentDate = currentTime.Date;
-        //    var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-        //    var morning = "AM";
-        //    var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-        //    var model = await _repoToDoList.FindAll(x =>
-        //          x.IsDelete == false
-        //          && x.EstimatedStartTime.Date == currentDate
-        //          && x.EstimatedFinishTime.Date == currentDate
-        //          && x.BuildingID == buildingID)
-        //       .ToListAsync();
-
-        //    var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueName });
-        //    var todolist = new List<ToDoListDto>();
-        //    foreach (var todo in groupBy)
-        //    {
-        //        var item = todo.FirstOrDefault();
-        //        var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-        //        var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
-        //        var stddeliver = todo.FirstOrDefault().DeliveredConsumption;
-
-        //        var itemTodolist = new ToDoListDto();
-        //        itemTodolist.ID = item.ID;
-        //        itemTodolist.PlanID = item.PlanID;
-        //        itemTodolist.MixingInfoID = item.MixingInfoID;
-        //        itemTodolist.GlueID = item.GlueID;
-        //        itemTodolist.LineID = item.LineID;
-        //        itemTodolist.LineName = item.LineName;
-        //        itemTodolist.GlueName = item.GlueName;
-        //        itemTodolist.Supplier = item.Supplier;
-        //        itemTodolist.Status = item.FinishDispatchingTime.HasValue == false ? false : item.FinishDispatchingTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
-
-        //        itemTodolist.StartMixingTime = item.StartMixingTime;
-        //        itemTodolist.FinishMixingTime = item.FinishMixingTime;
-
-        //        itemTodolist.StartStirTime = item.StartStirTime;
-        //        itemTodolist.FinishStirTime = item.FinishStirTime;
-
-        //        itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-        //        itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
-
-        //        itemTodolist.PrintTime = item.PrintTime;
-
-        //        itemTodolist.MixedConsumption = Math.Round(item.MixedConsumption, 2);
-        //        itemTodolist.DeliveredConsumption = Math.Round(stddeliver, 2);
-        //        itemTodolist.StandardConsumption = Math.Round(stdTotal, 2);
-
-        //        itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-        //        itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
-
-        //        itemTodolist.AbnormalStatus = item.AbnormalStatus;
-
-        //        itemTodolist.LineNames = lineList;
-        //        itemTodolist.BuildingID = item.BuildingID;
-        //        todolist.Add(itemTodolist);
-        //    }
-        //    var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-        //       .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-        //    var result = new List<ToDoListDto>();
-        //    foreach (var item in modelTemp)
-        //    {
-        //        result.AddRange(item.OrderByDescending(x => x.GlueName));
-        //    }
-        //    if (value == morning)
-        //    {
-        //        result = result.Where(x => x.EstimatedFinishTime <= start).ToList();
-        //    }
-
-        //    var doneList = new List<ToDoListDto>();
-        //    var doneListTemp = result.Where(x => x.FinishDispatchingTime != null).ToList();
-        //    var groupbyTime = doneListTemp.GroupBy(x => x.EstimatedStartTime).ToList();
-        //    foreach (var item in groupbyTime)
-        //    {
-        //        var doneItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //        var doneItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //        var res = doneItem.Concat(doneItem2).ToList();
-        //        doneList.AddRange(res);
-        //    }
-        //    var total = result.Count;
-        //    var doneTotal = doneList.Count;
-
-        //    var todoTotal = result.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime >= currentTime).Count();
-        //    var delayTotal = result.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime < currentTime).Count();
-
-        //    return new ToDoListForReturnDto(doneList, doneTotal, todoTotal, delayTotal, total);
-        //}
-
-        //public async Task<ToDoListForReturnDto> Delay(int buildingID)
-        //{
-
-        //    var currentTime = DateTime.Now.ToLocalTime();
-        //    var currentDate = currentTime.Date;
-        //    var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-        //    var morning = "AM";
-        //    var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-        //    var model = await _repoToDoList.FindAll(x =>
-        //           x.IsDelete == false
-        //           && x.EstimatedStartTime.Date == currentDate
-        //           && x.EstimatedFinishTime.Date == currentDate
-        //           && x.BuildingID == buildingID)
-        //       .ToListAsync();
-        //    var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
-        //    var todolist = new List<ToDoListDto>();
-        //    foreach (var todo in groupBy)
-        //    {
-        //        var item = todo.FirstOrDefault();
-        //        var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-        //        var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
-        //        var stddeliver = todo.Select(x => x.DeliveredConsumption).Sum();
-
-        //        var itemTodolist = new ToDoListDto();
-        //        itemTodolist.ID = item.ID;
-        //        itemTodolist.PlanID = item.PlanID;
-        //        itemTodolist.MixingInfoID = item.MixingInfoID;
-        //        itemTodolist.GlueID = item.GlueID;
-        //        itemTodolist.LineID = item.LineID;
-        //        itemTodolist.LineName = item.LineName;
-        //        itemTodolist.GlueName = item.GlueName;
-        //        itemTodolist.Supplier = item.Supplier;
-        //        itemTodolist.Status = item.Status;
-
-        //        itemTodolist.StartMixingTime = item.StartMixingTime;
-        //        itemTodolist.FinishMixingTime = item.FinishMixingTime;
-
-        //        itemTodolist.StartStirTime = item.StartStirTime;
-        //        itemTodolist.FinishStirTime = item.FinishStirTime;
-
-        //        itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-        //        itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
-
-        //        itemTodolist.PrintTime = item.PrintTime;
-
-        //        itemTodolist.MixedConsumption = Math.Round(item.MixedConsumption, 2);
-        //        itemTodolist.DeliveredConsumption = Math.Round(stddeliver, 2);
-        //        itemTodolist.StandardConsumption = Math.Round(stdTotal, 2);
-
-        //        itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-        //        itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
-
-        //        itemTodolist.AbnormalStatus = item.AbnormalStatus;
-        //        itemTodolist.IsDelete = item.IsDelete;
-
-        //        itemTodolist.LineNames = lineList;
-        //        itemTodolist.BuildingID = item.BuildingID;
-        //        todolist.Add(itemTodolist);
-        //    }
-        //    var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-        //        .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-        //    var result = new List<ToDoListDto>();
-        //    foreach (var item in modelTemp)
-        //    {
-        //        result.AddRange(item.OrderByDescending(x => x.GlueName));
-        //    }
-        //    var delayList = new List<ToDoListDto>();
-
-        //    var delayListTemp = result.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime < currentTime).ToList();
-        //    var groupbyTime = delayListTemp.GroupBy(x => x.EstimatedStartTime).ToList();
-        //    foreach (var item in groupbyTime)
-        //    {
-        //        var todoItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //        var todoItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //        var res = todoItem.Concat(todoItem2).ToList();
-        //        delayList.AddRange(res);
-
-        //    }
-        //    if (value == morning)
-        //    {
-        //        result = result.Where(x => x.EstimatedFinishTime <= start).ToList();
-        //    }
-        //    else
-        //    {
-        //        result = result.ToList();
-
-        //    }
-        //    var total = result.Count;
-        //    var doneTotal = result.Where(x => x.FinishDispatchingTime != null).Count();
-        //    var todoTotal = result.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime >= currentTime).Count();
-        //    var delayTotal = delayList.Count();
-
-        //    return new ToDoListForReturnDto(delayList, doneTotal, todoTotal, delayTotal, total);
-        //}
-
-        //public async Task<ToDoListForReturnDto> ToDo(int buildingID)
-        //{
-        //    try
-        //    {
-        //        var currentTime = DateTime.Now.ToLocalTime();
-        //        var currentDate = currentTime.Date;
-        //        var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-        //        var morning = "AM";
-        //        var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-        //        var model = await _repoToDoList.FindAll(x =>
-        //               x.IsDelete == false
-        //               && x.EstimatedStartTime.Date == currentDate
-        //               && x.EstimatedFinishTime.Date == currentDate
-        //               && x.BuildingID == buildingID)
-        //           .ToListAsync();
-
-        //        var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
-        //        var todolist = new List<ToDoListDto>();
-        //        foreach (var todo in groupBy)
-        //        {
-        //            var item = todo.FirstOrDefault();
-        //            var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-        //            var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
-        //            var stddeliver = todo.Select(x => x.DeliveredConsumption).Sum();
-
-        //            var itemTodolist = new ToDoListDto();
-        //            itemTodolist.ID = item.ID;
-        //            itemTodolist.PlanID = item.PlanID;
-        //            itemTodolist.MixingInfoID = item.MixingInfoID;
-        //            itemTodolist.GlueID = item.GlueID;
-        //            itemTodolist.LineID = item.LineID;
-        //            itemTodolist.LineName = item.LineName;
-        //            itemTodolist.GlueName = item.GlueName;
-        //            itemTodolist.Supplier = item.Supplier;
-        //            //itemTodolist.Status = item.FinishDispatchingTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
-
-        //            itemTodolist.StartMixingTime = item.StartMixingTime;
-        //            itemTodolist.FinishMixingTime = item.FinishMixingTime;
-
-        //            itemTodolist.StartStirTime = item.StartStirTime;
-        //            itemTodolist.FinishStirTime = item.FinishStirTime;
-
-        //            itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-        //            itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
-
-        //            itemTodolist.PrintTime = item.PrintTime;
-
-        //            itemTodolist.MixedConsumption = Math.Round(item.MixedConsumption, 2);
-        //            itemTodolist.DeliveredConsumption = Math.Round(stddeliver, 2);
-        //            itemTodolist.StandardConsumption = Math.Round(stdTotal, 2);
-
-        //            itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-        //            itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
-
-        //            itemTodolist.AbnormalStatus = item.AbnormalStatus;
-        //            itemTodolist.IsDelete = item.IsDelete;
-
-        //            itemTodolist.LineNames = lineList;
-        //            itemTodolist.BuildingID = item.BuildingID;
-        //            todolist.Add(itemTodolist);
-        //        }
-        //        var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-        //            .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-        //        var result = new List<ToDoListDto>();
-        //        foreach (var item in modelTemp)
-        //        {
-        //            result.AddRange(item.OrderByDescending(x => x.GlueName));
-        //        }
-        //        var todoList = new List<ToDoListDto>();
-        //        var groupbyTime = result.Where(x => x.FinishDispatchingTime is null).GroupBy(x => x.EstimatedStartTime).ToList();
-        //        foreach (var item in groupbyTime)
-        //        {
-        //            var todoItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //            var todoItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //            var res = todoItem.Concat(todoItem2).ToList();
-        //            todoList.AddRange(res);
-        //        }
-        //        var delayTotal = todoList.Where(x => x.EstimatedFinishTime < currentTime).Count();
-        //        if (value == morning)
-        //        {
-        //            todoList = todoList.Where(x => x.EstimatedFinishTime <= start && x.EstimatedFinishTime >= currentTime).ToList();
-        //        }
-        //        else
-        //        {
-        //            todoList = todoList.Where(x => x.EstimatedFinishTime >= currentTime).ToList();
-        //        }
-        //        if (value == morning)
-        //        {
-        //            result = result.Where(x => x.EstimatedFinishTime <= start).ToList();
-        //        }
-        //        else
-        //        {
-        //            result = result.ToList();
-
-        //        }
-        //        var total = result.Count;
-        //        var doneTotal = result.Where(x => x.FinishDispatchingTime != null).Count();
-        //        var todoTotal = todoList.Count();
-        //        return new ToDoListForReturnDto(todoList, doneTotal, todoTotal, delayTotal, total);
-
-        //    }
-        //    catch (Exception)
-        //    {
-
-        //        throw;
-        //    }
-
-        //}
-
-        //Leo Update
+        #region LoadData
+        // Helper for donelist
         List<ToDoListDto> MapDispatchToToDoListDto(List<DispatchList> model)
         {
             var dispatchlist = new List<ToDoListDto>();
@@ -516,6 +155,7 @@ namespace DMR_API._Services.Services
             }
             return dispatchListResult;
         }
+
         public async Task<ToDoListForReturnDto> Done(int buildingID)
         {
             var userID = _jwtService.GetUserID();
@@ -540,8 +180,6 @@ namespace DMR_API._Services.Services
 
             // dispatch
             // map to dto
-            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
-
             var dispatchListModel = await _repoDispatchList.FindAll(x =>
               x.IsDelete == false
               && x.EstimatedStartTime.Date == currentDate
@@ -550,6 +188,12 @@ namespace DMR_API._Services.Services
            .ToListAsync();
             if (role.RoleID == (int)Enums.Role.Dispatcher)
             {
+                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
+            }
+            else
+            {
+                var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
                 dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
             }
             // map to dto
@@ -560,7 +204,7 @@ namespace DMR_API._Services.Services
                 dispatchListResult = dispatchListResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
             // decentralzation
-            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff)
+            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
             {
                 var dispatchTotal = dispatchListResult.Count();
                 var dispatchListDoneResult = dispatchListResult.Where(x => x.FinishDispatchingTime != null).ToList();
@@ -586,41 +230,42 @@ namespace DMR_API._Services.Services
 
                 return response;
             }
-            if (role.RoleID == (int)Enums.Role.Worker)
-            {
-                var doneListForWorker = result.Where(x => x.PrintTime != null).ToList();
-                var doneTotalForWorker = doneListForWorker.Count;
+            //if (role.RoleID == (int)Enums.Role.Worker)
+            //{
+            //    var doneListForWorker = result.Where(x => x.PrintTime != null).ToList();
+            //    var doneTotalForWorker = doneListForWorker.Count;
 
-                var totalForWorker = result.Count();
-                var todoTotalForWorker = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay && x.GlueName.Contains(" + ")).Count();
-                var delayTotalForWorker = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay && x.GlueName.Contains(" + ")).Count();
+            //    var totalForWorker = result.Count();
+            //    var todoTotalForWorker = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay && x.GlueName.Contains(" + ")).Count();
+            //    var delayTotalForWorker = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay && x.GlueName.Contains(" + ")).Count();
 
-                return new ToDoListForReturnDto(doneListForWorker, doneTotalForWorker, todoTotalForWorker, delayTotalForWorker, totalForWorker);
-            }
-            if (role.RoleID == (int)Enums.Role.Dispatcher)
-            {
-                var doneListForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime != null).ToList();
-                var doneTotalForDispatcher = doneListForDispatcher.Count;
+            //    return new ToDoListForReturnDto(doneListForWorker, doneTotalForWorker, todoTotalForWorker, delayTotalForWorker, totalForWorker);
+            //}
+            //if (role.RoleID == (int)Enums.Role.Dispatcher)
+            //{
+            //    var doneListForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime != null).ToList();
+            //    var doneTotalForDispatcher = doneListForDispatcher.Count;
 
-                var totalForDispatcher = dispatchListResult.Count();
-                var todoTotalForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-                var delayTotalForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                var resoponse = new ToDoListForReturnDto();
-                resoponse.DoneTotal = doneTotalForDispatcher;
-                resoponse.DispatcherDetail(doneListForDispatcher, doneTotalForDispatcher, todoTotalForDispatcher, delayTotalForDispatcher, totalForDispatcher);
-                return resoponse;
-            }
+            //    var totalForDispatcher = dispatchListResult.Count();
+            //    var todoTotalForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
+            //    var delayTotalForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+            //    var resoponse = new ToDoListForReturnDto();
+            //    resoponse.DoneTotal = doneTotalForDispatcher;
+            //    resoponse.DispatcherDetail(doneListForDispatcher, doneTotalForDispatcher, todoTotalForDispatcher, delayTotalForDispatcher, totalForDispatcher);
+            //    return resoponse;
+            //}
             return new ToDoListForReturnDto(null, 0, 0, 0, 0);
         }
 
+        // Helper for delay, todo
         List<ToDoListDto> MapToTodolistDto(List<ToDoList> model)
         {
-            var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
+            var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID, x.PrintTime });
             var todolist = new List<ToDoListDto>();
             foreach (var todo in groupBy)
             {
                 var item = todo.FirstOrDefault();
-                var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
+                var lineList = todo.Select(x => x.LineName).DistinctBy(x=> x).OrderBy(x => x).ToList();
                 var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
                 var stddeliver = todo.Select(x => x.DeliveredConsumption).Sum();
 
@@ -664,22 +309,20 @@ namespace DMR_API._Services.Services
             }
 
             // GroupBy period and then by glueName
-            var modelTemp = todolist.OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
+            var modelTemp = todolist.OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime}).ToList();
             var result = new List<ToDoListDto>();
             foreach (var item in modelTemp)
             {
                 result.AddRange(item.OrderByDescending(x => x.GlueName));
             }
 
-
             return result;
         }
+
         public async Task<ToDoListForReturnDto> Delay(int buildingID)
         {
             var userID = _jwtService.GetUserID();
             var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
-            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
-
             var currentTime = DateTime.Now.ToLocalTime();
             currentTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, currentTime.Hour, currentTime.Minute, 0);
             var currentDate = currentTime.Date;
@@ -693,6 +336,16 @@ namespace DMR_API._Services.Services
                    && x.GlueName.Contains(" + ")
                    && x.BuildingID == buildingID)
                .ToListAsync();
+            if (role.RoleID == (int)Enums.Role.Dispatcher)
+            {
+                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                model = model.Where(x => lines.Contains(x.LineID)).ToList();
+            }
+            else
+            {
+                var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                model = model.Where(x => lines.Contains(x.LineID)).ToList();
+            }
             // map dto
             var result = MapToTodolistDto(model);
 
@@ -713,16 +366,16 @@ namespace DMR_API._Services.Services
                                                 ).Count();
 
             // decentralization
-            if (role.RoleID == (int)Enums.Role.Worker)
-            {
-                var data = result.Where(x => x.PrintTime is null
-                                             && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay
-                                         ).ToList();
-                var response = new ToDoListForReturnDto();
-                response.TodoDetail(data, doneTotal, todoTotal, delayTotal, total);
-                return response;
-            }
-            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff)
+            //if (role.RoleID == (int)Enums.Role.Worker)
+            //{
+            //    var data = result.Where(x => x.PrintTime is null
+            //                                 && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay
+            //                             ).ToList();
+            //    var response = new ToDoListForReturnDto();
+            //    response.TodoDetail(data, doneTotal, todoTotal, delayTotal, total);
+            //    return response;
+            //}
+            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
             {
                 var response = new ToDoListForReturnDto();
                 var data = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
@@ -732,10 +385,10 @@ namespace DMR_API._Services.Services
                                                                 && x.EstimatedFinishTime.Date == currentDate
                                                                 && x.BuildingID == buildingID)
                                                                  .ToListAsync();
-                if (role.RoleID == (int)Enums.Role.Dispatcher)
-                {
-                    dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
-                }
+                //if (role.RoleID == (int)Enums.Role.Dispatcher)
+                //{
+                //    dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
+                //}
                 // map to dto
                 var dispatchList = MapToDispatchListDto(dispatchListModel);
                 if (value == morning)
@@ -764,7 +417,6 @@ namespace DMR_API._Services.Services
             {
                 var userID = _jwtService.GetUserID();
                 var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
-                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
 
                 var currentTime = DateTime.Now.ToLocalTime();
                 currentTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, currentTime.Hour, currentTime.Minute, 0);
@@ -779,7 +431,24 @@ namespace DMR_API._Services.Services
                        && x.GlueName.Contains(" + ")
                        && x.BuildingID == buildingID)
                    .ToListAsync();
-
+                //var model2 = await _repoToDoList.FindAll(x =>
+                //       x.IsDelete == false
+                //       && x.EstimatedStartTime.Date == currentDate
+                //       && x.EstimatedFinishTime.Date == currentDate
+                //       && x.GlueName.Contains(" + ")
+                //       && x.AbnormalStatus == true
+                //       && x.BuildingID == buildingID)
+                //   .ToListAsync();
+                if (role.RoleID == (int)Enums.Role.Dispatcher)
+                {
+                    var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
+                else
+                {
+                    var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
                 // map dto
                 var result = MapToTodolistDto(model);
 
@@ -796,13 +465,13 @@ namespace DMR_API._Services.Services
                                                  ).Count();
                 var doneTotal = result.Where(x => x.PrintTime != null).Count();
 
-                if (role.RoleID == (int)Enums.Role.Worker)
-                {
-                    var response = new ToDoListForReturnDto();
-                    response.TodoDetail(data, doneTotal, todoTotal, delayTotal, total);
-                    return response;
-                }
-                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff)
+                //if (role.RoleID == (int)Enums.Role.Worker)
+                //{
+                //    var response = new ToDoListForReturnDto();
+                //    response.TodoDetail(data, doneTotal, todoTotal, delayTotal, total);
+                //    return response;
+                //}
+                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
                 {
 
                     var dispatchListModel = await _repoDispatchList.FindAll(x =>
@@ -810,11 +479,11 @@ namespace DMR_API._Services.Services
                                                                && x.EstimatedStartTime.Date == currentDate
                                                                && x.EstimatedFinishTime.Date == currentDate
                                                                && x.BuildingID == buildingID)
-                                                                .ToListAsync();
-                    if (role.RoleID == (int)Enums.Role.Dispatcher)
-                    {
-                        dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
-                    }
+                                                               .ToListAsync();
+                    //if (role.RoleID == (int)Enums.Role.Dispatcher)
+                    //{
+                    //    dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
+                    //}
                     // map to dto
                     var dispatchList = MapToDispatchListDto(dispatchListModel);
                     if (value == morning)
@@ -845,247 +514,344 @@ namespace DMR_API._Services.Services
             }
 
         }
-        //End Update
 
-        //public async Task<ToDoListForReturnDto> Delay(int buildingID)
-        //{
+        // Helper for dispatchlist, dispatchlist delay
+        List<DispatchListDto> MapToDispatchListDto(List<DispatchList> model)
+        {
+            var currentTime = DateTime.Now.ToLocalTime();
+            var currentDate = currentTime.Date;
+            var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
+            var dispatchlist = new List<DispatchListDto>();
+            foreach (var todo in groupBy)
+            {
+                var item = todo.FirstOrDefault();
+                var lineList = todo.Select(x => x.LineName).DistinctBy(x=> x).OrderBy(x => x).ToList();
 
-        //    var currentTime = DateTime.Now.ToLocalTime();
-        //    currentTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, currentTime.Hour, currentTime.Minute, 0);
-        //    var currentDate = currentTime.Date;
-        //    var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-        //    var morning = "AM";
-        //    var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-        //    var model = await _repoToDoList.FindAll(x =>
-        //           x.IsDelete == false
-        //           && x.EstimatedStartTime.Date == currentDate
-        //           && x.EstimatedFinishTime.Date == currentDate
-        //           && x.BuildingID == buildingID)
-        //       .ToListAsync();
-        //    var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
-        //    var todolist = new List<ToDoListDto>();
-        //    foreach (var todo in groupBy)
-        //    {
-        //        var item = todo.FirstOrDefault();
-        //        var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-        //        var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
-        //        var stddeliver = todo.Select(x => x.DeliveredConsumption).Sum();
+                var itemTodolist = new DispatchListDto();
+                itemTodolist.ID = item.ID;
+                itemTodolist.PlanID = item.PlanID;
+                itemTodolist.MixingInfoID = item.MixingInfoID;
+                itemTodolist.GlueID = item.GlueID;
+                itemTodolist.LineID = item.LineID;
+                itemTodolist.LineName = item.LineName;
+                itemTodolist.GlueName = item.GlueName;
+                itemTodolist.GlueNameID = item.GlueNameID;
+                itemTodolist.Supplier = item.Supplier;
+                itemTodolist.ColorCode = item.ColorCode;
 
-        //        var itemTodolist = new ToDoListDto();
-        //        itemTodolist.ID = item.ID;
-        //        itemTodolist.PlanID = item.PlanID;
-        //        itemTodolist.MixingInfoID = item.MixingInfoID;
-        //        itemTodolist.GlueID = item.GlueID;
-        //        itemTodolist.LineID = item.LineID;
-        //        itemTodolist.LineName = item.LineName;
-        //        itemTodolist.GlueName = item.GlueName;
-        //        itemTodolist.Supplier = item.Supplier;
-        //        itemTodolist.Status = item.Status;
+                itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
+                itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
 
-        //        itemTodolist.StartMixingTime = item.StartMixingTime;
-        //        itemTodolist.FinishMixingTime = item.FinishMixingTime;
+                itemTodolist.PrintTime = item.PrintTime;
 
-        //        itemTodolist.StartStirTime = item.StartStirTime;
-        //        itemTodolist.FinishStirTime = item.FinishStirTime;
+                itemTodolist.DeliveredAmount = item.DeliveredAmount;
 
-        //        itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-        //        itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
+                itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
+                itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
 
-        //        itemTodolist.PrintTime = item.PrintTime;
+                itemTodolist.FinishTimeOfPeriod = item.FinishTimeOfPeriod;
+                itemTodolist.StartTimeOfPeriod = item.StartTimeOfPeriod;
+                itemTodolist.IsDelete = item.IsDelete;
 
-        //        itemTodolist.MixedConsumption = Math.Round(item.MixedConsumption, 2);
-        //        itemTodolist.DeliveredConsumption = Math.Round(stddeliver, 2);
-        //        itemTodolist.StandardConsumption = Math.Round(stdTotal, 2);
+                itemTodolist.LineNames = lineList;
+                itemTodolist.BuildingID = item.BuildingID;
+                dispatchlist.Add(itemTodolist);
+            }
+            var modelTemp = dispatchlist.Where(x => x.EstimatedFinishTime.Date == currentDate)
+                .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.GlueNameID, x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
+            var result = new List<DispatchListDto>();
+            foreach (var item in modelTemp)
+            {
+                result.AddRange(item.OrderByDescending(x => x.GlueName));
+            }
+            return result;
+        }
 
-        //        itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-        //        itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
+        public async Task<DispatchListForReturnDto> DispatchList(int buildingID)
+        {
+            var userID = _jwtService.GetUserID();
+            var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
 
-        //        itemTodolist.AbnormalStatus = item.AbnormalStatus;
-        //        itemTodolist.IsDelete = item.IsDelete;
+            try
+            {
+                var currentTime = DateTime.Now.ToLocalTime();
+                var currentDate = currentTime.Date;
+                var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
+                var morning = "AM";
+                var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
+                var model = await _repoDispatchList.FindAll(x =>
+                       x.IsDelete == false
+                       && x.EstimatedStartTime.Date == currentDate
+                       && x.EstimatedFinishTime.Date == currentDate
+                       && x.BuildingID == buildingID)
+                   .ToListAsync();
+                if (role.RoleID == (int)Enums.Role.Dispatcher)
+                {
+                    var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
+                else
+                {
+                    var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
+                // map to dto
+                var dispatchList = MapToDispatchListDto(model);
 
-        //        itemTodolist.LineNames = lineList;
-        //        itemTodolist.BuildingID = item.BuildingID;
-        //        todolist.Add(itemTodolist);
-        //    }
-        //    var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-        //        .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-        //    var result = new List<ToDoListDto>();
-        //    foreach (var item in modelTemp)
-        //    {
-        //        result.AddRange(item.OrderByDescending(x => x.GlueName));
-        //    }
-        //    var delayList = new List<ToDoListDto>();
+                // filter by Middle of the day
+                if (value == morning)
+                    dispatchList = dispatchList.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-        //    var delayListTemp = result.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime < currentTime).ToList();
-        //    var groupbyTime = delayListTemp.GroupBy(x => x.EstimatedStartTime).ToList();
-        //    foreach (var item in groupbyTime)
-        //    {
-        //        var todoItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //        var todoItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //        var res = todoItem.Concat(todoItem2).ToList();
-        //        delayList.AddRange(res);
+                // Caculate
+                var dispatchTotal = dispatchList.Count();
 
-        //    }
-        //    if (value == morning)
-        //    {
-        //        result = result.Where(x => x.EstimatedFinishTime >= currentTime && x.EstimatedStartTime <= start).ToList();
-        //    }
-        //    else
-        //    {
-        //        result = result.ToList();
+                var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
+                var todoDispatchTotal = dispatchListResult.Count();
 
-        //    }
-        //    var total = result.Count;
-        //    var doneTotal = result.Where(x => x.FinishDispatchingTime != null && x.GlueName.Contains(" + ")).Count();
-        //    var todoTotal = result.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime >= currentTime && x.GlueName.Contains(" + ")).Count();
-        //    var delayTotal = delayList.Where(x => x.GlueName.Contains(" + ")).ToList().Count();
+                var delayDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+                var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
 
-        //    return new ToDoListForReturnDto(delayList.Where(x => x.GlueName.Contains(" + ")).ToList(), doneTotal, todoTotal, delayTotal, total);
-        //}
+                // decentralization
+                //if (role.RoleID == (int)Enums.Role.Dispatcher)
+                //{
+                //    var todoModel = await _repoToDoList.FindAll(x =>
+                //                                         x.IsDelete == false
+                //                                         && x.EstimatedStartTime.Date == currentDate
+                //                                         && x.EstimatedFinishTime.Date == currentDate
+                //                                         && x.GlueName.Contains(" + ")
+                //                                         && x.BuildingID == buildingID)
+                //                   .ToListAsync();
 
-        //public async Task<ToDoListForReturnDto> ToDo(int buildingID)
-        //{
-        //    try
-        //    {
-        //        var currentTime = DateTime.Now.ToLocalTime();
-        //        currentTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, currentTime.Hour, currentTime.Minute, 0);
-        //        var currentDate = currentTime.Date;
-        //        var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-        //        var morning = "AM";
-        //        var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-        //        var model = await _repoToDoList.FindAll(x =>
-        //               x.IsDelete == false
-        //               && x.EstimatedStartTime.Date == currentDate
-        //               && x.EstimatedFinishTime.Date == currentDate
-        //               && x.BuildingID == buildingID)
-        //           .ToListAsync();
+                //    // map dto
+                //    var todoResult = MapToTodolistDto(todoModel);
 
-        //        var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
-        //        var todolist = new List<ToDoListDto>();
-        //        foreach (var todo in groupBy)
-        //        {
-        //            var item = todo.FirstOrDefault();
-        //            var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-        //            var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
-        //            var stddeliver = todo.Select(x => x.DeliveredConsumption).Sum();
+                //    // filter by Middle of the day
+                //    if (value == morning)
+                //        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-        //            var itemTodolist = new ToDoListDto();
-        //            itemTodolist.ID = item.ID;
-        //            itemTodolist.PlanID = item.PlanID;
-        //            itemTodolist.GlueNameID = item.GlueNameID;
-        //            itemTodolist.AbnormalStatus = item.AbnormalStatus;
-        //            itemTodolist.MixingInfoID = item.MixingInfoID;
-        //            itemTodolist.GlueID = item.GlueID;
-        //            itemTodolist.LineID = item.LineID;
-        //            itemTodolist.LineName = item.LineName;
-        //            itemTodolist.GlueName = item.GlueName;
-        //            itemTodolist.Supplier = item.Supplier;
+                //    // caculate doneTodolist
+                //    var total = todoResult.Count();
+                //    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
+                //    var todoTotal = data.Count();
+                //    var delayTotal = todoResult.Where(x => x.PrintTime is null
+                //                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+                //    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
 
-        //            itemTodolist.StartMixingTime = item.StartMixingTime;
-        //            itemTodolist.FinishMixingTime = item.FinishMixingTime;
+                //    var response = new DispatchListForReturnDto();
+                //    response.DoneTotal = dispatchListDoneTotal;
+                //    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+                //    return response;
+                //}
+                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
+                {
+                    var response = new DispatchListForReturnDto();
+                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+                    var todoModel = await _repoToDoList.FindAll(x =>
+                      x.IsDelete == false
+                      && x.EstimatedStartTime.Date == currentDate
+                      && x.EstimatedFinishTime.Date == currentDate
+                      && x.GlueName.Contains(" + ")
+                      && x.BuildingID == buildingID)
+                  .ToListAsync();
 
-        //            itemTodolist.StartStirTime = item.StartStirTime;
-        //            itemTodolist.FinishStirTime = item.FinishStirTime;
+                    // map dto
+                    var todoResult = MapToTodolistDto(todoModel);
 
-        //            itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-        //            itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
+                    // filter by Middle of the day
+                    if (value == morning)
+                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-        //            itemTodolist.PrintTime = item.PrintTime;
+                    // caculate
+                    var total = todoResult.Count();
+                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
+                    var todoTotal = data.Count();
+                    var delayTotal = todoResult.Where(x => x.PrintTime is null
+                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
 
-        //            itemTodolist.MixedConsumption = Math.Round(item.MixedConsumption, 2);
-        //            itemTodolist.DeliveredConsumption = Math.Round(stddeliver, 2);
-        //            itemTodolist.StandardConsumption = Math.Round(stdTotal, 2);
 
-        //            itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-        //            itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
+                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
+                    total = doneTotal + delayTotal + todoTotal + dispatchListDoneTotal + todoDispatchTotal + delayDispatchTotal;
+                    doneTotal = doneTotal + dispatchListDoneTotal;
+                    response.TodoDetail(dispatchListResult, doneTotal, todoTotal, delayTotal, total);
 
-        //            itemTodolist.AbnormalStatus = item.AbnormalStatus;
-        //            itemTodolist.IsDelete = item.IsDelete;
+                    return response;
+                }
+                return new DispatchListForReturnDto(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
 
-        //            itemTodolist.LineNames = lineList;
-        //            itemTodolist.BuildingID = item.BuildingID;
-        //            todolist.Add(itemTodolist);
-        //        }
-        //        var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-        //            .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-        //        var result = new List<ToDoListDto>();
-        //        foreach (var item in modelTemp)
-        //        {
-        //            result.AddRange(item.OrderByDescending(x => x.GlueName));
-        //        }
-        //        var todoList = new List<ToDoListDto>();
-        //        var groupbyTime = result.Where(x => x.FinishDispatchingTime is null).GroupBy(x => x.EstimatedStartTime).ToList();
-        //        foreach (var item in groupbyTime)
-        //        {
-        //            var todoItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //            var todoItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-        //            var res = todoItem.Concat(todoItem2).ToList();
-        //            todoList.AddRange(res);
-        //        }
-        //        var delayTotal = todoList.Where(x => x.EstimatedFinishTime < currentTime && x.GlueName.Contains(" + ")).Count();
-        //        if (value == morning)
-        //        {
-        //            //Todo theo sang-chieu
-        //            //todoList = todoList.Where(x => x.EstimatedStartTime <= start && x.EstimatedFinishTime >= currentTime).ToList();
+            }
+            catch (Exception)
+            {
 
-        //            //todo All
-        //            todoList = todoList.Where(x => x.EstimatedFinishTime >= currentTime).ToList();
-        //        }
-        //        else
-        //        {
-        //            todoList = todoList.Where(x => x.EstimatedFinishTime >= currentTime).ToList();
-        //        }
-        //        //if (value == morning)
-        //        //{
-        //        //    result = result.Where(x => x.EstimatedFinishTime <= start).ToList();
-        //        //}
-        //        //else
-        //        //{
-        //        //    result = result.ToList();
+                throw;
+            }
+        }
 
-        //        //}
-        //        var total = result.Count;
-        //        var doneTotal = result.Where(x => x.FinishDispatchingTime != null).Count();
-        //        var todoTotal = todoList.Where(x => x.GlueName.Contains(" + ")).ToList().Count();
-        //        return new ToDoListForReturnDto(todoList.Where(x => x.GlueName.Contains(" + ")).ToList(), doneTotal, todoTotal, delayTotal, total);
+        public async Task<DispatchListForReturnDto> DispatchListDelay(int buildingID)
+        {
+            var userID = _jwtService.GetUserID();
+            var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
+            try
+            {
+                var currentTime = DateTime.Now.ToLocalTime();
+                var currentDate = currentTime.Date;
+                var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
+                var morning = "AM";
+                var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
+                var model = await _repoDispatchList.FindAll(x =>
+                       x.IsDelete == false
+                       && x.EstimatedStartTime.Date == currentDate
+                       && x.EstimatedFinishTime.Date == currentDate
+                       && x.BuildingID == buildingID)
+                   .ToListAsync();
+                if (role.RoleID == (int)Enums.Role.Dispatcher)
+                {
+                    var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
+                else
+                {
+                    var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
+                // map to dto
+                var dispatchList = MapToDispatchListDto(model);
+                // filter by Middle of the day
+                if (value == morning)
+                    dispatchList = dispatchList.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-        //    }
-        //    catch (Exception ex)
-        //    {
 
-        //        throw;
-        //    }
+                // caculate
+                var dispatchTotal = dispatchList.Count();
+                var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
+                var delayDispatchTotal = dispatchListResult.Count();
+                var todoDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
+                var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
 
-        //}
+                // decentralization
+                //if (role.RoleID == (int)Enums.Role.Dispatcher)
+                //{
+                //    var todoModel = await _repoToDoList.FindAll(x =>
+                //                                         x.IsDelete == false
+                //                                         && x.EstimatedStartTime.Date == currentDate
+                //                                         && x.EstimatedFinishTime.Date == currentDate
+                //                                         && x.GlueName.Contains(" + ")
+                //                                         && x.BuildingID == buildingID)
+                //                   .ToListAsync();
 
+                //    // map dto
+                //    var todoResult = MapToTodolistDto(todoModel);
+
+                //    // filter by Middle of the day
+                //    if (value == morning)
+                //        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
+
+                //    // caculate doneTodolist
+                //    var total = todoResult.Count();
+                //    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
+                //    var todoTotal = data.Count();
+                //    var delayTotal = todoResult.Where(x => x.PrintTime is null
+                //                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+                //    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
+
+                //    var response = new DispatchListForReturnDto();
+                //    response.DoneTotal = dispatchListDoneTotal;
+                //    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+                //    return response;
+                //}
+                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
+                {
+                    var response = new DispatchListForReturnDto();
+                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+                    var todoModel = await _repoToDoList.FindAll(x =>
+                                                          x.IsDelete == false
+                                                          && x.EstimatedStartTime.Date == currentDate
+                                                          && x.EstimatedFinishTime.Date == currentDate
+                                                          && x.GlueName.Contains(" + ")
+                                                          && x.BuildingID == buildingID)
+                                    .ToListAsync();
+
+                    // map dto
+                    var todoResult = MapToTodolistDto(todoModel);
+
+                    // filter by Middle of the day
+                    if (value == morning)
+                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
+
+                    // caculate doneTodolist
+                    var total = todoResult.Count();
+                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
+                    var todoTotal = data.Count();
+                    var delayTotal = todoResult.Where(x => x.PrintTime is null
+                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
+
+                    total = doneTotal + delayTotal + todoTotal + dispatchListDoneTotal + todoDispatchTotal + delayDispatchTotal;
+                    doneTotal = doneTotal + dispatchListDoneTotal;
+                    response.TodoDetail(dispatchListResult, doneTotal, todoTotal, delayTotal, total);
+
+                    return response;
+                }
+
+                return new DispatchListForReturnDto(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        // Khong su dung nua
+        public async Task<List<DispatchListDto>> GetDispatchListDetail(int glueNameID, string estimatedStartTime, string estimatedFinishTime)
+        {
+            var start = Convert.ToDateTime(estimatedStartTime);
+            var end = Convert.ToDateTime(estimatedFinishTime);
+            var dispatchList = await _repoDispatchList.FindAll(x => x.GlueNameID == glueNameID
+            && x.EstimatedFinishTime == end
+            && x.EstimatedStartTime == start
+            ).ProjectTo<DispatchListDto>(_configMapper).ToListAsync();
+
+            return dispatchList;
+        }
+
+        // Pha them (Addition)
         public async Task<ToDoListForReturnDto> ToDoAddition(int buildingID)
         {
             try
             {
                 var userID = _jwtService.GetUserID();
                 var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
-                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
 
                 var currentTime = DateTime.Now.ToLocalTime();
                 currentTime = new DateTime(currentTime.Year, currentTime.Month, currentTime.Day, currentTime.Hour, currentTime.Minute, 0);
                 var currentDate = currentTime.Date;
-                var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-                var morning = "AM";
                 var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-                var model = (await _repoToDoList.FindAll(x =>
+                var model = await _repoToDoList.FindAll(x =>
                        x.IsDelete == false
                        && x.EstimatedStartTime.Date == currentDate
                        && x.EstimatedFinishTime.Date == currentDate
                        && x.GlueName.Contains(" + ")
                        && x.BuildingID == buildingID)
-                   .ToListAsync()).DistinctBy(x => x.GlueName).ToList();
+                   .ToListAsync();
+                ///
+                if (role.RoleID == (int)Enums.Role.Dispatcher)
+                {
+                    var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
+                else
+                {
+                    var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                }
 
                 // map dto
                 var result = MapToTodolistDto(model);
                 return new ToDoListForReturnDto(result, 0, 0, 0, 0);
 
             }
-            catch (Exception ex)
+            catch
             {
 
                 throw;
@@ -1093,7 +859,7 @@ namespace DMR_API._Services.Services
 
         }
 
-
+        /// Khong su dung
         public async Task<DispatchListForReturnDto> DispatchAddition(int buildingID)
         {
             try
@@ -1122,110 +888,84 @@ namespace DMR_API._Services.Services
 
         }
 
-        public async Task<MixingInfo> Mix(MixingInfoForCreateDto mixing)
+        // Data of Dispatch Modal
+        public async Task<List<DispatchDetailDto>> GetDispatchDetail(int buildingID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinsihTime)
         {
-            try
+            var userID = _jwtService.GetUserID();
+            var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
+            var dispatchlist = await _repoDispatch.FindAll(x => x.GlueNameID == glueNameID
+                                && x.EstimatedStartTime == estimatedStartTime
+                                && !x.IsDelete
+                                && x.EstimatedFinishTime == estimatedFinsihTime)
+                            .Include(x => x.Building)
+                            .Select(x => new DispatchDetailDto
+                            {
+                                ID = x.ID,
+                                Amount = x.Amount,
+                                DeliveryTime = x.DeliveryTime,
+                                LineName = x.Building.Name,
+                                LineID = x.Building.ID
+                            })
+                            .ToListAsync();
+            // decentralzation
+            if (role.RoleID == (int)Enums.Role.Dispatcher)
             {
-                var item = _mapper.Map<MixingInfoForCreateDto, MixingInfo>(mixing);
-                item.Code = CodeUtility.RandomString(8);
-                item.CreatedTime = DateTime.Now;
-                var glue = await _repoGlue.FindAll().FirstOrDefaultAsync(x => x.isShow == true && x.ID == mixing.GlueID);
-                item.ExpiredTime = DateTime.Now.AddHours(glue.ExpiredTime);
-                _repoMixingInfo.Add(item);
-                await _repoMixingInfo.SaveAll();
-                // await _repoMixing.AddOrUpdate(item.ID);
-                return item;
+                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                dispatchlist = dispatchlist.Where(x => lines.Contains(x.LineID)).ToList();
             }
-            catch
+            else if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker)
             {
-                return new MixingInfo();
+                var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                dispatchlist = dispatchlist.Where(x => lines.Contains(x.LineID)).ToList();
             }
+            return dispatchlist;
         }
 
-        // Đã chỉnh sửa lúc 8:18 1/28/2021
-        public void UpdateDispatchTimeRange(ToDoListForUpdateDto model)
+        public async Task<List<MixingInfo>> GetMixingInfoHistory(int buildingID, int glueNameID, string estimatedStartTime, string estimatedFinishTime)
         {
-            var dispatch = model.Dispatches.Select(x => x.Amount).ToList();
-            var total = dispatch.Sum();
-            var list = _repoToDoList.FindAll(x => x.MixingInfoID == model.MixingInfoID).ToList();
-            list.ForEach(x =>
-            {
-                x.FinishDispatchingTime = model.FinishTime;
-                x.StartDispatchingTime = model.StartTime;
-                x.Status = model.FinishTime.Value.ToRemoveSecond() <= x.EstimatedFinishTime;
-                x.DeliveredConsumption = total;
-            });
-            _repoToDoList.UpdateRange(list);
-            _repoToDoList.Save();
+            var startPeriod = Convert.ToDateTime(estimatedStartTime);
+            var endPeriod = Convert.ToDateTime(estimatedFinishTime);
+            var ct = DateTime.Now;
+            var history = await _repoMixingInfo.FindAll(x => x.GlueNameID == glueNameID
+                                                        && x.BuildingID == buildingID
+                                                        && x.EstimatedStartTime <= ct
+                                                        && x.EstimatedFinishTime >= ct
+                                                        )
+                                                .Include(x => x.MixingInfoDetails)
+                                                .OrderByDescending(x => x.CreatedTime)
+                                                .ToListAsync();
+            return history;
         }
 
-        public void UpdateMixingTimeRange(ToDoListForUpdateDto model)
+        //Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+        public async Task<object> MixedHistory(int MixingInfoID)
         {
-            var list = _repoToDoList.FindAll(x => x.EstimatedStartTime == model.EstimatedStartTime && x.EstimatedFinishTime == model.EstimatedFinishTime && x.GlueName == model.GlueName).ToList();
-            list.ForEach(x =>
+            var result = await _repoMixingInfoDetail.FindAll().Include(x => x.Ingredient).Where(x => x.MixingInfoID == MixingInfoID).Select(x => new
             {
-                x.FinishMixingTime = model.FinishTime.Value.ToLocalTime();
-                x.StartMixingTime = model.StartTime.Value.ToLocalTime();
-                x.MixedConsumption = model.Amount;
-                x.MixingInfoID = model.MixingInfoID;
-            });
-            _repoToDoList.UpdateRange(list);
-            _repoToDoList.Save();
+                ID = x.ID,
+                Amount = x.Amount,
+                Batch = x.Batch,
+                Ingredient_ID = x.IngredientID,
+                Ingredient_Name = x.Ingredient.Name,
+                MixingInfo_ID = x.MixingInfoID,
+                Time_Start = x.Time_Start
+
+            }).ToListAsync();
+            return new
+            {
+                status = true,
+                result
+            };
         }
 
-        public void UpdateStiringTimeRange(ToDoListForUpdateDto model)
-        {
-            var list = _repoToDoList.FindAll(x => x.MixingInfoID == model.MixingInfoID).ToList();
-            list.ForEach(x =>
-            {
-                x.FinishStirTime = model.FinishTime.Value.ToLocalTime();
-                x.StartStirTime = model.StartTime.Value.ToLocalTime();
-            });
-            _repoToDoList.UpdateRange(list);
-            _repoToDoList.Save();
-        }
-
-        public MixingInfo PrintGlue(int mixingInfoID)
-        {
-            var mixing = _repoMixingInfo.FindById(mixingInfoID);
-            if (mixing is null) return new MixingInfo();
-            using (TransactionScope scope = new TransactionScope())
-            {
-                try
-                {
-                    var printTime = DateTime.Now.ToLocalTime();
-                    mixing.PrintTime = printTime;
-                    _repoMixingInfo.Update(mixing);
-                    _repoMixingInfo.Save();
-                    var todolist = _repoToDoList.FindAll(x => x.MixingInfoID == mixingInfoID).ToList();
-                    todolist.ForEach(item =>
-                    {
-                        item.Status = mixing.Status;
-                        item.PrintTime = mixing.PrintTime;
-
-                    });
-                    _repoToDoList.UpdateRange(todolist);
-                    _repoToDoList.Save();
-
-
-
-                    scope.Complete();
-                    return mixing;
-                }
-                catch
-                {
-                    scope.Dispose();
-                    return new MixingInfo();
-                }
-            }
-        }
-
+        // MixingInfo
         public MixingInfo FindPrintGlue(int mixingInfoID)
         {
             var item = _repoMixingInfo.FindAll(x => x.ID == mixingInfoID).Include(x => x.MixingInfoDetails).FirstOrDefault();
             return item;
         }
 
+        // Dispatch data
         public async Task<object> Dispatch(DispatchParams todolistDto)
         {
             var dispatches = await _repoDispatch.FindAll(x => x.MixingInfoID == todolistDto.MixingInfoID && x.CreatedTime.Date == todolistDto.EstimatedFinishTime.Date)
@@ -1244,339 +984,103 @@ namespace DMR_API._Services.Services
             return dispatches;
         }
 
-        public bool UpdateStartStirTimeByMixingInfoID(int mixingInfoID)
+        // khong su dung
+        public async Task<ToDoListForReturnDto> DispatchDone(int buildingID)
         {
-            var mixing = _repoMixingInfo.FindById(mixingInfoID);
-            if (mixing == null) return false;
-            var lines = _repoBuilding.FindAll(x => x.ParentID == mixing.BuildingID).Select(x => x.ID).ToList();
-            if (lines.Count == 0) return false;
-            try
+            var currentTime = DateTime.Now.ToLocalTime();
+            var currentDate = currentTime.Date;
+            var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
+            var morning = "AM";
+            var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
+            var model = await _repoDispatchList.FindAll(x =>
+                  x.IsDelete == false
+                  && x.EstimatedStartTime.Date == currentDate
+                  && x.EstimatedFinishTime.Date == currentDate
+                  && x.BuildingID == buildingID)
+               .ToListAsync();
+
+            var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueName });
+            var todolist = new List<ToDoListDto>();
+            foreach (var todo in groupBy)
             {
-                var list = _repoToDoList.FindAll(x => x.EstimatedStartTime == mixing.EstimatedStartTime && x.EstimatedFinishTime == mixing.EstimatedFinishTime && x.GlueName == mixing.GlueName && lines.Contains(x.LineID)).ToList();
-                list.ForEach(x =>
-                {
-                    x.StartStirTime = DateTime.Now;
-                });
-                _repoToDoList.UpdateRange(list);
-                _repoToDoList.Save();
-                return true;
+                var item = todo.FirstOrDefault();
+                var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
+                var deliveredAmount = todo.FirstOrDefault().DeliveredAmount;
+
+                var itemTodolist = new ToDoListDto();
+                itemTodolist.ID = item.ID;
+                itemTodolist.JobType = 2;
+                itemTodolist.PlanID = item.PlanID;
+                itemTodolist.MixingInfoID = item.MixingInfoID;
+                itemTodolist.GlueID = item.GlueID;
+                itemTodolist.LineID = item.LineID;
+                itemTodolist.LineName = item.LineName;
+                itemTodolist.GlueName = item.GlueName;
+                itemTodolist.Supplier = item.Supplier;
+                itemTodolist.Status = item.FinishDispatchingTime.HasValue == false ? false : item.FinishDispatchingTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
+
+                itemTodolist.StartMixingTime = null;
+                itemTodolist.FinishMixingTime = null;
+
+                itemTodolist.StartStirTime = null;
+                itemTodolist.FinishStirTime = null;
+
+                itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
+                itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
+
+                itemTodolist.PrintTime = item.PrintTime;
+
+                itemTodolist.MixedConsumption = 0;
+                itemTodolist.DeliveredConsumption = 0;
+                itemTodolist.StandardConsumption = 0;
+                itemTodolist.DeliveredAmount = deliveredAmount;
+
+                itemTodolist.DispatchTime = item.CreatedTime;
+                itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
+                itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
+
+                itemTodolist.AbnormalStatus = item.AbnormalStatus;
+
+                itemTodolist.LineNames = lineList;
+                itemTodolist.BuildingID = item.BuildingID;
+                todolist.Add(itemTodolist);
             }
-            catch
+            var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
+               .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
+            var result = new List<ToDoListDto>();
+            foreach (var item in modelTemp)
             {
-                return false;
+                result.AddRange(item.OrderByDescending(x => x.GlueName));
             }
+            if (value == morning)
+            {
+                result = result.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
+            }
+
+            var doneList = new List<ToDoListDto>();
+            var doneListTemp = result.Where(x => x.PrintTime != null).ToList(); /*Leo Update*/
+            var groupbyTime = doneListTemp.GroupBy(x => x.EstimatedStartTime).ToList();
+            foreach (var item in groupbyTime)
+            {
+                var doneItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
+                var doneItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
+                var res = doneItem.Concat(doneItem2).ToList();
+                doneList.AddRange(res);
+            }
+            var total = result.Count;
+            var doneTotal = doneList.Count;
+
+            /*Leo Update*/
+            var todoTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime >= currentTime && x.GlueName.Contains(" + ")).Count();
+            var delayTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime < currentTime && x.GlueName.Contains(" + ")).Count();
+            /*Leo Update*/
+            return new ToDoListForReturnDto(doneList, doneTotal, todoTotal, delayTotal, total);
         }
 
-        public bool UpdateFinishStirTimeByMixingInfoID(int mixingInfoID)
-        {
-            var mixing = _repoMixingInfo.FindById(mixingInfoID);
-            if (mixing == null) return false;
-            var lines = _repoBuilding.FindAll(x => x.ParentID == mixing.BuildingID).Select(x => x.ID).ToList();
-            try
-            {
-                var list = _repoToDoList.FindAll(x => x.EstimatedStartTime == mixing.EstimatedStartTime && x.EstimatedFinishTime == mixing.EstimatedFinishTime && x.GlueName == mixing.GlueName && lines.Contains(x.LineID)).ToList();
-                list.ForEach(x =>
-                {
-                    x.FinishStirTime = DateTime.Now;
-                });
-                _repoToDoList.UpdateRange(list);
-                _repoToDoList.Save();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+        #endregion
 
-        //public async Task<object> GenerateToDoList(List<int> plans)
-        //{
-
-        //    if (plans.Count == 0) return new
-        //    {
-        //        status = false,
-        //        message = "Không có kế hoạch làm việc nào được gửi lên server"
-        //    };
-        //    var currentTime = DateTime.Now;
-        //    var currentDate = currentTime.Date;
-        //    var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
-        //        .Include(x => x.Building)
-        //        .ThenInclude(x => x.LunchTime)
-        //          .Include(x => x.BPFCEstablish)
-        //            .ThenInclude(x => x.ModelName)
-        //         .Include(x => x.BPFCEstablish)
-        //            .ThenInclude(x => x.ModelNo)
-        //        .Include(x => x.BPFCEstablish)
-        //            .ThenInclude(x => x.ArticleNo)
-        //             .Include(x => x.BPFCEstablish)
-        //            .ThenInclude(x => x.ArtProcess)
-        //            .ThenInclude(x => x.Process)
-        //        .Include(x => x.BPFCEstablish)
-        //            .ThenInclude(x => x.Glues)
-        //            .ThenInclude(x => x.GlueName)
-        //        .Include(x => x.BPFCEstablish)
-        //            .ThenInclude(x => x.Glues)
-        //            .ThenInclude(x => x.GlueIngredients)
-        //            .ThenInclude(x => x.Ingredient)
-        //            .ThenInclude(x => x.Supplier)
-        //            .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
-        //            {
-        //                plan.WorkingHour,
-        //                plan.HourlyOutput,
-        //                plan.FinishWorkingTime,
-        //                plan.StartWorkingTime,
-        //                plan.DueDate,
-        //                plan.Building,
-        //                PlanID = plan.ID,
-        //                BPFCID = plan.BPFCEstablishID,
-        //                BPFCName = $"{plan.BPFCEstablish.ModelName.Name}->{plan.BPFCEstablish.ModelNo.Name}->{plan.BPFCEstablish.ArticleNo.Name}->{plan.BPFCEstablish.ArtProcess.Process.Name}",
-        //                plan.CreatedDate,
-        //                glue.Consumption,
-        //                GlueID = glue.ID,
-        //                glue.GlueNameID,
-        //                GlueName = glue.Name,
-        //                ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
-        //            }).ToListAsync();
-        //    var glueList = plansModel.Select(x => x.GlueName).ToList();
-        //    if (plansModel.Count == 0) return new
-        //    {
-        //        status = false,
-        //        message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
-        //    };
-        //    var value = plansModel.FirstOrDefault();
-
-        //    var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
-        //    if (line is null) return new
-        //    {
-        //        status = false,
-        //        message = "Không tìm thấy tòa nhà nào trong hệ thống!"
-        //    };
-
-        //    var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
-        //       .Include(x => x.LunchTime).FirstOrDefaultAsync();
-        //    if (building is null) return new
-        //    {
-        //        status = false,
-        //        message = "Không tìm thấy tòa nhà nào trong hệ thống!"
-        //    };
-
-        //    if (building.LunchTime is null) return new
-        //    {
-        //        status = false,
-        //        message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
-        //    };
-
-        //    var startLunchTimeBuilding = building.LunchTime.StartTime;
-        //    var endLunchTimeBuilding = building.LunchTime.EndTime;
-
-
-        //    var todolist = new List<ToDoListDto>();
-
-        //    var glues = plansModel.GroupBy(x => x.GlueName).ToList();
-
-        //    foreach (var glue in glues)
-        //    {
-        //        foreach (var item in glue)
-        //        {
-        //            //if (item.Building.LunchTime is null) return new
-        //            //{
-        //            //    status = false,
-        //            //    message = $"Vui lòng thêm giờ ăn trưa cho chuyền {item.Building.Name}"
-        //            //};
-        //            if (item.ChemicalA is null) return new
-        //            {
-        //                status = false,
-        //                message = $"Keo <b class='text-danger'>{item.GlueName}</b> ở trong <br /> <b class='text-danger'>{item.BPFCName}</b> <br /> không có hóa chất A! <br /> Vui lòng xem lại BPFC!"
-        //            };
-        //            var checmicalA = item.ChemicalA;
-        //            double replacementFrequency = checmicalA.ReplacementFrequency;
-        //            if (replacementFrequency == 0) return new
-        //            {
-        //                status = false,
-        //                message = $"Cột Replacement Frequency của hóa chất {checmicalA.Name} chưa gán giờ làm việc nên không thể tạo danh sách việc làm được!"
-        //            };
-        //            //var startLunchTimeBuilding = item.Building.LunchTime.StartTime;
-        //            //var endLunchTimeBuilding = item.Building.LunchTime.EndTime;
-        //            var startLunchTime = item.DueDate.Date.Add(new TimeSpan(startLunchTimeBuilding.Hour, startLunchTimeBuilding.Minute, 0));
-        //            var endLunchTime = item.DueDate.Date.Add(new TimeSpan(endLunchTimeBuilding.Hour, endLunchTimeBuilding.Minute, 0));
-
-        //            var finishWorkingTime = item.FinishWorkingTime;
-
-        //            double prepareTime = checmicalA.PrepareTime;
-
-        //            var kgPair = item.Consumption.ToDouble() / 1000;
-        //            double lunchHour = (endLunchTime - startLunchTime).TotalHours;
-        //            if (item.DueDate.Date != currentDate && item.CreatedDate != currentDate)
-        //            {
-        //                // var estimatedTime = item.DueDate.Date.Add(new TimeSpan(7, 30, 00)) - TimeSpan.FromHours(prepareTime);
-        //                var estimatedStartTimeTemp = item.StartWorkingTime;
-        //                var fwt = new DateTime();
-
-        //                while (true)
-        //                {
-        //                    fwt = estimatedStartTimeTemp.AddHours(prepareTime);
-        //                    var todo = new ToDoListDto();
-        //                    todo.GlueName = item.GlueName;
-        //                    todo.GlueID = item.GlueID;
-        //                    todo.PlanID = item.PlanID;
-        //                    todo.LineID = item.Building.ID;
-        //                    todo.LineName = item.Building.Name;
-        //                    todo.PlanID = item.PlanID;
-        //                    todo.BPFCID = item.BPFCID;
-        //                    todo.Supplier = item.ChemicalA.Supplier.Name;
-        //                    todo.PlanID = item.PlanID;
-        //                    todo.GlueNameID = item.GlueNameID.Value;
-        //                    todo.BuildingID = item.Building.ParentID.Value;
-        //                    todo.StandardConsumption = kgPair * (double)item.HourlyOutput * replacementFrequency;
-
-        //                    if (estimatedStartTimeTemp >= finishWorkingTime) break;
-        //                    // Rot vao khoang TG an trua tinh lai consumption 
-        //                    if (estimatedStartTimeTemp >= startLunchTime && estimatedStartTimeTemp <= endLunchTime)
-        //                    {
-        //                        estimatedStartTimeTemp = endLunchTime;
-        //                        todo.EstimatedStartTime = estimatedStartTimeTemp;  // SLT 13:30
-        //                        todo.EstimatedFinishTime = estimatedStartTimeTemp.AddHours(prepareTime); // 13:30 + preparetime
-        //                                                                                                 // 13:30 + 2 = 15:30 >= 14:00
-        //                        var estimatedStartNextTimeTemp = estimatedStartTimeTemp.AddHours(replacementFrequency);
-        //                        if (estimatedStartNextTimeTemp > finishWorkingTime)
-        //                        {
-        //                            var recalculateReplacementFrequency = (finishWorkingTime - estimatedStartTimeTemp).TotalHours;
-        //                            todo.StandardConsumption = kgPair * (double)item.HourlyOutput * recalculateReplacementFrequency;
-        //                        }
-
-        //                    }
-        //                    else
-        //                    {
-        //                        var estimatedStartNextTimeTemp = estimatedStartTimeTemp.AddHours(replacementFrequency);
-        //                        todo.StandardConsumption = kgPair * (double)item.HourlyOutput * replacementFrequency;
-
-        //                        if (estimatedStartNextTimeTemp > finishWorkingTime)
-        //                        {
-        //                            replacementFrequency = (finishWorkingTime - estimatedStartTimeTemp).TotalHours;
-        //                            todo.StandardConsumption = kgPair * (double)item.HourlyOutput * replacementFrequency;
-
-        //                        }
-        //                        else if (
-        //                            estimatedStartTimeTemp < startLunchTime
-        //                            && estimatedStartNextTimeTemp >= endLunchTime
-        //                            ||
-        //                            estimatedStartTimeTemp < startLunchTime
-        //                            && estimatedStartNextTimeTemp <= endLunchTime
-        //                            && estimatedStartNextTimeTemp > startLunchTime
-        //                            )
-        //                        {
-        //                            // neu TGBG tiep theo ma nam trong gio an trua thi gan bang TGKT an trua
-        //                            estimatedStartNextTimeTemp = estimatedStartNextTimeTemp <= endLunchTime && estimatedStartNextTimeTemp >= startLunchTime ? endLunchTime : estimatedStartNextTimeTemp;
-        //                            var recalculateReplacementFrequency = (estimatedStartNextTimeTemp - estimatedStartTimeTemp).TotalHours - (endLunchTime - startLunchTime).TotalHours;
-        //                            replacementFrequency = recalculateReplacementFrequency;
-        //                            todo.StandardConsumption = kgPair * (double)item.HourlyOutput * replacementFrequency;
-
-        //                        }
-
-        //                        todo.EstimatedStartTime = estimatedStartTimeTemp;
-        //                        todo.EstimatedFinishTime = fwt;
-        //                    }
-        //                    replacementFrequency = checmicalA.ReplacementFrequency;
-        //                    estimatedStartTimeTemp = estimatedStartTimeTemp.AddHours(replacementFrequency);
-        //                    todolist.Add(todo);
-        //                }
-        //                // Neu tao tu ngay hom truoc thi lay moc thoi gian la 7:30
-        //            }
-        //            else
-        //            {
-        //                var estimatedStartTimeTemp = item.StartWorkingTime;
-        //                var fwt = new DateTime();
-
-        //                while (true)
-        //                {
-        //                    fwt = estimatedStartTimeTemp.AddHours(prepareTime);
-        //                    var todo = new ToDoListDto();
-        //                    todo.GlueName = item.GlueName;
-        //                    todo.GlueID = item.GlueID;
-        //                    todo.PlanID = item.PlanID;
-        //                    todo.LineID = item.Building.ID;
-        //                    todo.LineName = item.Building.Name;
-        //                    todo.PlanID = item.PlanID;
-        //                    todo.BPFCID = item.BPFCID;
-        //                    todo.Supplier = item.ChemicalA.Supplier.Name;
-        //                    todo.PlanID = item.PlanID;
-        //                    todo.GlueNameID = item.GlueNameID.Value;
-        //                    todo.BuildingID = item.Building.ParentID.Value;
-        //                    todo.StandardConsumption = kgPair * (double)item.HourlyOutput * replacementFrequency;
-        //                    if (estimatedStartTimeTemp >= finishWorkingTime) break;
-        //                    // Rot vao khoang TG an trua tinh lai consumption 
-        //                    if (estimatedStartTimeTemp >= startLunchTime && estimatedStartTimeTemp <= endLunchTime)
-        //                    {
-        //                        estimatedStartTimeTemp = endLunchTime;
-        //                        todo.EstimatedStartTime = estimatedStartTimeTemp;  // SLT 13:30
-        //                        todo.EstimatedFinishTime = estimatedStartTimeTemp.AddHours(prepareTime); // 13:30 + preparetime
-        //                                                                                                 // 13:30 + 2 = 15:30 >= 14:00
-        //                        var estimatedStartNextTimeTemp = estimatedStartTimeTemp.AddHours(replacementFrequency);
-        //                        if (estimatedStartNextTimeTemp > finishWorkingTime)
-        //                        {
-        //                            var recalculateReplacementFrequency = (finishWorkingTime - estimatedStartTimeTemp).TotalHours;
-        //                            todo.StandardConsumption = kgPair * (double)item.HourlyOutput * recalculateReplacementFrequency;
-        //                        }
-        //                    }
-        //                    else
-        //                    {
-        //                        var estimatedStartNextTimeTemp = estimatedStartTimeTemp.AddHours(replacementFrequency);
-        //                        var standardConsumption = kgPair * (double)item.HourlyOutput * replacementFrequency;
-        //                        todo.StandardConsumption = standardConsumption;
-        //                        if (estimatedStartNextTimeTemp > finishWorkingTime)
-        //                        {
-        //                            var recalculateReplacementFrequency = (finishWorkingTime - estimatedStartTimeTemp).TotalHours;
-
-        //                            todo.StandardConsumption = kgPair * (double)item.HourlyOutput * recalculateReplacementFrequency;
-        //                        }
-        //                        else if (
-        //                           estimatedStartTimeTemp < startLunchTime // 12:00 <12:30
-        //                            && estimatedStartNextTimeTemp >= endLunchTime// 14:00 >=13:30
-        //                            ||
-        //                            estimatedStartTimeTemp < startLunchTime // 11:00 < 12:30
-        //                            && estimatedStartNextTimeTemp <= endLunchTime // 13:00 <= 13:30
-        //                            && estimatedStartNextTimeTemp > startLunchTime // 13:00 > 12:30
-        //                            )
-        //                        {
-        //                            // neu TGBG tiep theo ma nam trong gio an trua thi gan bang TGKT an trua
-        //                            estimatedStartNextTimeTemp = estimatedStartNextTimeTemp <= endLunchTime && estimatedStartNextTimeTemp >= startLunchTime ? endLunchTime : estimatedStartNextTimeTemp;
-        //                            var recalculateReplacementFrequency = (estimatedStartNextTimeTemp - estimatedStartTimeTemp).TotalHours - (endLunchTime - startLunchTime).TotalHours;
-        //                            todo.StandardConsumption = kgPair * (double)item.HourlyOutput * recalculateReplacementFrequency;
-        //                        }
-
-        //                        todo.EstimatedStartTime = estimatedStartTimeTemp;
-
-        //                        todo.EstimatedFinishTime = fwt;
-        //                    }
-        //                    replacementFrequency = checmicalA.ReplacementFrequency;
-        //                    estimatedStartTimeTemp = estimatedStartTimeTemp.AddHours(replacementFrequency);
-        //                    todolist.Add(todo);
-        //                }
-
-        //            }
-        //        }
-        //    }
-        //    try
-        //    {
-        //        var model = _mapper.Map<List<ToDoList>>(todolist);
-        //        _repoToDoList.AddRange(model);
-        //        _repoToDoList.Save();
-        //        return new
-        //        {
-        //            status = true,
-        //            message = "Tạo danh sách việc làm thành công!"
-        //        };
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return new
-        //        {
-        //            status = false,
-        //            message = "Tạo danh sách việc làm thất bại!"
-        //        };
-        //    }
-        //}
-
+        #region Todolist Action
+        //  Action of todolist table
 
         // Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
         public async Task<object> GenerateToDoList(List<int> plans)
@@ -1687,8 +1191,17 @@ namespace DMR_API._Services.Services
 
                     var kgPair = item.Consumption.ToDouble() / 1000;
 
-
-                    if (item.DueDate.Date != currentDate && item.CreatedDate.Date != currentDate)
+                    // 17/2/2021 != 17/2/2021 && 16/2/2021 != 17/2/2021
+                    // Len ke hoach tu ngay hom truoc
+                    // TH1: Tao ke hoach lam viec cho ngay mai nhung ngay mai moi bam cap nhat
+                    // duedate != currentdate && createDate == currentDate
+                    // 20 != 19 && 19 == 19
+                    // 20 == 20 && 19 != 20
+                    // TH2: Tao ke hoach lam viec cho ngay mai sau do nhan cap nhat luon
+                    // Th3: Tao ke hoach cua ngay hom nay va bam cap nhat luon
+                    if (item.DueDate.Date != currentDate && item.CreatedDate.Date == currentDate
+                        || item.DueDate.Date == currentDate && item.CreatedDate.Date != currentDate
+                        )
                     {
                         foreach (var period in periods)
                         {
@@ -1717,8 +1230,8 @@ namespace DMR_API._Services.Services
                     {
                         foreach (var period in periods)
                         {
-                            var EstimatedStartTime = item.DueDate.Date.Add(new TimeSpan(period.StartTime.Hour, period.StartTime.Minute, 0));
-                            var EstimatedFinishTime = item.DueDate.Date.Add(new TimeSpan(period.EndTime.Hour, period.EndTime.Minute, 0));
+                            var estimatedStartTime = item.DueDate.Date.Add(new TimeSpan(period.StartTime.Hour, period.StartTime.Minute, 0));
+                            var estimatedFinishTime = item.DueDate.Date.Add(new TimeSpan(period.EndTime.Hour, period.EndTime.Minute, 0));
                             double replacementFrequency = (period.EndTime - period.StartTime).TotalHours;
                             var todo = new ToDoListDto();
                             todo.GlueName = item.GlueName;
@@ -1733,26 +1246,28 @@ namespace DMR_API._Services.Services
                             todo.GlueNameID = item.GlueNameID.Value;
                             todo.BuildingID = item.Building.ParentID.Value;
                             todo.StandardConsumption = kgPair * (double)hourlyOutput * replacementFrequency;
-                            todo.EstimatedStartTime = EstimatedStartTime; // 11:00
-                            todo.EstimatedFinishTime = EstimatedFinishTime;//12:30
-                            //10:50
-                            //10h:50
-                            // 15:42 >= 15:30 && 15:42 <= 16:30
-                            // 13:42 >= 13:30 && 13:42 <= 15:30
+                            todo.EstimatedStartTime = estimatedStartTime; // 11:00
+                            todo.EstimatedFinishTime = estimatedFinishTime;//12:30
 
+                            // neu ton tai roi thi khong them nua
+                          
                             if (item.StartWorkingTime.TimeOfDay <= period.StartTime.TimeOfDay
                                 || item.StartWorkingTime.TimeOfDay >= period.StartTime.TimeOfDay
                                 && item.StartWorkingTime.TimeOfDay <= period.EndTime.TimeOfDay
                                 )
                             {
                                 // 8:37 > 7:30
-                                if (EstimatedStartTime.TimeOfDay <= item.CreatedDate.TimeOfDay
-                                        && EstimatedFinishTime.TimeOfDay >= item.CreatedDate.TimeOfDay
+                              
+                                if (estimatedStartTime.TimeOfDay <= item.CreatedDate.TimeOfDay
+                                        && estimatedFinishTime.TimeOfDay >= item.CreatedDate.TimeOfDay
                                         ||
-                                        EstimatedFinishTime.TimeOfDay >= item.CreatedDate.TimeOfDay
-                                        && EstimatedStartTime.TimeOfDay >= item.CreatedDate.TimeOfDay
+                                        estimatedFinishTime.TimeOfDay >= item.CreatedDate.TimeOfDay
+                                        && estimatedStartTime.TimeOfDay >= item.CreatedDate.TimeOfDay
                                         )
+                                {
+                                   
                                     todolist.Add(todo);
+                                }
                             }
                         }
                     }
@@ -1800,6 +1315,1433 @@ namespace DMR_API._Services.Services
                 }
             }
         }
+
+        public async Task<object> GenerateDispatchList(List<int> plans)
+        {
+            if (plans.Count == 0) return new
+            {
+                status = false,
+                message = "Không có kế hoạch làm việc nào được gửi lên server"
+            };
+            var currentTime = DateTime.Now;
+            var currentDate = currentTime.Date;
+            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
+                .Include(x => x.Building)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ModelName)
+                 .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ModelNo)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ArticleNo)
+                     .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ArtProcess)
+                    .ThenInclude(x => x.Process)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueName)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueIngredients)
+                    .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Supplier)
+                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
+                    {
+                        plan.WorkingHour,
+                        plan.HourlyOutput,
+                        plan.FinishWorkingTime,
+                        plan.StartWorkingTime,
+                        BPFCName = $"{plan.BPFCEstablish.ModelName.Name}->{plan.BPFCEstablish.ModelNo.Name}->{plan.BPFCEstablish.ArticleNo.Name}->{plan.BPFCEstablish.ArtProcess.Process.Name}",
+                        plan.DueDate,
+                        plan.Building,
+                        PlanID = plan.ID,
+                        BPFCID = plan.BPFCEstablishID,
+                        plan.CreatedDate,
+                        glue.Consumption,
+                        GlueID = glue.ID,
+                        glue.GlueNameID,
+                        GlueName = glue.Name,
+                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
+                    }).ToListAsync();
+
+            var value = plansModel.FirstOrDefault();
+            if (plansModel.Count == 0) return new
+            {
+                status = false,
+                message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
+            };
+
+            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
+            if (line is null) return new
+            {
+                status = false,
+                message = "Không tìm thấy chuyền nào trong hệ thống!"
+            };
+
+            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
+               .Include(x => x.LunchTime)
+               .ThenInclude(x => x.Periods)
+               .FirstOrDefaultAsync();
+            if (building is null) return new
+            {
+                status = false,
+                message = "Không tìm thấy tòa nhà nào trong hệ thống!"
+            };
+
+            if (building.LunchTime is null) return new
+            {
+                status = false,
+                message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
+            };
+            var periods = building.LunchTime.Periods;
+            if (periods.Count == 0 && periods == null) return new
+            {
+                status = false,
+                message = $"Tòa nhà {building.Name} chưa cài đặt period!"
+            };
+            var startLunchTimeBuilding = building.LunchTime.StartTime;
+            var endLunchTimeBuilding = building.LunchTime.EndTime;
+
+            var dispatchlist = new List<DispatchListDto>();
+
+            var glues = plansModel.GroupBy(x => x.GlueName).ToList();
+
+            foreach (var glue in glues)
+            {
+                foreach (var item in glue)
+                {
+                    if (item.ChemicalA is null) return new
+                    {
+                        status = false,
+                        message = $"Keo {item.GlueName} trong {item.BPFCName} không có hóa chất A! Vui lòng xem lại BPFC!"
+                    };
+                    var checmicalA = item.ChemicalA;
+                    var startLunchTime = item.DueDate.Date.Add(new TimeSpan(startLunchTimeBuilding.Hour, startLunchTimeBuilding.Minute, 0));
+                    var endLunchTime = item.DueDate.Date.Add(new TimeSpan(endLunchTimeBuilding.Hour, endLunchTimeBuilding.Minute, 0));
+
+                    var finishWorkingTime = item.FinishWorkingTime;
+
+                    double prepareTime = checmicalA.PrepareTime;
+
+                    var kgPair = item.Consumption.ToDouble() / 1000;
+                    double lunchHour = (endLunchTime - startLunchTime).TotalHours;
+                    // Nếu lên kế hoạch cho ngày tiếp theo 
+                    if (item.DueDate.Date != currentDate && item.CreatedDate.Date != currentDate)
+                    {
+                        for (int index = 0; index < periods.Count; index++)
+                        {
+                            var startWorkingTime = periods[index].StartTime;
+                            var endWorkingTime = periods[index].EndTime;
+                            var defaultMin = 30;
+                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
+                            // 7:30
+                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var startDispatchTimeTemp = startDispatchTime; // 7:30
+                            while (true)
+                            {
+                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
+                                {
+                                    break;
+                                }
+                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
+                                var todo = new DispatchListDto();
+                                todo.GlueName = item.GlueName;
+                                todo.GlueID = item.GlueID;
+                                todo.PlanID = item.PlanID;
+                                todo.LineID = item.Building.ID;
+                                todo.LineName = item.Building.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.BPFCID = item.BPFCID;
+                                todo.Supplier = item.ChemicalA.Supplier.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.ColorCode = (ColorCode)index;
+                                todo.GlueNameID = item.GlueNameID.Value;
+                                todo.BuildingID = item.Building.ParentID.Value;
+                                todo.EstimatedStartTime = startDispatchTimeTemp;
+                                todo.EstimatedFinishTime = endDispatchTime;
+
+                                dispatchlist.Add(todo);
+                                startDispatchTimeTemp = endDispatchTime; // 8:00
+                            }
+                        }
+                    }
+                    else
+                    {
+                        for (int index = 0; index < periods.Count; index++)
+                        {
+                            var startWorkingTime = periods[index].StartTime;
+                            var endWorkingTime = periods[index].EndTime;
+                            var startTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var finishTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(endWorkingTime.Hour, endWorkingTime.Minute, 0));
+
+                            var defaultMin = 30;
+                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
+                            // 7:30
+                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var startDispatchTimeTemp = startDispatchTime; // 7:30
+                            var colorCode = 0;
+                            while (true)
+                            {
+                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
+                                {
+                                    break;
+                                }
+
+                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
+                                var todo = new DispatchListDto();
+                                todo.GlueName = item.GlueName;
+                                todo.GlueID = item.GlueID;
+                                todo.PlanID = item.PlanID;
+                                todo.LineID = item.Building.ID;
+                                todo.LineName = item.Building.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.BPFCID = item.BPFCID;
+                                todo.ColorCode = (ColorCode)colorCode++;
+                                todo.Supplier = item.ChemicalA.Supplier.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.GlueNameID = item.GlueNameID.Value;
+                                todo.BuildingID = item.Building.ParentID.Value;
+                                todo.EstimatedStartTime = startDispatchTimeTemp;
+                                todo.EstimatedFinishTime = endDispatchTime;
+
+                                todo.StartTimeOfPeriod = startTimeOfPeriod;
+                                todo.FinishTimeOfPeriod = finishTimeOfPeriod;
+
+                                // chi tao nhung thoi gian trong tuong lai
+                                var finsihTimeOfWorkplan = item.FinishWorkingTime.TimeOfDay;
+                                var startTimeOfWorkplan = item.StartWorkingTime.TimeOfDay;
+                                // 16:30 >= 7:30 && 7:30 
+                                // 16:30 >= 10:50 && 11:00 >= 10:50
+                                if (finsihTimeOfWorkplan >= startDispatchTimeTemp.TimeOfDay && endDispatchTime.TimeOfDay >= startTimeOfWorkplan)
+                                    dispatchlist.Add(todo);
+                                startDispatchTimeTemp = endDispatchTime; // 8:00
+                            }
+                        }
+                    }
+                }
+            }
+            try
+            {
+                var model = _mapper.Map<List<DispatchList>>(dispatchlist);
+                _repoDispatchList.AddRange(model);
+                _repoDispatchList.Save();
+                return new
+                {
+                    status = true,
+                    message = "Tạo danh sách giao thành công!"
+                };
+            }
+            catch (Exception)
+            {
+                return new
+                {
+                    status = false,
+                    message = "Tạo danh sách giao thất bại!"
+                };
+            }
+        }
+
+        private async Task AddDispatchList(List<int> plans)
+        {
+            var userID = _jwtService.GetUserID();
+            var currentTime = DateTime.Now;
+            var currentDate = currentTime.Date;
+            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
+                .Include(x => x.Building)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ModelName)
+                 .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ModelNo)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ArticleNo)
+                     .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ArtProcess)
+                    .ThenInclude(x => x.Process)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueName)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueIngredients)
+                    .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Supplier)
+                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
+                    {
+                        plan.WorkingHour,
+                        plan.HourlyOutput,
+                        plan.FinishWorkingTime,
+                        plan.StartWorkingTime,
+                        BPFCName = $"{plan.BPFCEstablish.ModelName.Name}->{plan.BPFCEstablish.ModelNo.Name}->{plan.BPFCEstablish.ArticleNo.Name}->{plan.BPFCEstablish.ArtProcess.Process.Name}",
+                        plan.DueDate,
+                        plan.Building,
+                        PlanID = plan.ID,
+                        BPFCID = plan.BPFCEstablishID,
+                        plan.CreatedDate,
+                        glue.Consumption,
+                        GlueID = glue.ID,
+                        glue.GlueNameID,
+                        GlueName = glue.Name,
+                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
+                    }).ToListAsync();
+
+            var value = plansModel.FirstOrDefault();
+
+            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
+
+
+            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
+               .Include(x => x.LunchTime)
+               .ThenInclude(x => x.Periods)
+               .FirstOrDefaultAsync();
+
+
+
+            var periods = building.LunchTime.Periods;
+            var dispatchlistOvertime = periods.Where(x => x.IsOvertime).ToList();
+            var startLunchTimeBuilding = building.LunchTime.StartTime;
+            var endLunchTimeBuilding = building.LunchTime.EndTime;
+
+            var dispatchlist = new List<DispatchListDto>();
+
+            var glues = plansModel.GroupBy(x => x.GlueName).ToList();
+
+            foreach (var glue in glues)
+            {
+                foreach (var item in glue)
+                {
+
+                    var checmicalA = item.ChemicalA;
+                    var startLunchTime = item.DueDate.Date.Add(new TimeSpan(startLunchTimeBuilding.Hour, startLunchTimeBuilding.Minute, 0));
+                    var endLunchTime = item.DueDate.Date.Add(new TimeSpan(endLunchTimeBuilding.Hour, endLunchTimeBuilding.Minute, 0));
+
+                    var finishWorkingTime = item.FinishWorkingTime;
+
+                    double prepareTime = checmicalA.PrepareTime;
+
+                    var kgPair = item.Consumption.ToDouble() / 1000;
+                    double lunchHour = (endLunchTime - startLunchTime).TotalHours;
+                    // Nếu lên kế hoạch tu ngay hom truoc
+                    if (item.DueDate.Date != currentDate && item.CreatedDate.Date == currentDate
+                        || item.DueDate.Date == currentDate && item.CreatedDate.Date != currentDate
+                        )
+                    {
+                        for (int index = 0; index < periods.Count; index++)
+                        {
+                            var startWorkingTime = periods[index].StartTime;
+                            var endWorkingTime = periods[index].EndTime;
+
+                            var startTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var finishTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(endWorkingTime.Hour, endWorkingTime.Minute, 0));
+
+                            var defaultMin = 30;
+                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
+                            // 7:30
+                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var startDispatchTimeTemp = startDispatchTime; // 7:30
+                            var colorCode = 0;
+                            while (true)
+                            {
+                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
+                                {
+                                    break;
+                                }
+                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
+                                var todo = new DispatchListDto();
+                                todo.GlueName = item.GlueName;
+                                todo.GlueID = item.GlueID;
+                                todo.PlanID = item.PlanID;
+                                todo.LineID = item.Building.ID;
+                                todo.LineName = item.Building.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.BPFCID = item.BPFCID;
+                                todo.ColorCode = (ColorCode)colorCode++;
+                                todo.Supplier = item.ChemicalA.Supplier.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.GlueNameID = item.GlueNameID.Value;
+                                todo.BuildingID = item.Building.ParentID.Value;
+                                todo.EstimatedStartTime = startDispatchTimeTemp;
+                                todo.EstimatedFinishTime = endDispatchTime;
+                                todo.CreatedTime = currentTime;
+                                todo.CreatedBy = userID;
+                                todo.StartTimeOfPeriod = startTimeOfPeriod;
+                                todo.FinishTimeOfPeriod = finishTimeOfPeriod;
+
+                                dispatchlist.Add(todo);
+                                startDispatchTimeTemp = endDispatchTime; // 8:00
+                            }
+                        }
+                    }
+                    else// Nếu có đổi modelName trong ngày
+                    {
+                        for (int index = 0; index < periods.Count; index++)
+                        {
+                            var startWorkingTime = periods[index].StartTime;
+                            var endWorkingTime = periods[index].EndTime;
+                            var startTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var finishTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(endWorkingTime.Hour, endWorkingTime.Minute, 0));
+
+                            var defaultMin = 30;
+                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
+                            // 7:30
+                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
+                            var startDispatchTimeTemp = startDispatchTime; // 7:30
+                            var colorCode = 0;
+                            while (true)
+                            {
+                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
+                                {
+                                    break;
+                                }
+
+                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
+                                var todo = new DispatchListDto();
+                                todo.GlueName = item.GlueName;
+                                todo.GlueID = item.GlueID;
+                                todo.PlanID = item.PlanID;
+                                todo.LineID = item.Building.ID;
+                                todo.LineName = item.Building.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.BPFCID = item.BPFCID;
+                                todo.ColorCode = (ColorCode)colorCode++;
+                                todo.Supplier = item.ChemicalA.Supplier.Name;
+                                todo.PlanID = item.PlanID;
+                                todo.GlueNameID = item.GlueNameID.Value;
+                                todo.BuildingID = item.Building.ParentID.Value;
+                                todo.EstimatedStartTime = startDispatchTimeTemp;
+                                todo.EstimatedFinishTime = endDispatchTime;
+                                todo.CreatedTime = currentTime;
+                                todo.CreatedBy = userID;
+                                todo.StartTimeOfPeriod = startTimeOfPeriod;
+                                todo.FinishTimeOfPeriod = finishTimeOfPeriod;
+
+                                // chi tao nhung thoi gian trong tuong lai
+                                var finsihTimeOfWorkplan = item.FinishWorkingTime.TimeOfDay;
+                                var startTimeOfWorkplan = item.StartWorkingTime.TimeOfDay;
+                                // 16:30 >= 7:30 && 7:30 
+                                // 16:30 >= 16:30 && 11:00 >= 10:50
+                                if (finsihTimeOfWorkplan > startDispatchTimeTemp.TimeOfDay && endDispatchTime.TimeOfDay >= startTimeOfWorkplan)
+                                {
+                                    if (
+                                        // 7:00 <= 8:45 && 7:30 >= 8:45 || 9:00 > 8:45 && 9:30 > 8:45
+                                        startDispatchTimeTemp.TimeOfDay <= item.CreatedDate.TimeOfDay
+                                    && endDispatchTime.TimeOfDay >= item.CreatedDate.TimeOfDay
+                                    ||
+                                        startDispatchTimeTemp.TimeOfDay >= item.CreatedDate.TimeOfDay
+                                    && endDispatchTime.TimeOfDay >= item.CreatedDate.TimeOfDay
+                                    )
+                                        dispatchlist.Add(todo);
+                                }
+                                startDispatchTimeTemp = endDispatchTime; // 8:00
+                            }
+                        }
+                    }
+                }
+            }
+            try
+            {
+                var dispatchlistForAdd = new List<DispatchList>();
+                var model = _mapper.Map<List<DispatchList>>(dispatchlist);
+                foreach (var item in dispatchlistOvertime)
+                {
+                    var dispatchlistOvertimeModel = model.Where(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay
+                                                            && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToList();
+                    dispatchlistOvertimeModel.ForEach(item =>
+                    {
+                        item.IsDelete = true;
+                    });
+
+                    var dispatchlistNoOvertimeModel = model.Where(x => x.StartTimeOfPeriod.TimeOfDay != item.StartTime.TimeOfDay
+                                                            && x.FinishTimeOfPeriod.TimeOfDay != item.EndTime.TimeOfDay).ToList();
+
+                    dispatchlistForAdd.AddRange(dispatchlistOvertimeModel);
+                    dispatchlistForAdd.AddRange(dispatchlistNoOvertimeModel);
+                }
+                _repoDispatchList.AddRange(dispatchlistForAdd);
+                await _repoDispatchList.SaveAll();
+
+
+
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        // Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+        public async Task<bool> AddRange(List<ToDoList> toDoList)
+        {
+            _repoToDoList.AddRange(toDoList);
+            try
+            {
+                return await _repoToDoList.SaveAll();
+            }
+            catch (Exception)
+            {
+                return false;
+                throw;
+            }
+        }
+
+        public async Task<bool> CancelRange(List<ToDoListForCancelDto> todolistList)
+        {
+            var flag = new List<bool>();
+            foreach (var todolist in todolistList)
+            {
+                var model = _repoToDoList.FindAll(x => x.ID == todolist.ID && todolist.LineNames.Contains(x.LineName)).ToList();
+                if (model is null) flag.Add(false);
+                _repoToDoList.RemoveMultiple(model);
+                flag.Add(await _repoToDoList.SaveAll());
+            }
+            return flag.All(x => x is true);
+        }
+
+        public async Task<bool> Cancel(ToDoListForCancelDto todolist)
+        {
+            var model = _repoToDoList.FindAll(x => x.ID == todolist.ID && todolist.LineNames.Contains(x.LineName)).ToList();
+            if (model is null) return false;
+            _repoToDoList.RemoveMultiple(model);
+            return await _repoToDoList.SaveAll();
+        }
+
+        public void UpdateMixingTimeRange(ToDoListForUpdateDto model)
+        {
+            var list = _repoToDoList.FindAll(x => x.EstimatedStartTime == model.EstimatedStartTime && x.EstimatedFinishTime == model.EstimatedFinishTime && x.GlueName == model.GlueName).ToList();
+            list.ForEach(x =>
+            {
+                x.FinishMixingTime = model.FinishTime.Value.ToLocalTime();
+                x.StartMixingTime = model.StartTime.Value.ToLocalTime();
+                x.MixedConsumption = model.Amount;
+                x.MixingInfoID = model.MixingInfoID;
+            });
+            _repoToDoList.UpdateRange(list);
+            _repoToDoList.Save();
+        }
+
+        // Đã chỉnh sửa lúc 8:18 1/28/2021
+        public void UpdateDispatchTimeRange(ToDoListForUpdateDto model)
+        {
+            var dispatch = model.Dispatches.Select(x => x.Amount).ToList();
+            var total = dispatch.Sum();
+            var list = _repoToDoList.FindAll(x => x.MixingInfoID == model.MixingInfoID).ToList();
+            list.ForEach(x =>
+            {
+                x.FinishDispatchingTime = model.FinishTime;
+                x.StartDispatchingTime = model.StartTime;
+                x.Status = model.FinishTime.Value.ToRemoveSecond() <= x.EstimatedFinishTime;
+                x.DeliveredConsumption = total;
+            });
+            _repoToDoList.UpdateRange(list);
+            _repoToDoList.Save();
+        }
+
+        public void UpdateStiringTimeRange(ToDoListForUpdateDto model)
+        {
+            var list = _repoToDoList.FindAll(x => x.MixingInfoID == model.MixingInfoID).ToList();
+            list.ForEach(x =>
+            {
+                x.FinishStirTime = model.FinishTime.Value.ToLocalTime();
+                x.StartStirTime = model.StartTime.Value.ToLocalTime();
+            });
+            _repoToDoList.UpdateRange(list);
+            _repoToDoList.Save();
+        }
+
+        public MixingInfo PrintGlue(int mixingInfoID)
+        {
+            var mixing = _repoMixingInfo.FindById(mixingInfoID);
+            if (mixing is null) return new MixingInfo();
+            using (TransactionScope scope = new TransactionScope())
+            {
+                try
+                {
+                    var printTime = DateTime.Now.ToLocalTime();
+                    mixing.PrintTime = printTime;
+                    _repoMixingInfo.Update(mixing);
+                    _repoMixingInfo.Save();
+                    var todolist = _repoToDoList.FindAll(x => x.MixingInfoID == mixingInfoID).ToList();
+                    todolist.ForEach(item =>
+                    {
+                        item.Status = mixing.Status;
+                        item.PrintTime = mixing.PrintTime;
+
+                    });
+                    _repoToDoList.UpdateRange(todolist);
+                    _repoToDoList.Save();
+
+
+
+                    scope.Complete();
+                    return mixing;
+                }
+                catch
+                {
+                    scope.Dispose();
+                    return new MixingInfo();
+                }
+            }
+        }
+
+        public bool UpdateStartStirTimeByMixingInfoID(int mixingInfoID)
+        {
+            var mixing = _repoMixingInfo.FindById(mixingInfoID);
+            if (mixing == null) return false;
+            var lines = _repoBuilding.FindAll(x => x.ParentID == mixing.BuildingID).Select(x => x.ID).ToList();
+            if (lines.Count == 0) return false;
+            try
+            {
+                var list = _repoToDoList.FindAll(x => x.EstimatedStartTime == mixing.EstimatedStartTime && x.EstimatedFinishTime == mixing.EstimatedFinishTime && x.GlueName == mixing.GlueName && lines.Contains(x.LineID)).ToList();
+                list.ForEach(x =>
+                {
+                    x.StartStirTime = DateTime.Now;
+                });
+                _repoToDoList.UpdateRange(list);
+                _repoToDoList.Save();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+
+        public bool UpdateFinishStirTimeByMixingInfoID(int mixingInfoID)
+        {
+            var mixing = _repoMixingInfo.FindById(mixingInfoID);
+            if (mixing == null) return false;
+            var lines = _repoBuilding.FindAll(x => x.ParentID == mixing.BuildingID).Select(x => x.ID).ToList();
+            try
+            {
+                var list = _repoToDoList.FindAll(x => x.EstimatedStartTime == mixing.EstimatedStartTime && x.EstimatedFinishTime == mixing.EstimatedFinishTime && x.GlueName == mixing.GlueName && lines.Contains(x.LineID)).ToList();
+                list.ForEach(x =>
+                {
+                    x.FinishStirTime = DateTime.Now;
+                });
+                _repoToDoList.UpdateRange(list);
+                _repoToDoList.Save();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // Pha them action
+        public async Task<object> Addition(int glueNameID, int building, DateTime start, DateTime end)
+        {
+            var userID = _jwtService.GetUserID();
+            var ct = DateTime.Now.ToRemoveSecond();
+            var result = await _repoToDoList.FindAll()
+                            .Where(x => x.BuildingID == building 
+                                && x.EstimatedStartTime.Date == ct.Date 
+                                && x.GlueNameID == glueNameID 
+                                && x.AbnormalStatus == false 
+                                && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay 
+                                && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay)
+                            .ToListAsync();
+            var model = new List<ToDoList>();
+            var src = DateTime.Now;
+
+
+            if (result.Count > 0)
+            {
+                foreach (var item in result)
+                {
+                    model.Add(new ToDoList
+                    {
+                        AbnormalStatus = true,
+                        PlanID = item.PlanID,
+                        GlueID = item.GlueID,
+                        GlueNameID = item.GlueNameID,
+                        GlueName = item.GlueName,
+                        BuildingID = item.BuildingID,
+                        LineID = item.LineID,
+                        BPFCID = item.BPFCID,
+                        LineName = item.LineName,
+                        Supplier = item.Supplier,
+                        StandardConsumption = item.StandardConsumption,
+                        EstimatedStartTime = ct,
+                        EstimatedFinishTime = item.EstimatedFinishTime
+                    });
+                }
+            }
+            else
+            {
+                return new
+                {
+                    status = false,
+                    message = "Không thể tạo Addition trong khoảng thời gian này! Vui lòng chọn lại khoảng thời gian phù hợp với hiện tại"
+                };
+            }
+            var dispatchResult = await _repoDispatchList.FindAll()
+                                    .Where(x => x.BuildingID == building 
+                                            && x.EstimatedStartTime.Date == ct.Date 
+                                            && x.GlueNameID == glueNameID 
+                                            && x.AbnormalStatus == false 
+                                            && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay 
+                                            && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay 
+                                            && x.FinishDispatchingTime != null)
+                                    .ToListAsync();
+            var dispatchModel = new List<DispatchList>();
+
+            var checkExistDispatch = await _repoDispatchList.FindAll()
+                                            .Where(x => x.BuildingID == building 
+                                                && x.EstimatedStartTime.Date == ct.Date 
+                                                && x.GlueNameID == glueNameID 
+                                                && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay 
+                                                && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay 
+                                                && x.FinishDispatchingTime == null)
+                                            .AnyAsync();
+            if (!checkExistDispatch)
+            {
+                foreach (var item in dispatchResult)
+                {
+                    dispatchModel.Add(new DispatchList
+                    {
+                        AbnormalStatus = true,
+                        PlanID = item.PlanID,
+                        GlueID = item.GlueID,
+                        GlueNameID = item.GlueNameID,
+                        GlueName = item.GlueName,
+                        BuildingID = item.BuildingID,
+                        LineID = item.LineID,
+                        BPFCID = item.BPFCID,
+                        LineName = item.LineName,
+                        Supplier = item.Supplier,
+                        EstimatedStartTime = ct,
+                        EstimatedFinishTime = item.EstimatedFinishTime,
+                        StartTimeOfPeriod = item.StartTimeOfPeriod,
+                        FinishTimeOfPeriod = item.FinishTimeOfPeriod,
+                        ColorCode = item.ColorCode,
+                        CreatedTime = ct,
+                        CreatedBy = userID
+
+                    });
+                }
+            }
+            // Neu giao roi thi add them lai
+            // con chua giao thi khong can add
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    _repoToDoList.AddRange(model);
+                    await _repoToDoList.SaveAll();
+                    if (!checkExistDispatch)
+                    {
+                        _repoDispatchList.AddRange(dispatchModel);
+                        await _repoDispatchList.SaveAll();
+                    }
+                    transaction.Complete();
+                    return new
+                    {
+                        status = true,
+                        message = "Tạo Addition thành công!"
+                    };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Dispose();
+                    return new
+                    {
+                        status = false,
+                        message = $"Tạo Addition thất bại! {ex.Message}"
+                    };
+                }
+            }
+
+        }
+
+        public async Task<ResponseDetail<object>> AdditionDispatch(int glueNameID)
+        {
+            var userID = _jwtService.GetUserID();
+            var ct = DateTime.Now.ToRemoveSecond();
+            var result = await _repoDispatchList.FindAll().Where(x => x.GlueNameID == glueNameID && x.AbnormalStatus == false && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay && x.FinishDispatchingTime != null).ToListAsync();
+            if (result.Count > 0)
+            {
+                foreach (var item in result)
+                {
+                    item.EstimatedStartTime = ct;
+                    item.FinishDispatchingTime = null;
+                    item.AbnormalStatus = true;
+                    item.DeliveredAmount = 0;
+                    item.MixingInfoID = 0;
+                    item.ID = 0;
+                    item.CreatedTime = ct;
+                    item.CreatedBy = userID;
+                }
+            }
+            else
+            {
+                return new ResponseDetail<object>
+                {
+                    Status = false,
+                    Message = "Không thể giao thêm trong khoảng thời gian này! Vui lòng chọn lại khoảng thời gian phù hợp với hiện tại"
+                };
+            }
+            try
+            {
+                var model = _mapper.Map<List<DispatchList>>(result);
+                _repoDispatchList.AddRange(model);
+                _repoDispatchList.Save();
+                return new ResponseDetail<object>
+                {
+                    Status = true,
+                    Message = "Tạo giao thêm keo thành công!"
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDetail<object>
+                {
+                    Status = false,
+                    Message = $"Tạo giao thêm keo thất bại! {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<object> AddOvertime(List<int> plans)
+        {
+            if (plans.Count == 0) return new
+            {
+                status = false,
+                message = "Không có kế hoạch làm việc nào được gửi lên server"
+            };
+            var currentTime = DateTime.Now;
+            var currentDate = currentTime.Date;
+            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
+                .Include(x => x.Building)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueName)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueIngredients)
+                    .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Supplier)
+                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
+                    {
+                        plan.WorkingHour,
+                        plan.HourlyOutput,
+                        plan.FinishWorkingTime,
+                        plan.StartWorkingTime,
+                        plan.DueDate,
+                        plan.Building,
+                        PlanID = plan.ID,
+                        BPFCID = plan.BPFCEstablishID,
+                        plan.CreatedDate,
+                        glue.Consumption,
+                        GlueID = glue.ID,
+                        glue.GlueNameID,
+                        GlueName = glue.Name,
+                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
+                    }).ToListAsync();
+            var glueList = plansModel.Select(x => x.GlueName).ToList();
+            if (plansModel.Count == 0) return new
+            {
+                status = false,
+                message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
+            };
+            var value = plansModel.FirstOrDefault();
+
+            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
+            if (line is null) return new
+            {
+                status = false,
+                message = "Không tìm thấy chuyền nào trong hệ thống!"
+            };
+
+            var checkExistLine = _repoPlan.FindAll().Any(x => x.BuildingID == line.ID);
+
+            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
+              .Include(x => x.LunchTime)
+              .ThenInclude(x => x.Periods)
+              .FirstOrDefaultAsync();
+
+            if (building is null) return new
+            {
+                status = false,
+                message = "Không tìm thấy tòa nhà nào trong hệ thống!"
+            };
+
+            if (building.LunchTime is null) return new
+            {
+                status = false,
+                message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
+            };
+
+            var periods = building.LunchTime.Periods;
+
+            if (periods.Count == 0 && periods == null) return new
+            {
+                status = false,
+                message = $"Tòa nhà {building.Name} chưa cài đặt period!"
+            };
+            // Chi tao gio tang ca
+            periods = periods.Where(x => x.IsOvertime == true).ToList();
+            var finishWorkingTimeOfWorkplan = periods.OrderByDescending(x => x.EndTime).FirstOrDefault().EndTime;
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    var planUpdate = await _repoPlan.FindAll(x => plans.Contains(x.ID)).ToListAsync();
+                    planUpdate.ForEach(item =>
+                    {
+                        item.FinishWorkingTime = finishWorkingTimeOfWorkplan;
+                        item.IsOvertime = true;
+                    });
+                    _repoPlan.UpdateRange(planUpdate);
+                    await _repoPlan.SaveAll();
+
+                    var todolistForUpdate = new List<ToDoList>();
+                    var dispatchlistForUpdate = new List<DispatchList>();
+                    foreach (var item in periods)
+                    {
+                        var todolist = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
+                                                                && x.EstimatedFinishTime.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
+                        todolist.ForEach(item =>
+                        {
+                            item.IsDelete = false;
+                        });
+                        todolistForUpdate.AddRange(todolist);
+
+                        var dispatchlist = await _repoDispatchList.FindAll(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
+                        dispatchlist.ForEach(item =>
+                        {
+                            item.IsDelete = false;
+                        });
+                        dispatchlistForUpdate.AddRange(dispatchlist);
+
+                    }
+                    _repoPlan.UpdateRange(planUpdate);
+                    await _repoPlan.SaveAll();
+
+                    // cap nhat todolist
+                    _repoToDoList.UpdateRange(todolistForUpdate);
+                    await _repoDispatchList.SaveAll();
+
+                    //cap nhat dispatchlist
+                    _repoDispatchList.UpdateRange(dispatchlistForUpdate);
+                    await _repoDispatchList.SaveAll();
+                    transaction.Complete();
+                    return new
+                    {
+                        status = true,
+                        message = "Đã cài đặt giờ tăng ca!"
+                    };
+                }
+                catch (Exception)
+                {
+                    transaction.Dispose();
+                    return new
+                    {
+                        status = false,
+                        message = "Không cài đặt được giờ tăng ca!"
+                    };
+                }
+            }
+
+        }
+
+        public async Task<object> RemoveOvertime(List<int> plans)
+        {
+            if (plans.Count == 0) return new
+            {
+                status = false,
+                message = "Không có kế hoạch làm việc nào được gửi lên server"
+            };
+            var currentTime = DateTime.Now;
+            var currentDate = currentTime.Date;
+            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
+                .Include(x => x.Building)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueName)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.Glues)
+                    .ThenInclude(x => x.GlueIngredients)
+                    .ThenInclude(x => x.Ingredient)
+                    .ThenInclude(x => x.Supplier)
+                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
+                    {
+                        plan.WorkingHour,
+                        plan.HourlyOutput,
+                        plan.FinishWorkingTime,
+                        plan.StartWorkingTime,
+                        plan.DueDate,
+                        plan.Building,
+                        PlanID = plan.ID,
+                        BPFCID = plan.BPFCEstablishID,
+                        plan.CreatedDate,
+                        glue.Consumption,
+                        GlueID = glue.ID,
+                        glue.GlueNameID,
+                        GlueName = glue.Name,
+                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
+                    }).ToListAsync();
+            var glueList = plansModel.Select(x => x.GlueName).ToList();
+            if (plansModel.Count == 0) return new
+            {
+                status = false,
+                message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
+            };
+            var value = plansModel.FirstOrDefault();
+
+            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
+            if (line is null) return new
+            {
+                status = false,
+                message = "Không tìm thấy chuyền nào trong hệ thống!"
+            };
+
+            var checkExistLine = _repoPlan.FindAll().Any(x => x.BuildingID == line.ID);
+
+            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
+              .Include(x => x.LunchTime)
+              .ThenInclude(x => x.Periods)
+              .FirstOrDefaultAsync();
+
+            if (building is null) return new
+            {
+                status = false,
+                message = "Không tìm thấy tòa nhà nào trong hệ thống!"
+            };
+
+            if (building.LunchTime is null) return new
+            {
+                status = false,
+                message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
+            };
+
+            var periods = building.LunchTime.Periods;
+
+            if (periods.Count == 0 && periods == null) return new
+            {
+                status = false,
+                message = $"Tòa nhà {building.Name} chưa cài đặt period!"
+            };
+            // Chi tao gio tang ca
+            var finishWorkingTime = periods.Where(x => x.IsOvertime == false).OrderByDescending(x => x.EndTime).FirstOrDefault().EndTime;
+            periods = periods.Where(x => x.IsOvertime == true).ToList();
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    var todolistForUpdate = new List<ToDoList>();
+                    var dispatchlistForUpdate = new List<DispatchList>();
+                    foreach (var item in periods)
+                    {
+                        var todolist = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
+                                                                && x.EstimatedFinishTime.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
+                        todolist.ForEach(item =>
+                        {
+                            item.IsDelete = true;
+                        });
+                        todolistForUpdate.AddRange(todolist);
+
+                        var dispatchlist = await _repoDispatchList.FindAll(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
+                        dispatchlist.ForEach(item =>
+                        {
+                            item.IsDelete = true;
+                        });
+                        dispatchlistForUpdate.AddRange(dispatchlist);
+
+                    }
+
+                    // cap nhat workplan
+                    var planUpdate = await _repoPlan.FindAll(x => plans.Contains(x.ID)).ToListAsync();
+                    planUpdate.ForEach(item =>
+                    {
+                        item.FinishWorkingTime = finishWorkingTime;
+                        item.IsOvertime = false;
+                    });
+                    _repoPlan.UpdateRange(planUpdate);
+                    await _repoPlan.SaveAll();
+
+                    // cap nhat todolist
+                    _repoToDoList.UpdateRange(todolistForUpdate);
+                    await _repoDispatchList.SaveAll();
+
+                    //cap nhat dispatchlist
+                    _repoDispatchList.UpdateRange(dispatchlistForUpdate);
+                    await _repoDispatchList.SaveAll();
+
+                    transaction.Complete();
+                    return new
+                    {
+                        status = true,
+                        message = $"Đã hủy giờ tăng ca!"
+                    };
+                }
+                catch (Exception)
+                {
+                    transaction.Dispose();
+                    return new
+                    {
+                        status = false,
+                        message = $"Không xóa được giờ tăng ca!"
+                    };
+                }
+            }
+
+            throw new NotImplementedException();
+        }
+        #endregion
+
+        #region Mixing Action
+        public async Task<MixingInfo> Mix(MixingInfoForCreateDto mixing)
+        {
+            try
+            {
+                var item = _mapper.Map<MixingInfoForCreateDto, MixingInfo>(mixing);
+                item.Code = CodeUtility.RandomString(8);
+                item.CreatedTime = DateTime.Now;
+                var glue = await _repoGlue.FindAll().FirstOrDefaultAsync(x => x.isShow == true && x.ID == mixing.GlueID);
+                item.ExpiredTime = DateTime.Now.AddHours(glue.ExpiredTime);
+                _repoMixingInfo.Add(item);
+                await _repoMixingInfo.SaveAll();
+                // await _repoMixing.AddOrUpdate(item.ID);
+                return item;
+            }
+            catch
+            {
+                return new MixingInfo();
+            }
+        }
+
+        MixingDetailForResponse MixingDetail(string glueName, DateTime date)
+        {
+            var mixedModel = _repoMixingInfo.FindAll(x => x.CreatedTime.Date == date)
+                         .Include(x => x.MixingInfoDetails)
+                         .Include(x => x.Glue)
+                             .ThenInclude(x => x.GlueName)
+                         .Where(x => x.Glue.GlueName.Name == glueName).ToList();
+            var count = _repoMixingInfo.FindAll().Include(x => x.Glue)
+                             .ThenInclude(x => x.GlueName).Where(x => x.Glue.GlueName.Name.Equals(glueName))
+                            .Count();
+            double mixedCon = 0;
+            double deliveryCon = 0;
+            if (count == 0) // Chua add cai nao trong db thi return ve rong
+            {
+                return new MixingDetailForResponse();
+            }
+            else if (mixedModel.Count == 0) // neu ngay hien tai khong co thi lay cua ngay truoc do
+            {
+                date = date.AddDays(-1);
+                return MixingDetail(glueName, date);
+            }
+            else // ngay hien tai co thi lay cua ngay hien tai
+            {
+                var mixingModel = mixedModel.FirstOrDefault();
+                var deliveryModel = _repoDispatch.FindAll(x => mixedModel.Select(a => a.ID).Contains(x.MixingInfoID) && x.CreatedTime.Date == date).ToList();
+                //deliveryCon = deliveryModel.Count() == 0 ? 0 : deliveryModel.Sum(x => x.Amount);
+                double sumDelivery = 0;
+                double sumMixed = 0;
+                foreach (var item in mixedModel)
+                {
+                    var subDeliveryModel = deliveryModel.Where(x => x.MixingInfoID == item.ID);
+                    sumDelivery += subDeliveryModel.Count() == 0 ? 0 : subDeliveryModel.Sum(x => x.Amount);
+
+                    sumMixed += item.MixingInfoDetails.Sum(x => x.Amount);
+                }
+                deliveryCon = sumDelivery / deliveryModel.Count();
+                mixedCon = sumMixed / mixedModel.Count();
+                deliveryCon = Double.IsNaN(deliveryCon) ? 0 : deliveryCon;
+                mixedCon = Double.IsNaN(mixedCon) ? 0 : mixedCon;
+                return new MixingDetailForResponse(mixedCon, mixingModel.CreatedTime, deliveryCon, mixingModel.CreatedTime);
+            }
+        }
+
+        public MixingDetailForResponse GetMixingDetail(MixingDetailParams obj)
+        {
+            var glueName = obj.GlueName.ToSafetyString().Trim();
+            var date = DateTime.Now.ToLocalTime().Date;
+            return MixingDetail(glueName, date);
+        }
+
+        #endregion
+
+        #region Dispatchlist Action
+
+        public async Task<ResponseDetail<object>> UpdateDispatchDetail(DispatchListForUpdateDto update)
+        {
+            var item = await _repoDispatchList.FindAll(x => x.ID == update.ID).FirstOrDefaultAsync();
+            if (item == null)
+                return new ResponseDetail<object>()
+                {
+                    Status = false,
+                    Message = "Không tìm thấy dữ liệu!"
+                };
+            try
+            {
+                item.DeliveredAmount = update.Amount;
+                item.CreatedTime = DateTime.Now;
+                _repoDispatchList.Update(item);
+                var status = await _repoDispatchList.SaveAll();
+
+                return new ResponseDetail<object>()
+                {
+                    Status = true,
+                    Message = "Thành công!"
+                };
+            }
+            catch (Exception)
+            {
+                return new ResponseDetail<object>()
+                {
+                    Status = false,
+                    Message = "Không cập nhật được dữ liệu!"
+                };
+                throw;
+            }
+        }
+
+        public async Task<ResponseDetail<string>> FinishDispatch(FinishDispatchParams obj)
+        {
+            var dispatchlist = await _repoDispatchList.FindAll(x => obj.Lines.Contains(x.LineID) && x.GlueNameID == obj.GlueNameID && x.EstimatedStartTime == obj.EstimatedStartTime && x.EstimatedFinishTime == obj.EstimatedFinishTime).ToListAsync();
+            dispatchlist.ForEach(item =>
+            {
+                item.FinishDispatchingTime = DateTime.Now.ToLocalTime();
+            });
+            _repoDispatchList.UpdateRange(dispatchlist);
+            try
+            {
+                await _repoDispatchList.SaveAll();
+                return new ResponseDetail<string>("Success", true, "");
+            }
+            catch (Exception ex)
+            {
+                return new ResponseDetail<string>("Error", false, ex.Message);
+            }
+
+        }
+
+        public async Task<MixingInfo> PrintGlueDispatchListAsync(int mixingInfoID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinsihTime)
+        {
+            var mixing = await _repoMixingInfo.FindAll(x => x.ID == mixingInfoID).FirstOrDefaultAsync();
+            if (mixing is null) return new MixingInfo();
+            var dispatchlist = await _repoDispatchList.FindAll(x => x.GlueNameID == glueNameID && x.EstimatedStartTime == estimatedStartTime && x.EstimatedFinishTime == estimatedFinsihTime).ToListAsync();
+            // B1: Cap nhat print time cho tat ca cac line
+            // B2: Nhung nhung multiple glue thi trong 30 phut phai giao 2 lan , nhung single glue thi giao 1 lan
+            // TH1: Neu la multiple thi them moi 2 dong du lieu vao bang Dispatch
+            // TH2: Them 1 dong du lieu vao bang dispatch
+            using TransactionScope scope = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    // B1
+                    var printTime = DateTime.Now.ToLocalTime();
+                    mixing.PrintTime = printTime;
+                    _repoMixingInfo.Update(mixing);
+                    _repoMixingInfo.Save();
+
+                    dispatchlist.ForEach(item =>
+                    {
+                        item.Status = mixing.Status;
+                        item.MixingInfoID = mixingInfoID;
+                        item.PrintTime = mixing.PrintTime;
+                    });
+
+                    _repoDispatchList.UpdateRange(dispatchlist);
+                    await _repoDispatchList.SaveAll();
+
+                    // B2
+                    var dispatchListDetail = new List<Dispatch>();
+                    var groupBy = dispatchlist.GroupBy(x => new
+                    {
+                        x.GlueNameID,
+                        x.EstimatedFinishTime,
+                        x.EstimatedStartTime
+                    }).ToList();
+                    foreach (var groupByItem in groupBy)
+                    {
+                        foreach (var item in groupByItem)
+                        {
+                            var dispatchItem = await _repoDispatch.FindAll(x => x.GlueNameID == item.GlueNameID
+                                                && x.LineID == item.LineID
+                                                && x.EstimatedStartTime == item.EstimatedStartTime
+                                                && x.EstimatedFinishTime == item.EstimatedFinishTime
+                                                ).FirstOrDefaultAsync();
+                            // TH1
+                            if (item.GlueName.Contains("+"))
+                            {
+                                if (dispatchItem == null)
+                                {
+                                    var listAdd = new List<Dispatch>
+                                {
+                                    new Dispatch
+                                    {
+                                        MixingInfoID = item.MixingInfoID,
+                                        LineID = item.LineID,
+                                        GlueNameID = item.GlueNameID,
+                                        EstimatedFinishTime = item.EstimatedFinishTime,
+                                        EstimatedStartTime = item.EstimatedStartTime,
+                                    },new Dispatch
+                                    {
+                                        MixingInfoID = item.MixingInfoID,
+                                        LineID = item.LineID,
+                                        GlueNameID = item.GlueNameID,
+                                        EstimatedFinishTime = item.EstimatedFinishTime,
+                                        EstimatedStartTime = item.EstimatedStartTime,
+                                    },
+                                };
+                                    _repoDispatch.AddRange(listAdd);
+                                    await _repoDispatch.SaveAll();
+                                }
+                            }
+                            else // TH2
+                            {
+                                if (dispatchItem == null)
+                                {
+                                    var listAdd = new List<Dispatch>
+                                {
+                                    new Dispatch
+                                    {
+                                        MixingInfoID = item.MixingInfoID,
+                                        LineID = item.LineID,
+                                        GlueNameID = item.GlueNameID,
+                                        EstimatedFinishTime = item.EstimatedFinishTime,
+                                        EstimatedStartTime = item.EstimatedStartTime,
+                                    }
+                                };
+                                    _repoDispatch.AddRange(listAdd);
+                                    await _repoDispatch.SaveAll();
+                                }
+                            }
+                        }
+                    }
+                    scope.Complete();
+                    return mixing;
+
+                }
+                catch
+                {
+                    scope.Dispose();
+                    return new MixingInfo();
+                }
+            }
+        }
+
+        public MixingInfo PrintGlueDispatchList(int mixingInfoID, int dispatchListID)
+        {
+            var mixing = _repoMixingInfo.FindById(mixingInfoID);
+            if (mixing is null) return new MixingInfo();
+            using (TransactionScope scope = new TransactionScope())
+            {
+                try
+                {
+                    var printTime = DateTime.Now.ToLocalTime();
+                    mixing.PrintTime = printTime;
+                    _repoMixingInfo.Update(mixing);
+                    _repoMixingInfo.Save();
+                    var dispatchlist = _repoDispatchList.FindAll(x => x.ID == dispatchListID).FirstOrDefault();
+                    dispatchlist.Status = mixing.Status;
+                    dispatchlist.MixingInfoID = mixingInfoID;
+                    dispatchlist.PrintTime = mixing.PrintTime;
+                    _repoDispatchList.Update(dispatchlist);
+                    _repoDispatchList.Save();
+                    var dispatchListDetail = new DispatchListDetail
+                    {
+                        MixingInfoID = mixingInfoID,
+                        DispatchListID = dispatchListID,
+                        CreatedTime = DateTime.Now,
+                    };
+                    _repoDispatchListDetail.Add(dispatchListDetail);
+                    _repoDispatchListDetail.Save();
+
+
+                    scope.Complete();
+                    return mixing;
+
+                }
+                catch
+                {
+                    scope.Dispose();
+                    return new MixingInfo();
+                }
+            }
+        }
+
+        public async Task<ResponseDetail<string>> UpdateDispatchDetail(DispatchDetailForUpdateDto item)
+        {
+
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    var dispatchItem = await _repoDispatch.FindAll(x => x.ID == item.ID).FirstOrDefaultAsync();
+                    dispatchItem.DeliveryTime = item.Amount != dispatchItem.Amount ? DateTime.Now.ToLocalTime() : dispatchItem.DeliveryTime;
+                    dispatchItem.Amount = item.Amount;
+                    _repoDispatch.Update(dispatchItem);
+                    await _repoDispatch.SaveAll();
+
+                    var dispatchlist = await _repoDispatchList.FindAll(x => item.LineID == x.LineID && x.GlueNameID == item.GlueNameID && x.EstimatedStartTime == item.EstimatedStartTime && x.EstimatedFinishTime == item.EstimatedFinishTime).ToListAsync();
+                    dispatchlist.ForEach(x =>
+                    {
+                        if (x.GlueName.Contains("+"))
+                        {
+                            var dispatchAmount = _repoDispatch.FindAll(x => item.LineID == x.LineID && x.GlueNameID == item.GlueNameID && x.EstimatedStartTime == item.EstimatedStartTime && x.EstimatedFinishTime == item.EstimatedFinishTime).Sum(x => x.Amount);
+                            double amount = dispatchAmount;
+                            double test = amount / 1000;
+                            x.DeliveredAmount = amount > 0 ? Math.Round((amount / 1000), 3) : 0;
+                        }
+                        else
+                        {
+                            double amount = item.Amount;
+                            double test = amount / 1000;
+
+                            x.DeliveredAmount = amount > 0 ? Math.Round((amount / 1000), 3) : 0;
+                        }
+                    });
+                    _repoDispatchList.UpdateRange(dispatchlist);
+                    await _repoDispatchList.SaveAll();
+
+                    transaction.Complete();
+                    return new ResponseDetail<string>("Success", true, "");
+                }
+                catch (Exception ex)
+                {
+                    transaction.Dispose();
+                    return new ResponseDetail<string>("Error", true, ex.Message);
+                    throw;
+                }
+            }
+
+        }
+
+        public async Task<ResponseDetail<string>> UpdateMixingInfoDispatchList(int mixingInfoID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinsihTime)
+        {
+            var mixing = await _repoMixingInfo.FindAll(x => x.ID == mixingInfoID).FirstOrDefaultAsync();
+            if (mixing is null) return new ResponseDetail<string>("Error", true, "Not found mixing!");
+            var dispatchlist = await _repoDispatchList.FindAll(x => x.GlueNameID == glueNameID && x.EstimatedStartTime == estimatedStartTime && x.EstimatedFinishTime == estimatedFinsihTime).ToListAsync();
+
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    dispatchlist.ForEach(item =>
+                    {
+                        item.Status = mixing.Status;
+                        item.MixingInfoID = mixingInfoID;
+                        item.PrintTime = mixing.PrintTime;
+                    });
+
+                    _repoDispatchList.UpdateRange(dispatchlist);
+                    await _repoDispatchList.SaveAll();
+                    transaction.Complete();
+                    return new ResponseDetail<string>("Success", true, "");
+                }
+                catch (Exception ex)
+                {
+                    transaction.Dispose();
+                    return new ResponseDetail<string>("Error", true, ex.Message);
+                }
+            }
+        }
+
+        #endregion
+
+        #region Report
 
         public Byte[] ExcelExportDoneList(List<ToDoListForExportDto> model)
         {
@@ -2194,10 +3136,21 @@ namespace DMR_API._Services.Services
             }
         }
 
+        // report
         public async Task<Byte[]> ExportExcelToDoListByBuilding(int buildingID)
         {
             var currentTime = DateTime.Now.ToLocalTime();
             var currentDate = currentTime.Date;
+            // B1: Lay ra tat task cua todolist
+            // TH1: Lay cac task da hoan thanh
+            // Th2: lay danh sach cac task chua hoan thanh va bi tre
+            // B2: Map 2 danh sach tren cua todolist vao dto
+
+            // B1: Lay ra tat task cua dispatchlist
+            // TH1: Lay cac task da hoan thanh
+            // Th2: lay danh sach cac task chua hoan thanh va bi tre
+            // B2: Map 2 danh sach tren cua todolist vao dto
+
             var model = await _repoToDoList.FindAll(x =>
                    x.IsDelete == false
                    && x.EstimatedStartTime.Date == currentDate
@@ -2343,57 +3296,126 @@ namespace DMR_API._Services.Services
                     exportList.Add(exportItem);
                 }
             }
-            return ExcelExportDoneList(exportList);
-        }
-
-        MixingDetailForResponse MixingDetail(string glueName, DateTime date)
-        {
-            var mixedModel = _repoMixingInfo.FindAll(x => x.CreatedTime.Date == date)
-                         .Include(x => x.MixingInfoDetails)
-                         .Include(x => x.Glue)
-                             .ThenInclude(x => x.GlueName)
-                         .Where(x => x.Glue.GlueName.Name == glueName).ToList();
-            var count = _repoMixingInfo.FindAll().Include(x => x.Glue)
-                             .ThenInclude(x => x.GlueName).Where(x => x.Glue.GlueName.Name.Equals(glueName))
-                            .Count();
-            double mixedCon = 0;
-            double deliveryCon = 0;
-            if (count == 0) // Chua add cai nao trong db thi return ve rong
+            var dispatchListModel = await _repoDispatchList.FindAll(x =>
+                  x.IsDelete == false
+                  && x.EstimatedStartTime.Date == currentDate
+                  && x.EstimatedFinishTime.Date == currentDate
+                  && x.FinishDispatchingTime != null
+                  && x.BuildingID == buildingID
+                  )
+               .Include(x => x.Plan)
+                   .ThenInclude(x => x.BPFCEstablish)
+                   .ThenInclude(x => x.ModelName)
+               .Include(x => x.Plan)
+                   .ThenInclude(x => x.BPFCEstablish)
+                   .ThenInclude(x => x.ModelNo)
+                .Include(x => x.Plan)
+                   .ThenInclude(x => x.BPFCEstablish)
+                   .ThenInclude(x => x.ArticleNo)
+               .Include(x => x.Plan)
+                   .ThenInclude(x => x.Stations)
+               .Select(x => new
+               {
+                   x.Plan,
+                   x.EstimatedFinishTime,
+                   x.EstimatedStartTime,
+                   x.FinishDispatchingTime,
+                   x.StartDispatchingTime,
+                   x.PrintTime,
+                   x.MixingInfoID,
+                   x.DeliveredAmount,
+                   x.LineName,
+                   x.LineID,
+                   x.Supplier,
+                   x.GlueID,
+                   x.GlueName,
+                   x.Status,
+                   Station = x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID) == null ? 0 : x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID).Amount,
+                   ModelName = x.Plan.BPFCEstablish.ModelName == null ? "N/A" : x.Plan.BPFCEstablish.ModelName.Name,
+                   ModelNO = x.Plan.BPFCEstablish.ModelNo == null ? "N/A" : x.Plan.BPFCEstablish.ModelNo.Name,
+                   ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
+               })
+              .ToListAsync();
+            var delayDispatchListModel = await _repoDispatchList.FindAll(x =>
+                 x.IsDelete == false
+                 && x.EstimatedStartTime.Date == currentDate
+                 && x.EstimatedFinishTime.Date == currentDate
+                 && x.EstimatedFinishTime < currentTime
+                 && x.FinishDispatchingTime == null //Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+                 && x.BuildingID == buildingID
+                 )
+              .Include(x => x.Plan)
+                  .ThenInclude(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelName)
+              .Include(x => x.Plan)
+                  .ThenInclude(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelNo)
+               .Include(x => x.Plan)
+                  .ThenInclude(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ArticleNo)
+              .Include(x => x.Plan)
+                  .ThenInclude(x => x.Stations)
+              .Select(x => new
+              {
+                  x.Plan,
+                  x.EstimatedFinishTime,
+                  x.EstimatedStartTime,
+                  x.FinishDispatchingTime,
+                  x.StartDispatchingTime,
+                  x.PrintTime,
+                  x.MixingInfoID,
+                  x.DeliveredAmount,
+                  x.LineName,
+                  x.LineID,
+                  x.Supplier,
+                  x.GlueID,
+                  x.GlueName,
+                  x.Status,
+                  Station = x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID) == null ? 0 : x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID).Amount,
+                  ModelName = x.Plan.BPFCEstablish.ModelName == null ? "N/A" : x.Plan.BPFCEstablish.ModelName.Name,
+                  ModelNO = x.Plan.BPFCEstablish.ModelNo == null ? "N/A" : x.Plan.BPFCEstablish.ModelNo.Name,
+                  ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
+              })
+             .ToListAsync();
+            var groupByDispatchList = dispatchListModel.Concat(delayDispatchListModel).GroupBy(x => new { x.EstimatedStartTime, x.GlueName })
+              .OrderBy(x => x.Key.EstimatedStartTime)
+              .ThenBy(x => x.Key.GlueName)
+              .ToList();
+            foreach (var groupByItem in groupByDispatchList.Select((value, i) => new { i, value }))
             {
-                return new MixingDetailForResponse();
-            }
-            else if (mixedModel.Count == 0) // neu ngay hien tai khong co thi lay cua ngay truoc do
-            {
-                date = date.AddDays(-1);
-                return MixingDetail(glueName, date);
-            }
-            else // ngay hien tai co thi lay cua ngay hien tai
-            {
-                var mixingModel = mixedModel.FirstOrDefault();
-                var deliveryModel = _repoDispatch.FindAll(x => mixedModel.Select(a => a.ID).Contains(x.MixingInfoID) && x.CreatedTime.Date == date).ToList();
-                //deliveryCon = deliveryModel.Count() == 0 ? 0 : deliveryModel.Sum(x => x.Amount);
-                double sumDelivery = 0;
-                double sumMixed = 0;
-                foreach (var item in mixedModel)
+                var sequence = groupByItem.i + 1;
+                foreach (var item in groupByItem.value.OrderBy(x => x.LineName).ToList())
                 {
-                    var subDeliveryModel = deliveryModel.Where(x => x.MixingInfoID == item.ID);
-                    sumDelivery += subDeliveryModel.Count() == 0 ? 0 : subDeliveryModel.Sum(x => x.Amount);
+                    var dispatchModel = await _repoDispatch.FindAll(a => a.MixingInfoID == item.MixingInfoID && a.LineID == item.LineID)
+                        .FirstOrDefaultAsync();
+                    var exportItem = new ToDoListForExportDto();
+                    exportItem.Sequence = sequence;
+                    exportItem.Line = item.LineName;
+                    exportItem.Station = item.Station;
+                    exportItem.Supplier = item.Supplier;
+                    var modelName = item.Plan.BPFCEstablish.ModelName;
+                    var modelNO = item.Plan.BPFCEstablish.ModelName;
+                    var articleNO = item.Plan.BPFCEstablish.ModelName;
 
-                    sumMixed += item.MixingInfoDetails.Sum(x => x.Amount);
+                    exportItem.ModelName = item.ModelName;
+                    exportItem.ModelNO = item.ModelNO;
+                    exportItem.ArticleNO = item.ArticleNO;
+                    exportItem.GlueName = item.GlueName;
+
+                    exportItem.StartDispatchingTime = item.StartDispatchingTime;
+                    exportItem.FinishDispatchingTime = item.FinishDispatchingTime;
+
+                    exportItem.DeliveredConsumption = item.DeliveredAmount;
+                    exportItem.DeliveredConsumptionEachLine = dispatchModel is null ? 0 : dispatchModel.Amount;
+                    var status = item.FinishDispatchingTime.HasValue == false ? false : item.FinishDispatchingTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
+                    exportItem.Status = status ? "Pass" : "Fail";
+
+                    exportItem.EstimatedStartTime = item.EstimatedStartTime;
+                    exportItem.EstimatedFinishTime = item.EstimatedFinishTime;
+                    exportList.Add(exportItem);
                 }
-                deliveryCon = sumDelivery / deliveryModel.Count();
-                mixedCon = sumMixed / mixedModel.Count();
-                deliveryCon = Double.IsNaN(deliveryCon) ? 0 : deliveryCon;
-                mixedCon = Double.IsNaN(mixedCon) ? 0 : mixedCon;
-                return new MixingDetailForResponse(mixedCon, mixingModel.CreatedTime, deliveryCon, mixingModel.CreatedTime);
             }
-        }
-
-        public MixingDetailForResponse GetMixingDetail(MixingDetailParams obj)
-        {
-            var glueName = obj.GlueName.ToSafetyString().Trim();
-            var date = DateTime.Now.ToLocalTime().Date;
-            return MixingDetail(glueName, date);
+            return ExcelExportDoneList(exportList);
         }
 
         public async Task<byte[]> ExportExcelToDoListWholeBuilding()
@@ -2561,6 +3583,7 @@ namespace DMR_API._Services.Services
             }
             return ExcelExportForReport(exportList);
         }
+
         public async Task<byte[]> ExportExcelToDoListWholeBuilding(DateTime startTime, DateTime endTime)
         {
             var start = startTime.Date;
@@ -2572,7 +3595,6 @@ namespace DMR_API._Services.Services
             var newModel = await _repoToDoList.FindAll(x =>
                    x.IsDelete == false
                    && x.EstimatedFinishTime.Date >= start && x.EstimatedFinishTime.Date <= end
-                   && x.FinishDispatchingTime != null
                    && buildings.Contains(x.BuildingID))
                 .Include(x => x.Plan)
                     .ThenInclude(x => x.BPFCEstablish)
@@ -2614,7 +3636,6 @@ namespace DMR_API._Services.Services
                     ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
                 })
                .ToListAsync();
-
             var exportList = new List<ToDoListForExportDto>();
             var groupByBuilding = newModel.GroupBy(x => x.BuildingID).OrderBy(x => x.Key).ToList();
             foreach (var building in groupByBuilding)
@@ -2676,7 +3697,7 @@ namespace DMR_API._Services.Services
             }
             return ExcelExportForReport(exportList);
         }
-        // Report(new)
+        // Report 2
         private Byte[] ExcelExportForReport(List<ToDoListForExportDto> todolist)
         {
             try
@@ -3627,12 +4648,12 @@ namespace DMR_API._Services.Services
             sequenceExcelRange.Style.Fill.PatternType = ExcelFillStyle.Solid;
             sequenceExcelRange.Style.Fill.BackgroundColor.SetColor(index % 2 == 0 ? ColorTranslator.FromHtml("#BDD7EE") : ColorTranslator.FromHtml("#FFF"));
         }
-
         public async Task<byte[]> ExportExcelNewReportOfDonelistByBuilding(int buildingID)
         {
             var currentTime = DateTime.Now.ToLocalTime();
             var currentDate = currentTime.Date;
-            var model = await _repoToDoList.FindAll(x =>
+           
+            var doneTodolistModel = await _repoToDoList.FindAll(x =>
                    x.IsDelete == false
                    && x.EstimatedStartTime.Date == currentDate
                    && x.EstimatedFinishTime.Date == currentDate
@@ -3678,8 +4699,9 @@ namespace DMR_API._Services.Services
                     ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
                 })
                .ToListAsync();
+            
 
-            var delay = await _repoToDoList.FindAll(x =>
+            var delayTodolistModel = await _repoToDoList.FindAll(x =>
                   x.IsDelete == false
                   && x.EstimatedStartTime.Date == currentDate
                   && x.EstimatedFinishTime.Date == currentDate
@@ -3727,10 +4749,11 @@ namespace DMR_API._Services.Services
                }).Where(x => x.GlueName.Contains(" + ")) //Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
               .ToListAsync();
             var exportList = new List<ToDoListForExportDto>();
-            var groupBy = model.Concat(delay).GroupBy(x => new { x.EstimatedStartTime, x.GlueName })
+            var groupBy = doneTodolistModel.Concat(delayTodolistModel).GroupBy(x => new { x.EstimatedStartTime, x.GlueName })
                 .OrderBy(x => x.Key.EstimatedStartTime)
                 .ThenBy(x => x.Key.GlueName)
                 .ToList();
+           
             foreach (var groupByItem in groupBy.Select((value, i) => new { i, value }))
             {
                 var sequence = groupByItem.i + 1;
@@ -3775,6 +4798,125 @@ namespace DMR_API._Services.Services
                     exportItem.MixedConsumption = item.MixedConsumption;
                     exportItem.DeliveredConsumption = item.DeliveredConsumption;
                     exportItem.DeliveredConsumptionEachLine = dispatchModel is null ? 0 : dispatchModel.Amount;
+                    var status = item.PrintTime.HasValue == false ? false : item.PrintTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
+                    exportItem.Status = status ? "Pass" : "Fail";
+
+                    exportItem.EstimatedStartTime = item.EstimatedStartTime;
+                    exportItem.EstimatedFinishTime = item.EstimatedFinishTime;
+                    exportList.Add(exportItem);
+                }
+            }
+            var dispatchListModel = await _repoDispatchList.FindAll(x =>
+                  x.IsDelete == false
+                  && x.EstimatedStartTime.Date == currentDate
+                  && x.EstimatedFinishTime.Date == currentDate
+                  && x.FinishDispatchingTime != null
+                  && x.BuildingID == buildingID
+                  )
+               .Include(x => x.Plan)
+                   .ThenInclude(x => x.BPFCEstablish)
+                   .ThenInclude(x => x.ModelName)
+               .Include(x => x.Plan)
+                   .ThenInclude(x => x.BPFCEstablish)
+                   .ThenInclude(x => x.ModelNo)
+                .Include(x => x.Plan)
+                   .ThenInclude(x => x.BPFCEstablish)
+                   .ThenInclude(x => x.ArticleNo)
+               .Include(x => x.Plan)
+                   .ThenInclude(x => x.Stations)
+               .Select(x => new
+               {
+                   x.Plan,
+                   x.EstimatedFinishTime,
+                   x.EstimatedStartTime,
+                   x.FinishDispatchingTime,
+                   x.StartDispatchingTime,
+                   x.PrintTime,
+                   x.MixingInfoID,
+                   x.DeliveredAmount,
+                   x.LineName,
+                   x.LineID,
+                   x.Supplier,
+                   x.GlueID,
+                   x.GlueName,
+                   x.Status,
+                   Station = x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID) == null ? 0 : x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID).Amount,
+                   ModelName = x.Plan.BPFCEstablish.ModelName == null ? "N/A" : x.Plan.BPFCEstablish.ModelName.Name,
+                   ModelNO = x.Plan.BPFCEstablish.ModelNo == null ? "N/A" : x.Plan.BPFCEstablish.ModelNo.Name,
+                   ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
+               })
+              .ToListAsync();
+            var delayDispatchListModel = await _repoDispatchList.FindAll(x =>
+                 x.IsDelete == false
+                 && x.EstimatedStartTime.Date == currentDate
+                 && x.EstimatedFinishTime.Date == currentDate
+                 && x.EstimatedFinishTime < currentTime
+                 && x.FinishDispatchingTime == null //Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
+                 && x.BuildingID == buildingID
+                 )
+              .Include(x => x.Plan)
+                  .ThenInclude(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelName)
+              .Include(x => x.Plan)
+                  .ThenInclude(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelNo)
+               .Include(x => x.Plan)
+                  .ThenInclude(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ArticleNo)
+              .Include(x => x.Plan)
+                  .ThenInclude(x => x.Stations)
+              .Select(x => new
+              {
+                  x.Plan,
+                  x.EstimatedFinishTime,
+                  x.EstimatedStartTime,
+                  x.FinishDispatchingTime,
+                  x.StartDispatchingTime,
+                  x.PrintTime,
+                  x.MixingInfoID,
+                  x.DeliveredAmount,
+                  x.LineName,
+                  x.LineID,
+                  x.Supplier,
+                  x.GlueID,
+                  x.GlueName,
+                  x.Status,
+                  Station = x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID) == null ? 0 : x.Plan.Stations.FirstOrDefault(a => a.GlueID == x.GlueID).Amount,
+                  ModelName = x.Plan.BPFCEstablish.ModelName == null ? "N/A" : x.Plan.BPFCEstablish.ModelName.Name,
+                  ModelNO = x.Plan.BPFCEstablish.ModelNo == null ? "N/A" : x.Plan.BPFCEstablish.ModelNo.Name,
+                  ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
+              })
+             .ToListAsync();
+            var groupByDispatchList = dispatchListModel.Concat(delayDispatchListModel).GroupBy(x => new { x.EstimatedStartTime, x.GlueName })
+              .OrderBy(x => x.Key.EstimatedStartTime)
+              .ThenBy(x => x.Key.GlueName)
+              .ToList();
+            foreach (var groupByItem in groupByDispatchList.Select((value, i) => new { i, value }))
+            {
+                var sequence = groupByItem.i + 1;
+                foreach (var item in groupByItem.value.OrderBy(x => x.LineName).ToList())
+                {
+                    var dispatchModel = await _repoDispatch.FindAll(a => a.MixingInfoID == item.MixingInfoID && a.LineID == item.LineID)
+                        .FirstOrDefaultAsync();
+                    var exportItem = new ToDoListForExportDto();
+                    exportItem.Sequence = sequence;
+                    exportItem.Line = item.LineName;
+                    exportItem.Station = item.Station;
+                    exportItem.Supplier = item.Supplier;
+                    var modelName = item.Plan.BPFCEstablish.ModelName;
+                    var modelNO = item.Plan.BPFCEstablish.ModelName;
+                    var articleNO = item.Plan.BPFCEstablish.ModelName;
+
+                    exportItem.ModelName = item.ModelName;
+                    exportItem.ModelNO = item.ModelNO;
+                    exportItem.ArticleNO = item.ArticleNO;
+                    exportItem.GlueName = item.GlueName;
+
+                    exportItem.StartDispatchingTime = item.StartDispatchingTime;
+                    exportItem.FinishDispatchingTime = item.FinishDispatchingTime;
+
+                    exportItem.DeliveredConsumption = item.DeliveredAmount;
+                    exportItem.DeliveredConsumptionEachLine = dispatchModel is null ? 0 : dispatchModel.Amount;
                     var status = item.FinishDispatchingTime.HasValue == false ? false : item.FinishDispatchingTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
                     exportItem.Status = status ? "Pass" : "Fail";
 
@@ -3784,8 +4926,10 @@ namespace DMR_API._Services.Services
                 }
             }
             return ExcelExportReportOfDoneList(exportList);
-            throw new NotImplementedException();
         }
+        #endregion
+
+        #region SendMail Action
 
         public async Task<bool> SendMail(byte[] data, DateTime time)
         {
@@ -3819,1509 +4963,7 @@ namespace DMR_API._Services.Services
             }
         }
 
-        public async Task<object> GenerateDispatchList(List<int> plans)
-        {
-            if (plans.Count == 0) return new
-            {
-                status = false,
-                message = "Không có kế hoạch làm việc nào được gửi lên server"
-            };
-            var currentTime = DateTime.Now;
-            var currentDate = currentTime.Date;
-            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
-                .Include(x => x.Building)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ModelName)
-                 .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ModelNo)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ArticleNo)
-                     .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ArtProcess)
-                    .ThenInclude(x => x.Process)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueName)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueIngredients)
-                    .ThenInclude(x => x.Ingredient)
-                    .ThenInclude(x => x.Supplier)
-                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
-                    {
-                        plan.WorkingHour,
-                        plan.HourlyOutput,
-                        plan.FinishWorkingTime,
-                        plan.StartWorkingTime,
-                        BPFCName = $"{plan.BPFCEstablish.ModelName.Name}->{plan.BPFCEstablish.ModelNo.Name}->{plan.BPFCEstablish.ArticleNo.Name}->{plan.BPFCEstablish.ArtProcess.Process.Name}",
-                        plan.DueDate,
-                        plan.Building,
-                        PlanID = plan.ID,
-                        BPFCID = plan.BPFCEstablishID,
-                        plan.CreatedDate,
-                        glue.Consumption,
-                        GlueID = glue.ID,
-                        glue.GlueNameID,
-                        GlueName = glue.Name,
-                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
-                    }).ToListAsync();
+        #endregion
 
-            var value = plansModel.FirstOrDefault();
-            if (plansModel.Count == 0) return new
-            {
-                status = false,
-                message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
-            };
-
-            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
-            if (line is null) return new
-            {
-                status = false,
-                message = "Không tìm thấy chuyền nào trong hệ thống!"
-            };
-
-            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
-               .Include(x => x.LunchTime)
-               .ThenInclude(x => x.Periods)
-               .FirstOrDefaultAsync();
-            if (building is null) return new
-            {
-                status = false,
-                message = "Không tìm thấy tòa nhà nào trong hệ thống!"
-            };
-
-            if (building.LunchTime is null) return new
-            {
-                status = false,
-                message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
-            };
-            var periods = building.LunchTime.Periods;
-            if (periods.Count == 0 && periods == null) return new
-            {
-                status = false,
-                message = $"Tòa nhà {building.Name} chưa cài đặt period!"
-            };
-            var startLunchTimeBuilding = building.LunchTime.StartTime;
-            var endLunchTimeBuilding = building.LunchTime.EndTime;
-
-            var dispatchlist = new List<DispatchListDto>();
-
-            var glues = plansModel.GroupBy(x => x.GlueName).ToList();
-
-            foreach (var glue in glues)
-            {
-                foreach (var item in glue)
-                {
-                    if (item.ChemicalA is null) return new
-                    {
-                        status = false,
-                        message = $"Keo {item.GlueName} trong {item.BPFCName} không có hóa chất A! Vui lòng xem lại BPFC!"
-                    };
-                    var checmicalA = item.ChemicalA;
-                    var startLunchTime = item.DueDate.Date.Add(new TimeSpan(startLunchTimeBuilding.Hour, startLunchTimeBuilding.Minute, 0));
-                    var endLunchTime = item.DueDate.Date.Add(new TimeSpan(endLunchTimeBuilding.Hour, endLunchTimeBuilding.Minute, 0));
-
-                    var finishWorkingTime = item.FinishWorkingTime;
-
-                    double prepareTime = checmicalA.PrepareTime;
-
-                    var kgPair = item.Consumption.ToDouble() / 1000;
-                    double lunchHour = (endLunchTime - startLunchTime).TotalHours;
-                    // Nếu lên kế hoạch cho ngày tiếp theo 
-                    if (item.DueDate.Date != currentDate && item.CreatedDate.Date != currentDate)
-                    {
-                        for (int index = 0; index < periods.Count; index++)
-                        {
-                            var startWorkingTime = periods[index].StartTime;
-                            var endWorkingTime = periods[index].EndTime;
-                            var defaultMin = 30;
-                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
-                            // 7:30
-                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
-                            var startDispatchTimeTemp = startDispatchTime; // 7:30
-                            while (true)
-                            {
-                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
-                                {
-                                    break;
-                                }
-                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
-                                var todo = new DispatchListDto();
-                                todo.GlueName = item.GlueName;
-                                todo.GlueID = item.GlueID;
-                                todo.PlanID = item.PlanID;
-                                todo.LineID = item.Building.ID;
-                                todo.LineName = item.Building.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.BPFCID = item.BPFCID;
-                                todo.Supplier = item.ChemicalA.Supplier.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.ColorCode = (ColorCode)index;
-                                todo.GlueNameID = item.GlueNameID.Value;
-                                todo.BuildingID = item.Building.ParentID.Value;
-                                todo.EstimatedStartTime = startDispatchTimeTemp;
-                                todo.EstimatedFinishTime = endDispatchTime;
-
-                                dispatchlist.Add(todo);
-                                startDispatchTimeTemp = endDispatchTime; // 8:00
-                            }
-                        }
-                    }
-                    else
-                    {
-                        for (int index = 0; index < periods.Count; index++)
-                        {
-                            var startWorkingTime = periods[index].StartTime;
-                            var endWorkingTime = periods[index].EndTime;
-                            var startTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
-                            var finishTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(endWorkingTime.Hour, endWorkingTime.Minute, 0));
-
-                            var defaultMin = 30;
-                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
-                            // 7:30
-                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
-                            var startDispatchTimeTemp = startDispatchTime; // 7:30
-                            var colorCode = 0;
-                            while (true)
-                            {
-                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
-                                {
-                                    break;
-                                }
-
-                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
-                                var todo = new DispatchListDto();
-                                todo.GlueName = item.GlueName;
-                                todo.GlueID = item.GlueID;
-                                todo.PlanID = item.PlanID;
-                                todo.LineID = item.Building.ID;
-                                todo.LineName = item.Building.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.BPFCID = item.BPFCID;
-                                todo.ColorCode = (ColorCode)colorCode++;
-                                todo.Supplier = item.ChemicalA.Supplier.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.GlueNameID = item.GlueNameID.Value;
-                                todo.BuildingID = item.Building.ParentID.Value;
-                                todo.EstimatedStartTime = startDispatchTimeTemp;
-                                todo.EstimatedFinishTime = endDispatchTime;
-
-                                todo.StartTimeOfPeriod = startTimeOfPeriod;
-                                todo.FinishTimeOfPeriod = finishTimeOfPeriod;
-
-                                // chi tao nhung thoi gian trong tuong lai
-                                var finsihTimeOfWorkplan = item.FinishWorkingTime.TimeOfDay;
-                                var startTimeOfWorkplan = item.StartWorkingTime.TimeOfDay;
-                                // 16:30 >= 7:30 && 7:30 
-                                // 16:30 >= 10:50 && 11:00 >= 10:50
-                                if (finsihTimeOfWorkplan >= startDispatchTimeTemp.TimeOfDay && endDispatchTime.TimeOfDay >= startTimeOfWorkplan)
-                                    dispatchlist.Add(todo);
-                                startDispatchTimeTemp = endDispatchTime; // 8:00
-                            }
-                        }
-                    }
-                }
-            }
-            try
-            {
-                var model = _mapper.Map<List<DispatchList>>(dispatchlist);
-                _repoDispatchList.AddRange(model);
-                _repoDispatchList.Save();
-                return new
-                {
-                    status = true,
-                    message = "Tạo danh sách giao thành công!"
-                };
-            }
-            catch (Exception)
-            {
-                return new
-                {
-                    status = false,
-                    message = "Tạo danh sách giao thất bại!"
-                };
-            }
-        }
-
-        private async Task AddDispatchList(List<int> plans)
-        {
-            var currentTime = DateTime.Now;
-            var currentDate = currentTime.Date;
-            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
-                .Include(x => x.Building)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ModelName)
-                 .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ModelNo)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ArticleNo)
-                     .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ArtProcess)
-                    .ThenInclude(x => x.Process)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueName)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueIngredients)
-                    .ThenInclude(x => x.Ingredient)
-                    .ThenInclude(x => x.Supplier)
-                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
-                    {
-                        plan.WorkingHour,
-                        plan.HourlyOutput,
-                        plan.FinishWorkingTime,
-                        plan.StartWorkingTime,
-                        BPFCName = $"{plan.BPFCEstablish.ModelName.Name}->{plan.BPFCEstablish.ModelNo.Name}->{plan.BPFCEstablish.ArticleNo.Name}->{plan.BPFCEstablish.ArtProcess.Process.Name}",
-                        plan.DueDate,
-                        plan.Building,
-                        PlanID = plan.ID,
-                        BPFCID = plan.BPFCEstablishID,
-                        plan.CreatedDate,
-                        glue.Consumption,
-                        GlueID = glue.ID,
-                        glue.GlueNameID,
-                        GlueName = glue.Name,
-                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
-                    }).ToListAsync();
-
-            var value = plansModel.FirstOrDefault();
-
-            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
-
-
-            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
-               .Include(x => x.LunchTime)
-               .ThenInclude(x => x.Periods)
-               .FirstOrDefaultAsync();
-
-
-
-            var periods = building.LunchTime.Periods;
-            var dispatchlistOvertime = periods.Where(x => x.IsOvertime).ToList();
-            var startLunchTimeBuilding = building.LunchTime.StartTime;
-            var endLunchTimeBuilding = building.LunchTime.EndTime;
-
-            var dispatchlist = new List<DispatchListDto>();
-
-            var glues = plansModel.GroupBy(x => x.GlueName).ToList();
-
-            foreach (var glue in glues)
-            {
-                foreach (var item in glue)
-                {
-
-                    var checmicalA = item.ChemicalA;
-                    var startLunchTime = item.DueDate.Date.Add(new TimeSpan(startLunchTimeBuilding.Hour, startLunchTimeBuilding.Minute, 0));
-                    var endLunchTime = item.DueDate.Date.Add(new TimeSpan(endLunchTimeBuilding.Hour, endLunchTimeBuilding.Minute, 0));
-
-                    var finishWorkingTime = item.FinishWorkingTime;
-
-                    double prepareTime = checmicalA.PrepareTime;
-
-                    var kgPair = item.Consumption.ToDouble() / 1000;
-                    double lunchHour = (endLunchTime - startLunchTime).TotalHours;
-                    // Nếu lên kế hoạch cho ngày tiếp theo 
-                    if (item.DueDate.Date != currentDate && item.CreatedDate.Date != currentDate)
-                    {
-                        for (int index = 0; index < periods.Count; index++)
-                        {
-                            var startWorkingTime = periods[index].StartTime;
-                            var endWorkingTime = periods[index].EndTime;
-                            var defaultMin = 30;
-                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
-                            // 7:30
-                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
-                            var startDispatchTimeTemp = startDispatchTime; // 7:30
-                            while (true)
-                            {
-                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
-                                {
-                                    break;
-                                }
-                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
-                                var todo = new DispatchListDto();
-                                todo.GlueName = item.GlueName;
-                                todo.GlueID = item.GlueID;
-                                todo.PlanID = item.PlanID;
-                                todo.LineID = item.Building.ID;
-                                todo.LineName = item.Building.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.BPFCID = item.BPFCID;
-                                todo.Supplier = item.ChemicalA.Supplier.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.ColorCode = (ColorCode)index;
-                                todo.GlueNameID = item.GlueNameID.Value;
-                                todo.BuildingID = item.Building.ParentID.Value;
-                                todo.EstimatedStartTime = startDispatchTimeTemp;
-                                todo.EstimatedFinishTime = endDispatchTime;
-
-                                dispatchlist.Add(todo);
-                                startDispatchTimeTemp = endDispatchTime; // 8:00
-                            }
-                        }
-                    }
-                    else// Nếu có đổi modelName trong ngày
-                    {
-                        for (int index = 0; index < periods.Count; index++)
-                        {
-                            var startWorkingTime = periods[index].StartTime;
-                            var endWorkingTime = periods[index].EndTime;
-                            var startTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
-                            var finishTimeOfPeriod = item.DueDate.Date.Add(new TimeSpan(endWorkingTime.Hour, endWorkingTime.Minute, 0));
-
-                            var defaultMin = 30;
-                            var dispatchAmount = periods[index].EndTime - periods[index].StartTime;
-                            // 7:30
-                            var startDispatchTime = item.DueDate.Date.Add(new TimeSpan(startWorkingTime.Hour, startWorkingTime.Minute, 0));
-                            var startDispatchTimeTemp = startDispatchTime; // 7:30
-                            var colorCode = 0;
-                            while (true)
-                            {
-                                if (startDispatchTimeTemp.TimeOfDay >= endWorkingTime.TimeOfDay)
-                                {
-                                    break;
-                                }
-
-                                var endDispatchTime = startDispatchTimeTemp.AddMinutes(defaultMin); // 8:00
-                                var todo = new DispatchListDto();
-                                todo.GlueName = item.GlueName;
-                                todo.GlueID = item.GlueID;
-                                todo.PlanID = item.PlanID;
-                                todo.LineID = item.Building.ID;
-                                todo.LineName = item.Building.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.BPFCID = item.BPFCID;
-                                todo.ColorCode = (ColorCode)colorCode++;
-                                todo.Supplier = item.ChemicalA.Supplier.Name;
-                                todo.PlanID = item.PlanID;
-                                todo.GlueNameID = item.GlueNameID.Value;
-                                todo.BuildingID = item.Building.ParentID.Value;
-                                todo.EstimatedStartTime = startDispatchTimeTemp;
-                                todo.EstimatedFinishTime = endDispatchTime;
-
-                                todo.StartTimeOfPeriod = startTimeOfPeriod;
-                                todo.FinishTimeOfPeriod = finishTimeOfPeriod;
-
-                                // chi tao nhung thoi gian trong tuong lai
-                                var finsihTimeOfWorkplan = item.FinishWorkingTime.TimeOfDay;
-                                var startTimeOfWorkplan = item.StartWorkingTime.TimeOfDay;
-                                // 16:30 >= 7:30 && 7:30 
-                                // 16:30 >= 16:30 && 11:00 >= 10:50
-                                if (finsihTimeOfWorkplan > startDispatchTimeTemp.TimeOfDay && endDispatchTime.TimeOfDay >= startTimeOfWorkplan)
-                                {
-                                    if (
-                                            // 7:00 <= 8:45 && 7:30 >= 8:45 || 9:00 > 8:45 && 9:30 > 8:45
-                                            startDispatchTimeTemp.TimeOfDay <= item.CreatedDate.TimeOfDay 
-                                        && endDispatchTime.TimeOfDay >= item.CreatedDate.TimeOfDay
-                                        ||
-                                            startDispatchTimeTemp.TimeOfDay >= item.CreatedDate.TimeOfDay
-                                        && endDispatchTime.TimeOfDay >= item.CreatedDate.TimeOfDay
-                                        )
-                                    dispatchlist.Add(todo);
-                                }
-                                startDispatchTimeTemp = endDispatchTime; // 8:00
-                            }
-                        }
-                    }
-                }
-            }
-            try
-            {
-                var dispatchlistForAdd = new List<DispatchList>();
-                var model = _mapper.Map<List<DispatchList>>(dispatchlist);
-                foreach (var item in dispatchlistOvertime)
-                {
-                    var dispatchlistOvertimeModel = model.Where(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay
-                                                            && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToList();
-                    dispatchlistOvertimeModel.ForEach(item =>
-                    {
-                        item.IsDelete = true;
-                    });
-
-                    var dispatchlistNoOvertimeModel = model.Where(x => x.StartTimeOfPeriod.TimeOfDay != item.StartTime.TimeOfDay
-                                                            && x.FinishTimeOfPeriod.TimeOfDay != item.EndTime.TimeOfDay).ToList();
-
-                    dispatchlistForAdd.AddRange(dispatchlistOvertimeModel);
-                    dispatchlistForAdd.AddRange(dispatchlistNoOvertimeModel);
-                }
-                _repoDispatchList.AddRange(dispatchlistForAdd);
-                await _repoDispatchList.SaveAll();
-
-
-
-            }
-            catch (Exception)
-            {
-            }
-        }
-
-        // Giao keo
-        List<DispatchListDto> MapToDispatchListDto(List<DispatchList> model)
-        {
-            var currentTime = DateTime.Now.ToLocalTime();
-            var currentDate = currentTime.Date;
-            var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueNameID });
-            var dispatchlist = new List<DispatchListDto>();
-            foreach (var todo in groupBy)
-            {
-                var item = todo.FirstOrDefault();
-                var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-
-                var itemTodolist = new DispatchListDto();
-                itemTodolist.ID = item.ID;
-                itemTodolist.PlanID = item.PlanID;
-                itemTodolist.MixingInfoID = item.MixingInfoID;
-                itemTodolist.GlueID = item.GlueID;
-                itemTodolist.LineID = item.LineID;
-                itemTodolist.LineName = item.LineName;
-                itemTodolist.GlueName = item.GlueName;
-                itemTodolist.GlueNameID = item.GlueNameID;
-                itemTodolist.Supplier = item.Supplier;
-                itemTodolist.ColorCode = item.ColorCode;
-
-
-                itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-                itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
-
-                itemTodolist.PrintTime = item.PrintTime;
-
-                itemTodolist.DeliveredAmount = item.DeliveredAmount;
-
-                itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-                itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
-
-                itemTodolist.FinishTimeOfPeriod = item.FinishTimeOfPeriod;
-                itemTodolist.StartTimeOfPeriod = item.StartTimeOfPeriod;
-                itemTodolist.IsDelete = item.IsDelete;
-
-                itemTodolist.LineNames = lineList;
-                itemTodolist.BuildingID = item.BuildingID;
-                dispatchlist.Add(itemTodolist);
-            }
-            var modelTemp = dispatchlist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-                .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.GlueNameID, x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-            var result = new List<DispatchListDto>();
-            foreach (var item in modelTemp)
-            {
-                result.AddRange(item.OrderByDescending(x => x.GlueName));
-            }
-            return result;
-        }
-        public async Task<DispatchListForReturnDto> DispatchList(int buildingID)
-        {
-            var userID = _jwtService.GetUserID();
-            var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
-            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
-
-            try
-            {
-                var currentTime = DateTime.Now.ToLocalTime();
-                var currentDate = currentTime.Date;
-                var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-                var morning = "AM";
-                var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-                var model = await _repoDispatchList.FindAll(x =>
-                       x.IsDelete == false
-                       && x.EstimatedStartTime.Date == currentDate
-                       && x.EstimatedFinishTime.Date == currentDate
-                       && x.BuildingID == buildingID)
-                   .ToListAsync();
-                if (role.RoleID == (int)Enums.Role.Dispatcher)
-                {
-                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
-                }
-                // map to dto
-                var dispatchList = MapToDispatchListDto(model);
-
-                // filter by Middle of the day
-                if (value == morning)
-                    dispatchList = dispatchList.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-                // Caculate
-                var dispatchTotal = dispatchList.Count();
-
-                var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                var todoDispatchTotal = dispatchListResult.Count();
-
-                var delayDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
-
-                // decentralization
-                if (role.RoleID == (int)Enums.Role.Dispatcher)
-                {
-                    var todoModel = await _repoToDoList.FindAll(x =>
-                                                         x.IsDelete == false
-                                                         && x.EstimatedStartTime.Date == currentDate
-                                                         && x.EstimatedFinishTime.Date == currentDate
-                                                         && x.GlueName.Contains(" + ")
-                                                         && x.BuildingID == buildingID)
-                                   .ToListAsync();
-
-                    // map dto
-                    var todoResult = MapToTodolistDto(todoModel);
-
-                    // filter by Middle of the day
-                    if (value == morning)
-                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-                    // caculate doneTodolist
-                    var total = todoResult.Count();
-                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                    var todoTotal = data.Count();
-                    var delayTotal = todoResult.Where(x => x.PrintTime is null
-                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
-
-                    var response = new DispatchListForReturnDto();
-                    response.DoneTotal = dispatchListDoneTotal;
-                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                    return response;
-                }
-                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff)
-                {
-                    var response = new DispatchListForReturnDto();
-                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                    var todoModel = await _repoToDoList.FindAll(x =>
-                      x.IsDelete == false
-                      && x.EstimatedStartTime.Date == currentDate
-                      && x.EstimatedFinishTime.Date == currentDate
-                      && x.GlueName.Contains(" + ")
-                      && x.BuildingID == buildingID)
-                  .ToListAsync();
-
-                    // map dto
-                    var todoResult = MapToTodolistDto(todoModel);
-
-                    // filter by Middle of the day
-                    if (value == morning)
-                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-                    // caculate
-                    var total = todoResult.Count();
-                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                    var todoTotal = data.Count();
-                    var delayTotal = todoResult.Where(x => x.PrintTime is null
-                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-
-
-                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
-                    total = doneTotal + delayTotal + todoTotal + dispatchListDoneTotal + todoDispatchTotal + delayDispatchTotal;
-                    doneTotal = doneTotal + dispatchListDoneTotal;
-                    response.TodoDetail(dispatchListResult, doneTotal, todoTotal, delayTotal, total);
-
-                    return response;
-                }
-                return new DispatchListForReturnDto(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
-
-        public async Task<DispatchListForReturnDto> DispatchListDelay(int buildingID)
-        {
-            var userID = _jwtService.GetUserID();
-            var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
-            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
-            try
-            {
-                var currentTime = DateTime.Now.ToLocalTime();
-                var currentDate = currentTime.Date;
-                var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-                var morning = "AM";
-                var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-                var model = await _repoDispatchList.FindAll(x =>
-                       x.IsDelete == false
-                       && x.EstimatedStartTime.Date == currentDate
-                       && x.EstimatedFinishTime.Date == currentDate
-                       && x.BuildingID == buildingID)
-                   .ToListAsync();
-                if (role.RoleID == (int)Enums.Role.Dispatcher)
-                {
-                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
-                }
-                // map to dto
-                var dispatchList = MapToDispatchListDto(model);
-                // filter by Middle of the day
-                if (value == morning)
-                    dispatchList = dispatchList.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-
-                // caculate
-                var dispatchTotal = dispatchList.Count();
-                var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
-                var delayDispatchTotal = dispatchListResult.Count();
-                var todoDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-                var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
-
-                // decentralization
-                if (role.RoleID == (int)Enums.Role.Dispatcher)
-                {
-                    var todoModel = await _repoToDoList.FindAll(x =>
-                                                         x.IsDelete == false
-                                                         && x.EstimatedStartTime.Date == currentDate
-                                                         && x.EstimatedFinishTime.Date == currentDate
-                                                         && x.GlueName.Contains(" + ")
-                                                         && x.BuildingID == buildingID)
-                                   .ToListAsync();
-
-                    // map dto
-                    var todoResult = MapToTodolistDto(todoModel);
-
-                    // filter by Middle of the day
-                    if (value == morning)
-                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-                    // caculate doneTodolist
-                    var total = todoResult.Count();
-                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                    var todoTotal = data.Count();
-                    var delayTotal = todoResult.Where(x => x.PrintTime is null
-                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
-
-                    var response = new DispatchListForReturnDto();
-                    response.DoneTotal = dispatchListDoneTotal;
-                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                    return response;
-                }
-                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff)
-                {
-                    var response = new DispatchListForReturnDto();
-                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                    var todoModel = await _repoToDoList.FindAll(x =>
-                                                          x.IsDelete == false
-                                                          && x.EstimatedStartTime.Date == currentDate
-                                                          && x.EstimatedFinishTime.Date == currentDate
-                                                          && x.GlueName.Contains(" + ")
-                                                          && x.BuildingID == buildingID)
-                                    .ToListAsync();
-
-                    // map dto
-                    var todoResult = MapToTodolistDto(todoModel);
-
-                    // filter by Middle of the day
-                    if (value == morning)
-                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-                    // caculate doneTodolist
-                    var total = todoResult.Count();
-                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                    var todoTotal = data.Count();
-                    var delayTotal = todoResult.Where(x => x.PrintTime is null
-                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
-
-                    total = doneTotal + delayTotal + todoTotal + dispatchListDoneTotal + todoDispatchTotal + delayDispatchTotal;
-                    doneTotal = doneTotal + dispatchListDoneTotal;
-                    response.TodoDetail(dispatchListResult, doneTotal, todoTotal, delayTotal, total);
-
-                    return response;
-                }
-
-                return new DispatchListForReturnDto(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-        }
-        public async Task<object> Addition(int glueNameID, int glueID, DateTime start, DateTime end)
-        {
-            var result = await _repoToDoList.FindAll().Where(x => x.GlueNameID == glueNameID && x.AbnormalStatus == false && x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= end.TimeOfDay).ToListAsync();
-            var todolist = new List<ToDoListDto>();
-            var src = DateTime.Now;
-            if (result.Count > 0)
-            {
-                foreach (var item in result)
-                {
-                    item.EstimatedStartTime = new DateTime(src.Year, src.Month, src.Day, src.Hour, src.Minute, 0);
-                    item.AbnormalStatus = true;
-                    item.ID = 0;
-                }
-            }
-            else
-            {
-                return new
-                {
-                    status = false,
-                    message = "Không thể tạo Addition trong khoảng thời gian này! Vui lòng chọn lại khoảng thời gian phù hợp với hiện tại"
-                };
-            }
-
-            try
-            {
-                var model = _mapper.Map<List<ToDoList>>(result);
-                _repoToDoList.AddRange(model);
-                _repoToDoList.Save();
-                return new
-                {
-                    status = true,
-                    message = "Tạo Addition thành công!"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new
-                {
-                    status = false,
-                    message = "Tạo Addition thất bại!"
-                };
-            }
-        }
-
-        public async Task<ResponseDetail<object>> AdditionDispatch(int glueNameID)
-        {
-
-            var ct = DateTime.Now.ToRemoveSecond();
-            var test =  _repoDispatchList.FindAll().Where(x => x.GlueNameID == glueNameID).ToList();
-            var result = await _repoDispatchList.FindAll().Where(x => x.GlueNameID == glueNameID && x.AbnormalStatus == false && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay && x.FinishDispatchingTime != null).ToListAsync();
-            if (result.Count > 0)
-            {
-                foreach (var item in result)
-                {
-                    item.EstimatedStartTime = ct;
-                    item.FinishDispatchingTime = null;
-                    item.AbnormalStatus = true;
-                    item.ID = 0;
-                }
-            }
-            else
-            {
-                return new ResponseDetail<object>
-                {
-                    Status = false,
-                    Message = "Không thể giao thêm trong khoảng thời gian này! Vui lòng chọn lại khoảng thời gian phù hợp với hiện tại"
-                };
-            }
-            try
-            {
-                var model = _mapper.Map<List<DispatchList>>(result);
-                _repoDispatchList.AddRange(model);
-                _repoDispatchList.Save();
-                return new ResponseDetail<object>
-                {
-                    Status = true,
-                    Message = "Tạo giao thêm keo thành công!"
-                };
-            }
-            catch (Exception ex)
-            {
-                return new ResponseDetail<object>
-                {
-                    Status = false,
-                    Message = $"Tạo giao thêm keo thất bại! {ex.Message}"
-                };
-            }
-        }
-
-
-        public async Task<List<DispatchListDto>> GetDispatchListDetail(int glueNameID, string estimatedStartTime, string estimatedFinishTime)
-        {
-            var start = Convert.ToDateTime(estimatedStartTime);
-            var end = Convert.ToDateTime(estimatedFinishTime);
-            var dispatchList = await _repoDispatchList.FindAll(x => x.GlueNameID == glueNameID
-            && x.EstimatedFinishTime == end
-            && x.EstimatedStartTime == start
-            ).ProjectTo<DispatchListDto>(_configMapper).ToListAsync();
-
-            return dispatchList;
-        }
-
-        public async Task<ResponseDetail<object>> UpdateDispatchDetail(DispatchListForUpdateDto update)
-        {
-            var item = await _repoDispatchList.FindAll(x => x.ID == update.ID).FirstOrDefaultAsync();
-            if (item == null)
-                return new ResponseDetail<object>()
-                {
-                    Status = false,
-                    Message = "Không tìm thấy dữ liệu!"
-                };
-            try
-            {
-                item.DeliveredAmount = update.Amount;
-                item.CreatedTime = DateTime.Now;
-                _repoDispatchList.Update(item);
-                var status = await _repoDispatchList.SaveAll();
-
-                return new ResponseDetail<object>()
-                {
-                    Status = true,
-                    Message = "Thành công!"
-                };
-            }
-            catch (Exception)
-            {
-                return new ResponseDetail<object>()
-                {
-                    Status = false,
-                    Message = "Không cập nhật được dữ liệu!"
-                };
-                throw;
-            }
-        }
-
-        public async Task<List<MixingInfo>> GetMixingInfoHistory(int buildingID, int glueNameID, string estimatedStartTime, string estimatedFinishTime)
-        {
-            var startPeriod = Convert.ToDateTime(estimatedStartTime);
-            var endPeriod = Convert.ToDateTime(estimatedFinishTime);
-            var ct = DateTime.Now;
-            var history = await _repoMixingInfo.FindAll(x => x.GlueNameID == glueNameID
-                                                        && x.BuildingID == buildingID
-                                                        && x.EstimatedStartTime <= ct
-                                                        && x.EstimatedFinishTime >= ct
-                                                        )
-                                                .Include(x => x.MixingInfoDetails)
-                                                .ToListAsync();
-            return history;
-        }
-
-        public MixingInfo PrintGlueDispatchList(int mixingInfoID, int dispatchListID)
-        {
-            var mixing = _repoMixingInfo.FindById(mixingInfoID);
-            if (mixing is null) return new MixingInfo();
-            using (TransactionScope scope = new TransactionScope())
-            {
-                try
-                {
-                    var printTime = DateTime.Now.ToLocalTime();
-                    mixing.PrintTime = printTime;
-                    _repoMixingInfo.Update(mixing);
-                    _repoMixingInfo.Save();
-                    var dispatchlist = _repoDispatchList.FindAll(x => x.ID == dispatchListID).FirstOrDefault();
-                    dispatchlist.Status = mixing.Status;
-                    dispatchlist.MixingInfoID = mixingInfoID;
-                    dispatchlist.PrintTime = mixing.PrintTime;
-                    _repoDispatchList.Update(dispatchlist);
-                    _repoDispatchList.Save();
-                    var dispatchListDetail = new DispatchListDetail
-                    {
-                        MixingInfoID = mixingInfoID,
-                        DispatchListID = dispatchListID,
-                        CreatedTime = DateTime.Now,
-                    };
-                    _repoDispatchListDetail.Add(dispatchListDetail);
-                    _repoDispatchListDetail.Save();
-
-
-                    scope.Complete();
-                    return mixing;
-
-                }
-                catch
-                {
-                    scope.Dispose();
-                    return new MixingInfo();
-                }
-            }
-        }
-
-        public async Task<object> AddOvertime(List<int> plans)
-        {
-            if (plans.Count == 0) return new
-            {
-                status = false,
-                message = "Không có kế hoạch làm việc nào được gửi lên server"
-            };
-            var currentTime = DateTime.Now;
-            var currentDate = currentTime.Date;
-            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
-                .Include(x => x.Building)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueName)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueIngredients)
-                    .ThenInclude(x => x.Ingredient)
-                    .ThenInclude(x => x.Supplier)
-                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
-                    {
-                        plan.WorkingHour,
-                        plan.HourlyOutput,
-                        plan.FinishWorkingTime,
-                        plan.StartWorkingTime,
-                        plan.DueDate,
-                        plan.Building,
-                        PlanID = plan.ID,
-                        BPFCID = plan.BPFCEstablishID,
-                        plan.CreatedDate,
-                        glue.Consumption,
-                        GlueID = glue.ID,
-                        glue.GlueNameID,
-                        GlueName = glue.Name,
-                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
-                    }).ToListAsync();
-            var glueList = plansModel.Select(x => x.GlueName).ToList();
-            if (plansModel.Count == 0) return new
-            {
-                status = false,
-                message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
-            };
-            var value = plansModel.FirstOrDefault();
-
-            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
-            if (line is null) return new
-            {
-                status = false,
-                message = "Không tìm thấy chuyền nào trong hệ thống!"
-            };
-
-            var checkExistLine = _repoPlan.FindAll().Any(x => x.BuildingID == line.ID);
-
-            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
-              .Include(x => x.LunchTime)
-              .ThenInclude(x => x.Periods)
-              .FirstOrDefaultAsync();
-
-            if (building is null) return new
-            {
-                status = false,
-                message = "Không tìm thấy tòa nhà nào trong hệ thống!"
-            };
-
-            if (building.LunchTime is null) return new
-            {
-                status = false,
-                message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
-            };
-
-            var periods = building.LunchTime.Periods;
-
-            if (periods.Count == 0 && periods == null) return new
-            {
-                status = false,
-                message = $"Tòa nhà {building.Name} chưa cài đặt period!"
-            };
-            // Chi tao gio tang ca
-            periods = periods.Where(x => x.IsOvertime == true).ToList();
-            var finishWorkingTimeOfWorkplan = periods.OrderByDescending(x => x.EndTime).FirstOrDefault().EndTime;
-            using var transaction = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    var planUpdate = await _repoPlan.FindAll(x => plans.Contains(x.ID)).ToListAsync();
-                    planUpdate.ForEach(item =>
-                    {
-                        item.FinishWorkingTime = finishWorkingTimeOfWorkplan;
-                        item.IsOvertime = true;
-                    });
-                    _repoPlan.UpdateRange(planUpdate);
-                    await _repoPlan.SaveAll();
-
-                    var todolistForUpdate = new List<ToDoList>();
-                    var dispatchlistForUpdate = new List<DispatchList>();
-                    foreach (var item in periods)
-                    {
-                        var todolist = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
-                                                                && x.EstimatedFinishTime.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
-                        todolist.ForEach(item =>
-                        {
-                            item.IsDelete = false;
-                        });
-                        todolistForUpdate.AddRange(todolist);
-
-                        var dispatchlist = await _repoDispatchList.FindAll(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
-                        dispatchlist.ForEach(item =>
-                        {
-                            item.IsDelete = false;
-                        });
-                        dispatchlistForUpdate.AddRange(dispatchlist);
-
-                    }
-                    _repoPlan.UpdateRange(planUpdate);
-                    await _repoPlan.SaveAll();
-
-                    // cap nhat todolist
-                    _repoToDoList.UpdateRange(todolistForUpdate);
-                    await _repoDispatchList.SaveAll();
-
-                    //cap nhat dispatchlist
-                    _repoDispatchList.UpdateRange(dispatchlistForUpdate);
-                    await _repoDispatchList.SaveAll();
-                    transaction.Complete();
-                    return new
-                    {
-                        status = true,
-                        message = "Đã cài đặt giờ tăng ca!"
-                    };
-                }
-                catch (Exception)
-                {
-                    transaction.Dispose();
-                    return new
-                    {
-                        status = false,
-                        message = "Không cài đặt được giờ tăng ca!"
-                    };
-                }
-            }
-
-        }
-
-        public async Task<object> RemoveOvertime(List<int> plans)
-        {
-            if (plans.Count == 0) return new
-            {
-                status = false,
-                message = "Không có kế hoạch làm việc nào được gửi lên server"
-            };
-            var currentTime = DateTime.Now;
-            var currentDate = currentTime.Date;
-            var plansModel = await _repoPlan.FindAll(x => plans.Contains(x.ID))
-                .Include(x => x.Building)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueName)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.Glues)
-                    .ThenInclude(x => x.GlueIngredients)
-                    .ThenInclude(x => x.Ingredient)
-                    .ThenInclude(x => x.Supplier)
-                    .SelectMany(x => x.BPFCEstablish.Glues.Where(x => x.isShow), (plan, glue) => new
-                    {
-                        plan.WorkingHour,
-                        plan.HourlyOutput,
-                        plan.FinishWorkingTime,
-                        plan.StartWorkingTime,
-                        plan.DueDate,
-                        plan.Building,
-                        PlanID = plan.ID,
-                        BPFCID = plan.BPFCEstablishID,
-                        plan.CreatedDate,
-                        glue.Consumption,
-                        GlueID = glue.ID,
-                        glue.GlueNameID,
-                        GlueName = glue.Name,
-                        ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
-                    }).ToListAsync();
-            var glueList = plansModel.Select(x => x.GlueName).ToList();
-            if (plansModel.Count == 0) return new
-            {
-                status = false,
-                message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
-            };
-            var value = plansModel.FirstOrDefault();
-
-            var line = await _repoBuilding.FindAll(x => x.ID == value.Building.ID).FirstOrDefaultAsync();
-            if (line is null) return new
-            {
-                status = false,
-                message = "Không tìm thấy chuyền nào trong hệ thống!"
-            };
-
-            var checkExistLine = _repoPlan.FindAll().Any(x => x.BuildingID == line.ID);
-
-            var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
-              .Include(x => x.LunchTime)
-              .ThenInclude(x => x.Periods)
-              .FirstOrDefaultAsync();
-
-            if (building is null) return new
-            {
-                status = false,
-                message = "Không tìm thấy tòa nhà nào trong hệ thống!"
-            };
-
-            if (building.LunchTime is null) return new
-            {
-                status = false,
-                message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
-            };
-
-            var periods = building.LunchTime.Periods;
-
-            if (periods.Count == 0 && periods == null) return new
-            {
-                status = false,
-                message = $"Tòa nhà {building.Name} chưa cài đặt period!"
-            };
-            // Chi tao gio tang ca
-            var finishWorkingTime = periods.Where(x => x.IsOvertime == false).OrderByDescending(x => x.EndTime).FirstOrDefault().EndTime;
-            periods = periods.Where(x => x.IsOvertime == true).ToList();
-            using var transaction = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    var todolistForUpdate = new List<ToDoList>();
-                    var dispatchlistForUpdate = new List<DispatchList>();
-                    foreach (var item in periods)
-                    {
-                        var todolist = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
-                                                                && x.EstimatedFinishTime.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
-                        todolist.ForEach(item =>
-                        {
-                            item.IsDelete = true;
-                        });
-                        todolistForUpdate.AddRange(todolist);
-
-                        var dispatchlist = await _repoDispatchList.FindAll(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
-                        dispatchlist.ForEach(item =>
-                        {
-                            item.IsDelete = true;
-                        });
-                        dispatchlistForUpdate.AddRange(dispatchlist);
-
-                    }
-
-                    // cap nhat workplan
-                    var planUpdate = await _repoPlan.FindAll(x => plans.Contains(x.ID)).ToListAsync();
-                    planUpdate.ForEach(item =>
-                    {
-                        item.FinishWorkingTime = finishWorkingTime;
-                        item.IsOvertime = false;
-                    });
-                    _repoPlan.UpdateRange(planUpdate);
-                    await _repoPlan.SaveAll();
-
-                    // cap nhat todolist
-                    _repoToDoList.UpdateRange(todolistForUpdate);
-                    await _repoDispatchList.SaveAll();
-
-                    //cap nhat dispatchlist
-                    _repoDispatchList.UpdateRange(dispatchlistForUpdate);
-                    await _repoDispatchList.SaveAll();
-
-                    transaction.Complete();
-                    return new
-                    {
-                        status = true,
-                        message = $"Đã hủy giờ tăng ca!"
-                    };
-                }
-                catch (Exception)
-                {
-                    transaction.Dispose();
-                    return new
-                    {
-                        status = false,
-                        message = $"Không xóa được giờ tăng ca!"
-                    };
-                }
-            }
-
-            throw new NotImplementedException();
-        }
-
-        public async Task<ToDoListForReturnDto> DispatchDone(int buildingID)
-        {
-            var currentTime = DateTime.Now.ToLocalTime();
-            var currentDate = currentTime.Date;
-            var value = currentTime.ToString("tt", CultureInfo.InvariantCulture);
-            var morning = "AM";
-            var start = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 12, 00, 00);
-            var model = await _repoDispatchList.FindAll(x =>
-                  x.IsDelete == false
-                  && x.EstimatedStartTime.Date == currentDate
-                  && x.EstimatedFinishTime.Date == currentDate
-                  && x.BuildingID == buildingID)
-               .ToListAsync();
-
-            var groupBy = model.GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime, x.GlueName });
-            var todolist = new List<ToDoListDto>();
-            foreach (var todo in groupBy)
-            {
-                var item = todo.FirstOrDefault();
-                var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
-                var deliveredAmount = todo.FirstOrDefault().DeliveredAmount;
-
-                var itemTodolist = new ToDoListDto();
-                itemTodolist.ID = item.ID;
-                itemTodolist.JobType = 2;
-                itemTodolist.PlanID = item.PlanID;
-                itemTodolist.MixingInfoID = item.MixingInfoID;
-                itemTodolist.GlueID = item.GlueID;
-                itemTodolist.LineID = item.LineID;
-                itemTodolist.LineName = item.LineName;
-                itemTodolist.GlueName = item.GlueName;
-                itemTodolist.Supplier = item.Supplier;
-                itemTodolist.Status = item.FinishDispatchingTime.HasValue == false ? false : item.FinishDispatchingTime.Value.ToRemoveSecond() <= item.EstimatedFinishTime;
-
-                itemTodolist.StartMixingTime = null;
-                itemTodolist.FinishMixingTime = null;
-
-                itemTodolist.StartStirTime = null;
-                itemTodolist.FinishStirTime = null;
-
-                itemTodolist.StartDispatchingTime = item.StartDispatchingTime;
-                itemTodolist.FinishDispatchingTime = item.FinishDispatchingTime;
-
-                itemTodolist.PrintTime = item.PrintTime;
-
-                itemTodolist.MixedConsumption = 0;
-                itemTodolist.DeliveredConsumption = 0;
-                itemTodolist.StandardConsumption = 0;
-                itemTodolist.DeliveredAmount = deliveredAmount;
-
-                itemTodolist.DispatchTime = item.CreatedTime;
-                itemTodolist.EstimatedStartTime = item.EstimatedStartTime;
-                itemTodolist.EstimatedFinishTime = item.EstimatedFinishTime;
-
-                itemTodolist.AbnormalStatus = item.AbnormalStatus;
-
-                itemTodolist.LineNames = lineList;
-                itemTodolist.BuildingID = item.BuildingID;
-                todolist.Add(itemTodolist);
-            }
-            var modelTemp = todolist.Where(x => x.EstimatedFinishTime.Date == currentDate)
-               .OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
-            var result = new List<ToDoListDto>();
-            foreach (var item in modelTemp)
-            {
-                result.AddRange(item.OrderByDescending(x => x.GlueName));
-            }
-            if (value == morning)
-            {
-                result = result.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-            }
-
-            var doneList = new List<ToDoListDto>();
-            var doneListTemp = result.Where(x => x.PrintTime != null).ToList(); /*Leo Update*/
-            var groupbyTime = doneListTemp.GroupBy(x => x.EstimatedStartTime).ToList();
-            foreach (var item in groupbyTime)
-            {
-                var doneItem = item.Where(x => x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-                var doneItem2 = item.Where(x => !x.GlueName.Contains(" + ")).OrderBy(x => x.GlueName).OrderBy(x => x.Supplier).ToList();
-                var res = doneItem.Concat(doneItem2).ToList();
-                doneList.AddRange(res);
-            }
-            var total = result.Count;
-            var doneTotal = doneList.Count;
-
-            /*Leo Update*/
-            var todoTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime >= currentTime && x.GlueName.Contains(" + ")).Count();
-            var delayTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime < currentTime && x.GlueName.Contains(" + ")).Count();
-            /*Leo Update*/
-            return new ToDoListForReturnDto(doneList, doneTotal, todoTotal, delayTotal, total);
-        }
-
-        public async Task<MixingInfo> PrintGlueDispatchListAsync(int mixingInfoID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinsihTime)
-        {
-            var mixing = await _repoMixingInfo.FindAll(x => x.ID == mixingInfoID).FirstOrDefaultAsync();
-            if (mixing is null) return new MixingInfo();
-            var dispatchlist = await _repoDispatchList.FindAll(x => x.GlueNameID == glueNameID && x.EstimatedStartTime == estimatedStartTime && x.EstimatedFinishTime == estimatedFinsihTime).ToListAsync();
-
-            using TransactionScope scope = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    var printTime = DateTime.Now.ToLocalTime();
-                    mixing.PrintTime = printTime;
-                    _repoMixingInfo.Update(mixing);
-                    _repoMixingInfo.Save();
-
-                    dispatchlist.ForEach(item =>
-                    {
-                        item.Status = mixing.Status;
-                        item.MixingInfoID = mixingInfoID;
-                        item.PrintTime = mixing.PrintTime;
-                    });
-
-                    _repoDispatchList.UpdateRange(dispatchlist);
-                    await _repoDispatchList.SaveAll();
-                    var dispatchListDetail = new List<Dispatch>();
-                    var groupBy = dispatchlist.GroupBy(x => new
-                    {
-                        x.GlueNameID,
-                        x.EstimatedFinishTime,
-                        x.EstimatedStartTime
-                    }).ToList();
-                    foreach (var groupByItem in groupBy)
-                    {
-                        foreach (var item in groupByItem)
-                        {
-                            var dispatchItem = await _repoDispatch.FindAll(x => x.GlueNameID == item.GlueNameID
-                                                && x.LineID == item.LineID
-                                                && x.EstimatedStartTime == item.EstimatedStartTime
-                                                && x.EstimatedFinishTime == item.EstimatedFinishTime
-                                                ).FirstOrDefaultAsync();
-                            if (item.GlueName.Contains("+"))
-                            {
-                                if (dispatchItem == null)
-                                {
-                                    var listAdd = new List<Dispatch>
-                                {
-                                    new Dispatch
-                                    {
-                                        MixingInfoID = item.MixingInfoID,
-                                        LineID = item.LineID,
-                                        GlueNameID = item.GlueNameID,
-                                        EstimatedFinishTime = item.EstimatedFinishTime,
-                                        EstimatedStartTime = item.EstimatedStartTime,
-                                    },new Dispatch
-                                    {
-                                        MixingInfoID = item.MixingInfoID,
-                                        LineID = item.LineID,
-                                        GlueNameID = item.GlueNameID,
-                                        EstimatedFinishTime = item.EstimatedFinishTime,
-                                        EstimatedStartTime = item.EstimatedStartTime,
-                                    },
-                                };
-                                    _repoDispatch.AddRange(listAdd);
-                                    await _repoDispatch.SaveAll();
-                                }
-                            }
-                            else
-                            {
-                                if (dispatchItem == null)
-                                {
-                                    var listAdd = new List<Dispatch>
-                                {
-                                    new Dispatch
-                                    {
-                                        MixingInfoID = item.MixingInfoID,
-                                        LineID = item.LineID,
-                                        GlueNameID = item.GlueNameID,
-                                        EstimatedFinishTime = item.EstimatedFinishTime,
-                                        EstimatedStartTime = item.EstimatedStartTime,
-                                    }
-                                };
-                                    _repoDispatch.AddRange(listAdd);
-                                    await _repoDispatch.SaveAll();
-                                }
-                            }
-                        }
-                    }
-                    scope.Complete();
-                    return mixing;
-
-                }
-                catch
-                {
-                    scope.Dispose();
-                    return new MixingInfo();
-                }
-            }
-        }
-
-        public async Task<List<DispatchDetailDto>> GetDispatchDetail(int buildingID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinsihTime)
-        {
-            var userID = _jwtService.GetUserID();
-            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
-            var role = await _userRoleRepository.FindAll(x => x.UserID == userID).FirstOrDefaultAsync();
-            var dispatchlist = await _repoDispatch.FindAll(x => x.GlueNameID == glueNameID
-                                && x.EstimatedStartTime == estimatedStartTime
-                                && !x.IsDelete
-                                && x.EstimatedFinishTime == estimatedFinsihTime)
-                            .Include(x => x.Building)
-                            .Select(x => new DispatchDetailDto
-                            {
-                                ID = x.ID,
-                                Amount = x.Amount,
-                                DeliveryTime = x.DeliveryTime,
-                                LineName = x.Building.Name,
-                                LineID = x.Building.ID
-                            })
-                            .ToListAsync();
-            // decentralzation
-            if (role.RoleID == (int)Enums.Role.Dispatcher)
-            {
-                dispatchlist = dispatchlist.Where(x => lines.Contains(x.LineID)).ToList();
-            }
-            return dispatchlist;
-        }
-
-        public async Task<ResponseDetail<string>> FinishDispatch(FinishDispatchParams obj)
-        {
-            var dispatchlist = await _repoDispatchList.FindAll(x => obj.Lines.Contains(x.LineID) && x.GlueNameID == obj.GlueNameID && x.EstimatedStartTime == obj.EstimatedStartTime && x.EstimatedFinishTime == obj.EstimatedFinishTime).ToListAsync();
-            dispatchlist.ForEach(item =>
-            {
-                item.FinishDispatchingTime = DateTime.Now.ToLocalTime();
-            });
-            _repoDispatchList.UpdateRange(dispatchlist);
-            try
-            {
-                await _repoDispatchList.SaveAll();
-                return new ResponseDetail<string>("Success", true, "");
-            }
-            catch (Exception ex)
-            {
-                return new ResponseDetail<string>("Error", false, ex.Message);
-            }
-
-        }
-
-        public async Task<ResponseDetail<string>> UpdateDispatchDetail(DispatchDetailForUpdateDto item)
-        {
-
-            using var transaction = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    var dispatchItem = await _repoDispatch.FindAll(x => x.ID == item.ID).FirstOrDefaultAsync();
-                    dispatchItem.DeliveryTime = item.Amount != dispatchItem.Amount ? DateTime.Now.ToLocalTime() : dispatchItem.DeliveryTime;
-                    dispatchItem.Amount = item.Amount;
-                    _repoDispatch.Update(dispatchItem);
-                    await _repoDispatch.SaveAll();
-
-                    var dispatchlist = await _repoDispatchList.FindAll(x => item.LineID == x.LineID && x.GlueNameID == item.GlueNameID && x.EstimatedStartTime == item.EstimatedStartTime && x.EstimatedFinishTime == item.EstimatedFinishTime).ToListAsync();
-                    dispatchlist.ForEach(x =>
-                    {
-                        if (x.GlueName.Contains("+"))
-                        {
-                            var dispatchAmount = _repoDispatch.FindAll(x => item.LineID == x.LineID && x.GlueNameID == item.GlueNameID && x.EstimatedStartTime == item.EstimatedStartTime && x.EstimatedFinishTime == item.EstimatedFinishTime).Sum(x => x.Amount);
-                            double amount = dispatchAmount;
-                            double test = amount / 1000;
-                            x.DeliveredAmount = amount > 0 ? Math.Round((amount / 1000), 3) : 0;
-                        }
-                        else
-                        {
-                            double amount = item.Amount;
-                            double test = amount / 1000;
-
-                            x.DeliveredAmount = amount > 0 ? Math.Round((amount / 1000), 3) : 0;
-                        }
-                    });
-                    _repoDispatchList.UpdateRange(dispatchlist);
-                    await _repoDispatchList.SaveAll();
-
-                    transaction.Complete();
-                    return new ResponseDetail<string>("Success", true, "");
-                }
-                catch (Exception ex)
-                {
-                    transaction.Dispose();
-                    return new ResponseDetail<string>("Error", true, ex.Message);
-                    throw;
-                }
-            }
-
-        }
-
-        public async Task<ResponseDetail<string>> UpdateMixingInfoDispatchList(int mixingInfoID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinsihTime)
-        {
-            var mixing = await _repoMixingInfo.FindAll(x => x.ID == mixingInfoID).FirstOrDefaultAsync();
-            if (mixing is null) return new ResponseDetail<string>("Error", true, "Not found mixing!");
-            var dispatchlist = await _repoDispatchList.FindAll(x => x.GlueNameID == glueNameID && x.EstimatedStartTime == estimatedStartTime && x.EstimatedFinishTime == estimatedFinsihTime).ToListAsync();
-
-            using var transaction = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    dispatchlist.ForEach(item =>
-                    {
-                        item.Status = mixing.Status;
-                        item.MixingInfoID = mixingInfoID;
-                        item.PrintTime = mixing.PrintTime;
-                    });
-
-                    _repoDispatchList.UpdateRange(dispatchlist);
-                    await _repoDispatchList.SaveAll();
-                    transaction.Complete();
-                    return new ResponseDetail<string>("Success", true, "");
-                }
-                catch (Exception ex)
-                {
-                    transaction.Dispose();
-                    return new ResponseDetail<string>("Error", true, ex.Message);
-                }
-            }
-        }
     }
 }

@@ -90,7 +90,7 @@ namespace DMR_API._Services.Services
                             await _repoMailing.SaveAll();
 
                             var mailingList2 = await GetAllByFrequencyAndReport(add.First().Frequency, add.First().Report);
-                            await _hubContext.Clients.Group("Mailing").SendAsync("ReceiveMailing", mailingList2);
+                            await _hubContext.Clients.Group("Mailing").SendAsync("RescheduleJob", mailingList2);
 
                         } else
                         {
@@ -102,7 +102,7 @@ namespace DMR_API._Services.Services
                             await _repoMailing.SaveAll();
 
                             var mailingList2 = await GetAllByFrequencyAndReport(update.First().Frequency, update.First().Report);
-                            await _hubContext.Clients.Group("Mailing").SendAsync("ReceiveMailing", mailingList2);
+                            await _hubContext.Clients.Group("Mailing").SendAsync("RescheduleJob", mailingList2);
                         }
                        
                     }

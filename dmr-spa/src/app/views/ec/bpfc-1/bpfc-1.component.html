@@ -116,7 +116,7 @@
                   {{'KIND' | translate}}
                 </ng-template>
                 <ng-template #editTemplate let-data>
-                  <ejs-dropdownlist #glueDropdownlist [dataSource]='kinds' [(ngModel)]="data.kindName"
+                  <ejs-dropdownlist #kindDropdownlist [dataSource]='kinds' [(ngModel)]="data.kindName"
                     [fields]='fieldsKindEdit' [allowFiltering]='true' (change)='onChangeKindEdit($event)'>
                   </ejs-dropdownlist>
                 </ng-template>

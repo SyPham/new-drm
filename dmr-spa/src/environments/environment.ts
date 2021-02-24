@@ -11,6 +11,7 @@ export const environment = {
   apiUrl2: 'http://10.4.0.76:106/api/',
   hub: 'http://10.4.4.224:1009/ec-hub',
   scalingHub: 'http://10.4.4.224:1009/ec-hub',
+  scalingHubLocal: 'http://localhost:5001/scalingHub',
 
   // apiUrlEC: 'http://10.4.4.224:10022/api/',
   // apiUrl: 'http://10.4.0.76:106/api/',

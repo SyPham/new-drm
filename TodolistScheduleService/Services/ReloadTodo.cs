@@ -19,7 +19,6 @@ namespace TodolistScheduleService.Services
         private readonly ILogger<Worker> _logger;
         SchedulerBase<ReloadTodoJob> _scheduler;
         SchedulerBase<ReloadDispatchJob> _schedulerDispatchJob;
-        SchedulerBase<SendMailJob> _schedulerSendMailJob;
         public ReloadTodo(ILogger<Worker> logger)
         {
             _logger = logger;
@@ -30,12 +29,12 @@ namespace TodolistScheduleService.Services
             _scheduler = new SchedulerBase<ReloadTodoJob>();
             // Thuc thi luc 12:50
 
-            await _scheduler.Start(IntervalUnit.Hour, 9, 56);
+            await _scheduler.Start(IntervalUnit.Hour, 6, 00);
             _schedulerDispatchJob = new SchedulerBase<ReloadDispatchJob>();
             // Thuc thi luc 8:50
             var startAt = TimeSpan.FromHours(6);
             var endAt = TimeSpan.FromHours(23);
-            var repeatMins = 1;
+            var repeatMins = 30;
             await _schedulerDispatchJob.Start(repeatMins, startAt, endAt);
 
             //_schedulerSendMailJob  = new SchedulerBase<SendMailJob>();

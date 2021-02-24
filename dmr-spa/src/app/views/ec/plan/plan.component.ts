@@ -225,14 +225,15 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.buildingName = args.itemData.name;
     localStorage.setItem('buildingID', args.itemData.id);
     this.getAll();
+    this.getStartTimeFromPeriod();
   }
   gridConfig(): void {
     this.selectOptions = { checkboxOnly: true };
     this.pageSettings = { pageCount: 20, pageSizes: true, pageSize: 12 };
     this.editparams = { params: { popupHeight: '300px' } };
     this.editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-    this.toolbarOptions = ['ExcelExport', 'Add', 'Update', 'Cancel',
-      { text: 'Delete Range', tooltipText: 'Delete Range', prefixIcon: 'fa fa-trash', id: 'DeleteRange' }, 'Search',
+    this.toolbarOptions = ['Add',
+      { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search'
       // { text: 'Clone', tooltipText: 'Copy', prefixIcon: 'fa fa-copy', id: 'Clone' }
     ];
     const deleteRangeEn = 'Delete Range';
@@ -242,13 +243,13 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscription.push(this.dataService.getValueLocale().subscribe(lang => {
       if (lang === 'vi') {
         this.toolbarOptions = ['Add',
-          { text: 'Cập Nhật', tooltipText: 'Cập Nhật', prefixIcon: 'fa fa-tasks', id: 'Update' },
+          { text: 'Cập Nhật', tooltipText: 'Cập Nhật', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search'
           // { text: 'Nhân Bản', tooltipText: 'Nhân Bản', prefixIcon: 'fa fa-clone', id: 'Clone' },
         ];
         return;
       } else if (lang === 'en') {
         this.toolbarOptions = ['Add',
-          { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' },
+          { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search'
           // { text: 'Clone', tooltipText: 'Clone', prefixIcon: 'fa fa-clone', id: 'Clone' },
         ];
         return;
@@ -256,13 +257,13 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
         const langLocal = localStorage.getItem('lang');
         if (langLocal === 'vi') {
           this.toolbarOptions = ['Add',
-            { text: 'Cập Nhật', tooltipText: 'Cập Nhật', prefixIcon: 'fa fa-tasks', id: 'Update' },
+            { text: 'Cập Nhật', tooltipText: 'Cập Nhật', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search'
             // { text: 'Nhân Bản', tooltipText: 'Nhân Bản', prefixIcon: 'fa fa-clone', id: 'Clone' },
           ];
           return;
         } else if (langLocal === 'en') {
           this.toolbarOptions = ['Add',
-            { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' },
+            { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search'
             // { text: 'Clone', tooltipText: 'Clone', prefixIcon: 'fa fa-clone', id: 'Clone' },
           ];
           return;
@@ -548,7 +549,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.planService.getStartTimeFromPeriod(this.buildingID).subscribe(res => {
       if (res.status === true) {
         this.period = res.data;
-        console.log(this.period);
+        // console.log(this.period);
       } else {
         this.alertify.warning(res.message);
       }

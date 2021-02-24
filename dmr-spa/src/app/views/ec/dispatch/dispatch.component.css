@@ -28,3 +28,8 @@ input {
   from {background-color: #fade40;}
   to {background-color:  #e7f70c;}
 }
+
+.e-grid .e-altrow
+ { 
+    background-color: #d6d8db; 
+} 

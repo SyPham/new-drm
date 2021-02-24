@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Quartz;
 using Quartz.Impl;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using TodolistScheduleService.Jobs;
@@ -40,8 +41,8 @@ namespace TodolistScheduleService.Schedulers
         public async Task StartDaily(int hour, int minute)
         {
 
-
-            _jobDaily = JobBuilder.Create<SendMailJob>().Build();
+            _jobDaily = JobBuilder.Create<SendMailJob>()
+                                .Build();
 
             _triggerDaily = TriggerBuilder.Create()
                 .WithDailyTimeIntervalSchedule
@@ -55,10 +56,30 @@ namespace TodolistScheduleService.Schedulers
 
             await _scheduler.ScheduleJob(_jobDaily, _triggerDaily);
         }
-
-        public async Task StartWeekly(DayOfWeek dayOfWeek, int hour, int minute)
+        public async Task StartDaily(int hour, int minute, IDictionary<string, object> map)
         {
-            _jobWeekly = JobBuilder.Create<SendMailWeeklyJob>().Build();
+            _jobDaily = JobBuilder.Create<SendMailJob>()
+                                .SetJobData(new JobDataMap(map))
+                                .Build();
+
+            _triggerDaily = TriggerBuilder.Create()
+                .WithDailyTimeIntervalSchedule
+                  (s =>
+                     s.WithIntervalInHours(24)
+                    .OnEveryDay()
+                    .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
+                  )
+
+                .Build();
+
+            await _scheduler.ScheduleJob(_jobDaily, _triggerDaily);
+        }
+        public async Task StartWeekly(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map)
+        {
+           
+            _jobWeekly = JobBuilder.Create<SendMailWeeklyJob>()
+                            .SetJobData(new JobDataMap(map))
+                            .Build();
 
             _triggerWeekly = TriggerBuilder.Create()
                 .WithDailyTimeIntervalSchedule
@@ -112,22 +133,35 @@ namespace TodolistScheduleService.Schedulers
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
             return _scheduler.IsStarted;
         }
-        public async Task UpdateDailyTrigger(int hour, int minute)
+        // You can't change (update) a job once it has been scheduled. 
+        //You can only re-schedule it (with any changes you might want to make) or delete it and create a new one.
+        public async Task UpdateDailyTrigger(int hour, int minute, IDictionary<string, object> maps)
         {
-            _triggerDaily = TriggerBuilder.Create()
+            var builderJob = _jobDaily.GetJobBuilder();
+            builderJob.SetJobData(new JobDataMap(maps));
+            builderJob.Build();
+
+            var builder = _triggerDaily.GetTriggerBuilder();
+            builder.StartNow();
+            var newtriggerDaily = builder
                .WithDailyTimeIntervalSchedule
                  (s =>
                     s.WithIntervalInHours(24)
                    .OnEveryDay()
                    .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
                  )
-
                .Build();
-            await _scheduler.RescheduleJob(_triggerDaily.Key, _triggerDaily);
+            await _scheduler.RescheduleJob(_triggerDaily.Key, newtriggerDaily);
         }
-        public async Task UpdateWeeklyTrigger(DayOfWeek dayOfWeek, int hour, int minute)
+        public async Task UpdateWeeklyTrigger(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string,object> maps)
         {
-            _triggerWeekly = TriggerBuilder.Create()
+            var builderJob = _jobDaily.GetJobBuilder();
+            builderJob.SetJobData(new JobDataMap(maps));
+            builderJob.Build();
+
+            var builder = _triggerWeekly.GetTriggerBuilder();
+            builder.StartNow();
+            var newtriggerWeekly = builder
                .WithDailyTimeIntervalSchedule
                  (s =>
                    s.WithInterval(1, IntervalUnit.Week)
@@ -135,16 +169,20 @@ namespace TodolistScheduleService.Schedulers
                    .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
                  )
                .Build();
-            await _scheduler.RescheduleJob(_triggerWeekly.Key, _triggerWeekly);
+            await _scheduler.RescheduleJob(_triggerWeekly.Key, newtriggerWeekly);
         }
 
         public async Task UpdateMonthlyTrigger(int hour, int minute)
         {
-            _triggerMonthly = TriggerBuilder.Create()
+            var builder = _triggerMonthly.GetTriggerBuilder();
+            builder.StartNow();
+            var newtriggerMonthly = builder
                 .WithCronSchedule
                   ($"0 {minute} {hour} L * ?") // Meaning: Fire at 10:15am on the last day of every month
                 .Build();
-            await _scheduler.RescheduleJob(_triggerMonthly.Key, _triggerMonthly);
+
+            // if you don't want that it starts now, pass 'false' for the 'startNow' parameter
+            await _scheduler.RescheduleJob(_triggerMonthly.Key, newtriggerMonthly);
         }
         public async Task Stop()
         {

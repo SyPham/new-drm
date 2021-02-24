@@ -28,6 +28,11 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
+using Quartz;
+using DMR_API.SchedulerHelper;
+using DMR_API.SchedulerHelper.Jobs;
+using DMR_API.SignalrHub.Client;
+using System.Collections.Specialized;
 
 namespace DMR_API
 {
@@ -63,7 +68,7 @@ namespace DMR_API
             services.AddDbContext<IoTContext>(options => options.UseMySQL(Configuration.GetConnectionString("IoTConnection")));
             services.AddControllers().AddNewtonsoftJson(options =>
             {
-                 options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Unspecified; 
+                options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Unspecified;
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             }
             );
@@ -135,7 +140,6 @@ namespace DMR_API
                                 Scheme = "oauth2",
                                 Name = "Bearer",
                                 In = ParameterLocation.Header,
-
                             },
                             new List<string>()
                     }
@@ -160,7 +164,7 @@ namespace DMR_API
             services.AddScoped<IProcessRepository, ProcessRepository>();
             services.AddScoped<IArtProcessRepository, ArtProcessRepository>();
             services.AddScoped<IProcessRepository, ProcessRepository>();
-           
+
             services.AddScoped<IArticleNoRepository, ArticleNoRepository>();
             services.AddScoped<IBuildingRepository, BuildingRepository>();
             services.AddScoped<IBuildingUserRepository, BuildingUserRepository>();
@@ -244,8 +248,30 @@ namespace DMR_API
 
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
+
             //Không bao giờ inject Scoped & Transient service vào Singleton service
             //Không bao giờ inject Transient Service vào Scope Service
+
+            services.AddQuartz(async q =>
+           {
+               q.SchedulerId = "dmr-api";
+               // Thuc thi luc 6:00, lap lai 1 tieng 1 lan
+               await new SchedulerBase<ReloadTodoJob>().Start(1, IntervalUnit.Hour, 6, 00);
+
+               // Thuc thi luc 6:00 đên 21 gio la ngung lap lai 30 phut 1 lan
+               var startAt = TimeSpan.FromHours(6);
+               var endAt = TimeSpan.FromHours(21);
+               var repeatMins = 30;
+               await new SchedulerBase<ReloadDispatchJob>().Start(repeatMins, startAt, endAt);
+           });
+
+            // ASP.NET Core hosting
+            services.AddQuartzServer(options =>
+            {
+                // when shutting down we want jobs to complete gracefully
+                options.WaitForJobsToComplete = true;
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -285,5 +311,7 @@ namespace DMR_API
 
             });
         }
+
+
     }
 }

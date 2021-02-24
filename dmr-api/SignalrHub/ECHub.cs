@@ -12,11 +12,9 @@ namespace DMR_API.SignalrHub
 {
     public class ECHub : Hub
     {
+        private readonly static ConnectionMapping<UserConnection> _connections =
+       new ConnectionMapping<UserConnection>();
 
-        static HashSet<string> CurrentConnections = new HashSet<string>();
-        private readonly static ConnectionMapping<string> _connectionsOnline =
-        new ConnectionMapping<string>();
-      
         private readonly IToDoListService _todoService;
         private readonly IMailingService _mailingService;
         private readonly IMailExtension _emailService;
@@ -90,21 +88,30 @@ namespace DMR_API.SignalrHub
             var mailingList = await _mailingService.GetAllAsync();
             await Clients.Group("Mailing").SendAsync("ReceiveMailing", mailingList);
         }
-        public async Task CheckOnline(int userID)
-        {
-            string key = userID + "";
-            var connectionID = _connectionsOnline.FindConnection(key);
-            if (connectionID == null)
-            {
-                _connectionsOnline.Add(key, Context.ConnectionId);
-                await Groups.AddToGroupAsync(Context.ConnectionId, "Online");
-                await Clients.Group("Online").SendAsync("Online", _connectionsOnline.Count);
-            } else
-            {
-                await Groups.AddToGroupAsync(Context.ConnectionId, "Online");
-                _connectionsOnline.Add(key, Context.ConnectionId);
-                await Clients.Group("Online").SendAsync("Online", _connectionsOnline.Count);
 
+        public async Task CheckOnline(int userID, string username)
+        {
+            var keyBase = new UserConnection { ID = userID, UserName = username };
+            var connectionBaseID = _connections.FindConnection(keyBase);
+            if (connectionBaseID == null)
+            {
+                _connections.Add(keyBase, Context.ConnectionId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, "Online");
+
+                await Clients.Group("Online").SendAsync("Online", _connections.Count);
+                var entries = _connections.GetKey().Select(x => x.UserName).Distinct().ToList();
+                var usernames = string.Join(",", entries);
+                await Clients.Group("Online").SendAsync("UserOnline", usernames);
+            }
+            else
+            {
+                _connections.Add(keyBase, Context.ConnectionId);
+                await Groups.AddToGroupAsync(Context.ConnectionId, "Online");
+
+                await Clients.Group("Online").SendAsync("Online", _connections.Count);
+                var entries = _connections.GetKey().Select(x => x.UserName).Distinct().ToList();
+                var usernames = string.Join(",", entries);
+                await Clients.Group("Online").SendAsync("UserOnline", usernames);
             }
         }
 
@@ -134,29 +141,34 @@ namespace DMR_API.SignalrHub
         }
         public override async Task OnConnectedAsync()
         {
-            var id = Context.ConnectionId;
-            CurrentConnections.Add(id);
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Client OnConnectedAsync: {Context.ConnectionId}");
+            Console.ResetColor();
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            var connection = CurrentConnections.FirstOrDefault(x => x == Context.ConnectionId);
-            if (connection != null)
+            var keyBase = _connections.FindKeyByValue2(Context.ConnectionId);
+
+            if (keyBase != null)
             {
-                CurrentConnections.Remove(connection);
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
+                Console.ResetColor();
+                _connections.RemoveKeyAndValue(keyBase, Context.ConnectionId);
+
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Online");
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, "SignalR Users");
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Mailing");
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, "ReloadDispatch");
-            }
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, "ReloadTodo");
 
-            var key = _connectionsOnline.FindKeyByValue(Context.ConnectionId);
-            if (key != null)
-            {
-                _connectionsOnline.RemoveKeyAndValue(key, Context.ConnectionId);
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, "Online");
-                await Clients.Group("Online").SendAsync("Online", _connectionsOnline.Count);
+                await Clients.Group("Online").SendAsync("Online", _connections.Count);
+
+                var entries = _connections.GetKey().Select(x => x.UserName).Distinct().ToList();
+                var usernames = string.Join(",", entries);
+                await Clients.Group("Online").SendAsync("UserOnline", usernames);
             }
             await base.OnDisconnectedAsync(exception);
         }
@@ -164,7 +176,7 @@ namespace DMR_API.SignalrHub
         //return list of all active connections
         public List<string> GetAllActiveConnections()
         {
-            return CurrentConnections.ToList();
+            return new List<string>();
         }
         public async Task AddToGroup(string groupName)
         {

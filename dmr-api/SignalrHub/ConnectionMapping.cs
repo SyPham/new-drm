@@ -42,6 +42,12 @@ public class ConnectionMapping<T>
 
         return Enumerable.Empty<string>();
     }
+    public IEnumerable<T> GetKey()
+    {
+        var entries = _connections.Select(d => d.Key);
+        return entries;
+    }
+
     public HashSet<string> FindConnection(T key)
     {
         HashSet<string> connections;
@@ -61,6 +67,11 @@ public class ConnectionMapping<T>
         }
 
         return null;
+    }
+    public T FindKeyByValue2(string value)
+    {
+        var result = _connections.FirstOrDefault(x => x.Value.Any(a => a == value));
+        return (T)result.Key;
     }
     public void Remove(T key, string connectionId)
     {
@@ -100,7 +111,7 @@ public class ConnectionMapping<T>
 
             lock (connections)
             {
-                connections.RemoveWhere(x=> x == connectionId);
+                connections.RemoveWhere(x => x == connectionId);
 
                 if (connections.Count == 0)
                 {

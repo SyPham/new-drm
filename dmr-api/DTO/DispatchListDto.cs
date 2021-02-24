@@ -49,6 +49,7 @@ namespace DMR_API.DTO
         public DateTime DeleteTime { get; set; }
         public DateTime CreatedTime { get; set; }
         public int DeleteBy { get; set; }
+        public int CreatedBy { get; set; }
     }
     public class DispatchListForReturnDto
     {

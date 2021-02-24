@@ -37,9 +37,10 @@
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/material']">{{ 'MATERIAL' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/glue-type']">{{ 'Glue Type' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building-setting']">{{ 'Building Setting' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building-lunch-time']">Building LunchTime</a>
+            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building-lunch-time']">{{ 'Building LunchTime' | translate }} </a>
+            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/decentralization']">{{ 'Decentralization'| translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/scaling-setting']">{{ 'Scaling Setting' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/mailing']">{{ 'Mailing' }}</a>
+            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/mailing']">{{ 'Mailing'| translate }}</a>
 
             <a class="dropdown-item" *ngIf="isAdminCostingRole()" [routerLink]="[ '/ec/setting/costing']">{{ 'Cost' | translate }}</a>
             </div>

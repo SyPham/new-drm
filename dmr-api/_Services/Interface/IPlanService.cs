@@ -53,6 +53,12 @@ namespace DMR_API._Services.Interface
         Task<bool> CheckDuplicate(int lineID, int BPFCEstablishID, DateTime dueDate);
         bool DeleteRangePlan(List<int> plans);
 
+        /// <summary>
+        /// Đổi kế hoạch làm việc. Lấy ID của kế hoạch làm việc
+        /// </summary>
+        /// <param name="planID">ID của kế hoạc cũ</param>
+        /// <param name="bpfcID">BPFCID mới</param>
+        /// <returns></returns>
         Task<ResponseDetail<object>> ChangeBPFC(int planID, int bpfcID);
 
 

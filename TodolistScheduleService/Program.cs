@@ -49,7 +49,8 @@ namespace TodolistScheduleService
                     //services.AddDbContext<DataContext>(options => options.UseSqlServer(appsettings.DefaultConnection));
 
                     //services.AddHostedService<ReloadDispatch>();
-                    services.AddHostedService<ReloadTodo>();
+                    services.AddHostedService<Todo>();
+                    // services.AddHostedService<ReloadTodo>();
 
                 });
     }

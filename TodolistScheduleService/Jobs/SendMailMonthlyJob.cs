@@ -8,9 +8,10 @@ namespace TodolistScheduleService.Jobs
 {
     public class SendMailMonthlyJob : IJob
     {
-        public Task Execute(IJobExecutionContext context)
+        public async Task Execute(IJobExecutionContext context)
         {
-            throw new NotImplementedException();
+            await Console.Out.WriteLineAsync($"SendMailMonthlyJob: Yeu cau server gui mail vao luc: {DateTime.Now.Hour}:{DateTime.Now.Minute}");
+
         }
     }
 }

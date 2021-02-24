@@ -1483,6 +1483,7 @@
             "Update": "Update",
             "Delete": "Delete",
             "Print": "Print",
+            "Rejected": "Rejected",
             "Pdfexport": "PDF Export",
             "Excelexport": "Excel Export",
             "Wordexport": "Word Export",

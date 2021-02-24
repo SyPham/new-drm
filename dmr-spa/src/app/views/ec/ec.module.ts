@@ -1,7 +1,7 @@
 // Angular
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { NgxSpinnerModule } from 'ngx-spinner';
 // Components Routing
 import { ECRoutingModule } from './ec-routing.module';
@@ -91,6 +91,8 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { BuildingLunchTimeComponent } from './buildingLunchTime/building-lunch-Time.component';
 import { PrintGlueDispatchListComponent } from './print-glue-dispatch-list/print-glue-dispatch-list.component';
 import { MailingComponent } from './mailing/mailing.component';
+import { DecentralizationComponent } from './decentralization/decentralization.component';
+import { SignalrService } from 'src/app/_core/_service/signalr.service';
 declare var require: any;
 let defaultLang: string;
 const lang = localStorage.getItem('lang');
@@ -114,7 +116,7 @@ if (lang === 'vi') {
 }
 @NgModule({
   providers: [
-    DatePipe,
+    DatePipe
   ],
   imports: [
     QRCodeModule,
@@ -211,6 +213,7 @@ if (lang === 'vi') {
     BuildingLunchTimeComponent,
     PrintGlueDispatchListComponent,
     MailingComponent,
+    DecentralizationComponent,
     StationComponent
   ]
 })

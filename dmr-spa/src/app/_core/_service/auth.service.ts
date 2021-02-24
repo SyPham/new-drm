@@ -21,8 +21,8 @@ export class AuthService {
   jwtHelper = new JwtHelperService();
   currentUser: User;
   roleValue = new BehaviorSubject<IRole>({ id: 0, name: '' });
-  buildingValue = new BehaviorSubject<IBuilding>(
-    { id: 0, name: '', lunchTime: '', lunchTimeID: 0, level: 0, parentID: 0 , settings: null, plans: null});
+  buildingValue = new BehaviorSubject<IBuilding[]>([
+    { id: 0, name: '', lunchTime: '', lunchTimeID: 0, level: 0, parentID: 0 , settings: null, plans: null}]);
   decodedToken: any;
   levelSource = new BehaviorSubject<any>({});
   currentLevel = this.levelSource.asObservable();
@@ -51,7 +51,7 @@ export class AuthService {
           this.getBuildingUserByUserID(data.user.User.ID)
             .subscribe((res) => {
               localStorage.setItem('building', JSON.stringify(res.data));
-              this.setBuildingValue(res.data);
+              this.setBuildingValue(res.data as IBuilding[]);
           });
         }
       })
@@ -89,14 +89,14 @@ export class AuthService {
     return isMatch;
   }
 
-  public setBuildingValue(message): void {
-    this.buildingValue.next(message);
+  public setBuildingValue(building: IBuilding[]): void {
+    this.buildingValue.next(building);
   }
-  public getBuildingValue(): Observable<IBuilding> {
+  public getBuildingValue(): Observable<IBuilding[]> {
     return this.buildingValue.asObservable();
   }
-  public setRoleValue(message): void {
-    this.roleValue.next(message);
+  public setRoleValue(role: IRole): void {
+    this.roleValue.next(role);
   }
   public getRoleValue(): Observable<IRole> {
     return this.roleValue.asObservable();

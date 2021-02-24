@@ -225,6 +225,10 @@
     "Notify": "After 12:00 PM please press the Refresh button on to-do-list-2 page to update your to do list!",
     "Manual": "Manual",
     "Overtime": "Overtime",
-    "No overtime": "No overtime"
+    "Time": "Time",
+    "No overtime": "No overtime",
+    "Decentralization": "Decentralization",
+    "Building LunchTime": "Building LunchTime",
+    "Mailing": "Mailing"
 
 }

@@ -159,13 +159,13 @@ export class HeaderComponent implements OnInit, AfterViewInit {
         setTimeout(() => {
           L10n.load(this.vi);
           setCulture('vi');
-        });
+        }, 500);
       } else {
         this.dataService.setValueLocale(args.itemData.id);
         setTimeout(() => {
           L10n.load(this.en);
           setCulture('en-US');
-        });
+        }, 500);
       }
     }
   }

@@ -10,13 +10,13 @@ export class SearchDirective implements AfterViewInit {
     if (input[2]?.length === 8) {
       setTimeout(() => {
         this.host.nativeElement.select();
-      }, 300);
+      }, 2000);
     }
   }
   @HostListener('focus') onBlur() {
     setTimeout( () => {
       this.host.nativeElement.select();
-    }, 300);
+    }, 2000);
   }
 
   constructor(private host: ElementRef) { }
@@ -24,7 +24,7 @@ export class SearchDirective implements AfterViewInit {
       setTimeout(() => {
         this.host.nativeElement.focus();
         this.host.nativeElement.select();
-      }, 300);
+      }, 2000);
     }
   @HostListener('document:keydown.enter', ['$event'])
   onKeydownHandler(event: KeyboardEvent) {

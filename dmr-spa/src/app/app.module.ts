@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JwtModule } from '@auth0/angular-jwt';
@@ -56,6 +56,7 @@ import {HttpClient} from '@angular/common/http';
 import {TranslateModule, TranslateLoader} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import { GridAllModule } from '@syncfusion/ej2-angular-grids';
+import { SignalrService } from './_core/_service/signalr.service';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -103,8 +104,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     JwtModule.forRoot({
       config: {
         tokenGetter,
-        allowedDomains: ['10.4.0.76:1002'],
-        disallowedRoutes: ['10.4.0.76:1002/api/auth']
+        allowedDomains: ['10.4.0.76:1009'],
+        disallowedRoutes: ['10.4.0.76:1009/api/auth']
       }
     })
   ],
@@ -122,7 +123,6 @@ export function HttpLoaderFactory(http: HttpClient) {
     RoleResolver,
     AuthService,
     GlueResolver,
-
     { provide: HTTP_INTERCEPTORS, useClass: BasicAuthInterceptor, multi: true }
   ],
   bootstrap: [AppComponent]

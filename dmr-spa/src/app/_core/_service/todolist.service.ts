@@ -7,6 +7,9 @@ import { environment } from '../../../environments/environment';
 import { IDispatchListDetail, IDispatchListForUpdate, IToDoList, IToDoListForCancel, IToDoListForReturn } from '../_model/IToDoList';
 import { DispatchParams, IDispatch } from '../_model/plan';
 import { IMixingDetailForResponse, IMixingInfo } from '../_model/IMixingInfo';
+
+import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+
 const httpOptions = {
   headers: new HttpHeaders({
     'Content-Type': 'application/json',
@@ -19,7 +22,8 @@ const httpOptions = {
 export class TodolistService {
   baseUrl = environment.apiUrlEC;
   data = new BehaviorSubject<boolean>(null);
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+   }
   // Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
   addition(glueNameID, mixingID, start, end) {
     return this.http.get(`${this.baseUrl}ToDoList/addition/${glueNameID}/${mixingID}/${start}/${end}`);

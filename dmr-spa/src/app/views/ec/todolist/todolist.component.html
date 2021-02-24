@@ -1,51 +1,77 @@
 <ngx-spinner [fullScreen]="false" type="square-jelly-box" size="medium">
   <p class="loading">Loading data...</p>
 </ngx-spinner>
-<marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
+<!-- <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
   <span class="text-danger font-weight-bold" style="font-size: 18px;">{{'Notify' | translate}}
   </span>
 </marquee>
-<hr>
+<hr> -->
 <div class="card" #fullScreen>
   <div class="control-section e-tbar-section">
     <div class="e-sample-resize-container">
       <!-- Render the Toolbar Component -->
       <ejs-toolbar #toolbar (created)='createdToolbar()' (clicked)='onClickToolbarTop($event)'>
         <e-items>
-          <e-item prefixIcon='fa fa-cut' *ngIf="focusDone === TODO && (isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole())" tooltipText="{{'Addition' | translate}}">
+          <e-item prefixIcon='fa fa-cut' *ngIf="isShowTab === TODO" tooltipText="{{'Addition' | translate}}">
             <ng-template #template>
               <button type="button" (click)='openAddition()'
-                class="btn btn-sm e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
-                <i class="fas fa-plus"></i>
-                {{'Addition' | translate}}
+                class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
+                <i class="e-btn-icon e-icons e-icon-left fas fa-plus"></i>
+                <span class="e-tbar-btn-text">
+                  {{'Addition' | translate}}
+                </span>
               </button>
             </ng-template>
           </e-item>
-          <e-item type='Separator' *ngIf="focusDone === DISPATCH"></e-item>
-          <e-item prefixIcon='fa fa-cut' *ngIf="focusDone === DISPATCH && (isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole())" tooltipText="{{'Addition' | translate}}">
+          <!-- <e-item type='Separator' *ngIf="isShowTab === DISPATCH"></e-item> -->
+          <!-- <e-item prefixIcon='fa fa-cut' *ngIf="focusDone === DISPATCH && (isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole())" tooltipText="{{'Addition' | translate}}">
             <ng-template #template>
               <button type="button" (click)='openAdditionDispatch()'
-                class="btn btn-sm e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
-                <i class="fas fa-plus-circle"></i>
-                {{'Addition Dispatch' | translate}}
+                class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
+                <i class="e-btn-icon e-icons e-icon-left fas fa-plus-circle"></i>
+                <span class="e-tbar-btn-text">
+                  {{'Addition Dispatch' | translate}}
+                </span>
               </button>
             </ng-template>
-          </e-item>
-          <e-item id='excelExport' prefixIcon='fa fa-file-excel-o' text="Report"></e-item>
-          <e-item id='excelExport2' prefixIcon='fa fa-file-excel-o' text="Report(new)"></e-item>
+          </e-item> -->
+          <e-item id='excelExport' prefixIcon='fa fa-file-excel-o' text="{{'Report' | translate}}"></e-item>
+          <e-item id='excelExport2' prefixIcon='fa fa-file-excel-o' text="{{'Report' | translate}} 2"></e-item>
           <e-item type='Separator'></e-item>
           <e-item prefixIcon='e-copy-icon tb-icons' tooltipText="{{'Refresh Todolist' | translate}}">
             <ng-template #template>
               <button type="button" (click)='reloadPage()'
-                class="btn btn-sm e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
-                <i class="fas fa-refresh"></i> {{'Refresh Todolist' | translate}}
+                class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
+                <i class="e-btn-icon e-icons e-icon-left fas fa-refresh"></i> 
+                <span class="e-tbar-btn-text">
+                  {{'Refresh Todolist' | translate}}
+                </span>
               </button>
             </ng-template>
           </e-item>
-          <e-item template='<button id="screenToolbar">FullScreen</button>'></e-item>
+          <e-item >
+            <ng-template #template>
+              <button class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib" 
+                *ngIf="hasShowFullScreen" 
+                (click)='openFullscreen()' >
+                  <i class="e-btn-icon e-icons e-icon-left fa fa-expand-arrows-alt"></i>
+                  <span class="e-tbar-btn-text">
+                    FullScreen
+                  </span>
+              </button>
+              <button class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib" 
+                *ngIf="!hasShowFullScreen" 
+                (click)='closeFullscreen()'>
+                  <i class="e-btn-icon e-icons e-icon-left fas fa-compress-arrows-alt"></i>
+                  <span class="e-tbar-btn-text">
+                    CloseScreen
+                  </span>
+              </button>
+            </ng-template>
+          </e-item>
           <e-item type='Separator'></e-item>
          
-          <e-item prefixIcon='e-bold-icon tb-icons' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole()" tooltipText='Bold'>
+          <e-item prefixIcon='e-bold-icon tb-icons' tooltipText='Bold'>
             <ng-template #template>
               <ejs-dropdownlist [dataSource]='buildings' [fields]='fieldsBuildings' [allowFiltering]='true'
                 [value]="buildingID" (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)'
@@ -57,15 +83,15 @@
       </ejs-toolbar>
       <ejs-toolbar #toolbarTodo (created)='createdTodo()' (clicked)='onClickToolbar($event)'>
         <e-items>
-          <e-item id='todo' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole()" prefixIcon="fa fa-tasks" text=" {{ 'Todo' | translate }} ({{todoTotal}})"> </e-item>
-          <e-item id='delay' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole()" prefixIcon="fa fa-clock" text=" {{ 'Delay' | translate }} ({{delayTotal}})"> </e-item>
-          <e-item type='Separator' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole()"></e-item>
-          <e-item id='dispatch' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() ||isDispatcherRole()" prefixIcon='fa fa-check' text="{{ 'Dispatch' | translate }} ({{todoDispatchTotal}})"></e-item>
-          <e-item id='delayDispatchList' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() ||isDispatcherRole()" prefixIcon="fa fa-clock"
+          <e-item id='todo' prefixIcon="fa fa-tasks" text=" {{ 'Todo' | translate }} ({{todoTotal}})"> </e-item>
+          <e-item id='delay' prefixIcon="fa fa-clock" text=" {{ 'UNDONE' | translate }} ({{delayTotal}})"> </e-item>
+          <e-item type='Separator'></e-item>
+          <e-item id='dispatch' prefixIcon='fa fa-check' text="{{ 'Dispatch' | translate }} ({{todoDispatchTotal}})"></e-item>
+          <e-item id='delayDispatchList' prefixIcon="fa fa-clock"
             text=" {{ 'Delay' | translate }} ({{delayDispatchTotal}})"></e-item>
           <e-item type='Separator'></e-item>
           <e-item id='done' prefixIcon='fa fa-check' text=" {{ 'Done' | translate }} ({{doneTotal}})"></e-item>
-          <e-item id='per' *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole()" text=" {{'% of Done' | translate}} {{percentageOfDone }}% ({{doneTotal}} / {{total}})">
+          <e-item id='per' text=" {{'% of Done' | translate}} {{percentageOfDone }}% ({{doneTotal}} / {{total}})">
           </e-item>
 
           <e-item align='right'>
@@ -84,8 +110,8 @@
       </ejs-toolbar>
     </div>
     <!-- To do -->
-    <div class="card-body p-0" *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isWorkerRole()">
-      <ejs-grid #gridTodo id="gridTodo" *ngIf="isShowTodolistDone == TODO || isShowTodolistDone == DELAY"
+    <div class="card-body p-0">
+      <ejs-grid #gridTodo id="gridTodo" *ngIf="isShowTab == TODO || isShowTab == DELAY"
         [dataSource]='data' [searchSettings]="searchSettings" showColumnMenu='true' [allowExcelExport]='true'
         allowSorting='true' allowResizing='true' gridLines='Both' (actionBegin)="actionBegin($event)"
         (actionComplete)="actionComplete($event)" height='600' (rowDataBound)='rowDB($event)'
@@ -146,7 +172,7 @@
               {{ 'Option' | translate }}
             </ng-template>
             <ng-template #template let-data>
-              <div style="text-align: left;" *ngIf="isShowTodolistDone === TODO">
+              <div style="text-align: left;" *ngIf="isShowTab === TODO">
                 <div class="btn-group">
                   <button type="button" *ngIf="data.glueName.indexOf(' + ') !== -1"
                     [ngClass]="{'disabled': data.mixingInfoID > 0, 'cursor-pointer': data.mixingInfoID > 0}"
@@ -181,9 +207,9 @@
     <!-- end Todo -->
 
     <!-- Dispatch -->
-    <div class="card-body p-0" *ngIf="isAdminRole() || isSupervisorRole() || isStaffRole() || isDispatcherRole()">
+    <div class="card-body p-0">
       <ejs-grid #gridDispatch id="gridDispatch"
-        *ngIf="isShowTodolistDone == DISPATCH || isShowTodolistDone == DISPATCH_DELAY" [dataSource]='dispatchData'
+        *ngIf="isShowTab == DISPATCH || isShowTab == DISPATCH_DELAY" [dataSource]='dispatchData'
         [searchSettings]="searchSettings" showColumnMenu='true' [allowExcelExport]='true' allowSorting='true'
         allowResizing='true' gridLines='Both' (actionBegin)="actionBegin($event)"
         (actionComplete)="actionComplete($event)" height='600' (toolbarClick)='toolbarClick($event)'
@@ -257,7 +283,7 @@
 
     <!--  Done -->
     <div class="card-body p-0">
-      <ejs-grid #gridDone id="gridDone" *ngIf="isShowTodolistDone == DONE" [dataSource]='doneData'
+      <ejs-grid #gridDone id="gridDone" *ngIf="isShowTab == DONE" [dataSource]='doneData'
         [searchSettings]="searchSettings" showColumnMenu='true' [allowExcelExport]='true' allowSorting='true'
         allowResizing='true' gridLines='Both' (actionBegin)="actionBegin($event)"
         (actionComplete)="actionComplete($event)" height='600' (rowDataBound)='rowDB($event)'

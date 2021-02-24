@@ -1367,7 +1367,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
           this.dynamicSort('position')
         );
         const check = this.compareArray(this.oldDetail, localstoreDetails);
-        if (check === false) {
+        if (check === false && localstoreDetails.length > 0 && this.oldDetail.length > 0) {
           this.alertify
             .valid(
               'Cảnh báo!',
@@ -1391,7 +1391,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
               };
               this.glue = glue;
               this.saveGlue();
-              this.sortBySup(0);
+              // this.sortBySup(0);
             })
             .catch((err) => {
               args.cancel = true;
@@ -1414,7 +1414,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
           };
           this.glue = glue;
           this.saveGlue();
-          this.sortBySup(0);
+          // this.sortBySup(0);
         }
         break;
     }
@@ -1717,6 +1717,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.gridglue.refresh();
     this.selectedRow = [0];
     this.selIndex = [0];
+    this.modified = true;
   }
   getBuilding() {
     const userID = JSON.parse(localStorage.getItem('user')).User.ID;
@@ -1990,6 +1991,10 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
               );
               return;
             }
+            flagAllow = true;
+            flagPercentage = true;
+          }
+          if (glueIngredients.length === 0) {
             flagAllow = true;
             flagPercentage = true;
           }

@@ -26,7 +26,6 @@
                                         <i class="fa fa-times"></i>
                                     </button>
                                 </div>
-                               
                             </div>
                         </div>
                 </div>
@@ -143,7 +142,6 @@
                             {{'HOURLY_OUTPUT_LABEL' | translate}}
                         </ng-template>
                         </e-column>
-                      
                            <e-column field='isGenerate' headerText='Status' width='110' textAlign='Center' >
                             <ng-template #headerTemplate let-data>
                                 {{'Status' | translate}}
@@ -204,7 +202,6 @@
                     </e-columns>
             </ejs-grid>
            </div>
-
         </div>
     </div>
 </div>
@@ -269,7 +266,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-light" (click)="modal.close('Close click')">Close</button>
-        <button type="submit" (click)='changeBPFC()' class="btn btn-primary">Confim</button>
+        <button type="button" class="btn btn-light" (click)="modal.close('Close click')">{{ 'Close' | translate}}</button>
+        <button type="submit" (click)='changeBPFC()' class="btn btn-primary">{{ 'Confirm' | translate}}</button>
     </div>
 </ng-template>

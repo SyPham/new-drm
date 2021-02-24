@@ -21,7 +21,7 @@
       </e-column>
       <e-column field='amount' headerText='Amount' textAlign='Center' width='100'>
         <ng-template #headerTemplate let-data>
-          {{'Amount' | translate}}(g)
+          {{'Amount' | translate}} (g)
         </ng-template>
         <ng-template #template let-data>
           {{data.amount }}
@@ -29,7 +29,7 @@
       </e-column>
       <e-column field='time' headerText='Time' textAlign='Center' width='100'>
         <ng-template #headerTemplate let-data>
-          {{'Time' }}
+          {{'Time' | translate }}
         </ng-template>
         <ng-template #template let-data>
           {{data.deliveryTime === null ? '-' : data.deliveryTime | date: 'HH:mm' }}
@@ -42,6 +42,6 @@
   </ejs-grid>
 </div>
 <div class="modal-footer justify-content-center d-flex">
-  <button type="button" class="btn btn-warning" (click)="activeModal.close('Close click')"><i class="fa fa-remove"></i> {{'Close' | translate}}</button>
+  <button type="button" class="btn btn-warning" (click)="activeModal.close('Close click')"><i class="fa fa-save"></i> {{'SAVE' | translate}}</button>
   <button type="button" class="btn btn-primary" (click)="save()"><i class="fa fa-check"></i> {{'Finish' | translate}}</button>
 </div>

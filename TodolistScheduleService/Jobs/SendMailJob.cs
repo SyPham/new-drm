@@ -11,38 +11,46 @@ namespace TodolistScheduleService.Jobs
 {
     public class SendMailJob : IJob
     {
-        public SendMailJob()
-        {
-            Console.WriteLine($"Client ID: Start SendMailJob#############################################################");
+        //private readonly HubConnection _connection;
 
-        }
-
-        //HubConnection _connection;
         //public SendMailJob()
         //{
         //    _connection = new HubConnectionBuilder()
-        //     .WithUrl("http://10.4.4.224:1009/ec-hub")
-        //     .Build();
+        //      .WithUrl("http://10.4.4.224:1009/ec-hub")
+        //      .Build();
         //}
+
+        HubConnection _connection;
+        public SendMailJob()
+        {
+            _connection = new HubConnectionBuilder()
+             .WithUrl("http://10.4.4.224:1009/ec-hub")
+             .Build();
+        }
 
         public async Task Execute(IJobExecutionContext context)
         {
-            // Loop is here to wait until the server is running
-            //while (true)
-            //{
+            var dataMap = context.JobDetail.JobDataMap;
+            var doneList = dataMap.GetString("Done List");
+            var cost = dataMap.GetString("Cost");
 
-            //    try
-            //    {
-            //        await _connection.StartAsync();
-            //        break;
-            //    }
-            //    catch
-            //    {
-            //        await Task.Delay(1000);
-            //    }
-            //}
-            //await Console.Out.WriteLineAsync($"Hub: {_connection.State}");
+            //loop is here to wait until the server is running
+            while (true)
+            {
 
+                try
+                {
+                    await _connection.StartAsync();
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(1000);
+                }
+            }
+            Console.ForegroundColor = ConsoleColor.Green;
+            await Console.Out.WriteLineAsync($"SendMailDailyJob: Hub: {_connection.State}");
+            Console.ResetColor();
 
             try
             {
@@ -84,8 +92,27 @@ namespace TodolistScheduleService.Jobs
                 //    }
                 //}
                 // await _connection.InvokeAsync("SendMail", "2");
-                await Console.Out.WriteLineAsync("The system has sent emails.");
+                //await Console.Out.WriteLineAsync($"SendMailDailyJob: Hub: {_connection.State}");
+                foreach (var item in dataMap)
+                {
+                    if (item.Key == "Done List")
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"SendMailDailyJob: Chay API Report DoneList de gui mail vao luc: {DateTime.Now.Hour}:{DateTime.Now.Minute}");
+                        Console.ResetColor();
+                    }
 
+                    if (item.Key == "Cost")
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine($"SendMailDailyJob: Chay API Report Cost de gui mail vao luc: {DateTime.Now.Hour}:{DateTime.Now.Minute}");
+                        Console.ResetColor();
+                    }
+                }
+               
+                //Console.ForegroundColor = ConsoleColor.Yellow;
+                //Console.WriteLine($"SendMailDailyJob: Yeu cau server gui mail vao luc: {DateTime.Now.Hour}:{DateTime.Now.Minute}");
+                //Console.ResetColor();
             }
             catch (Exception)
             {

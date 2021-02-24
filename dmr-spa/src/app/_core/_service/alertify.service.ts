@@ -6,6 +6,7 @@ declare let Swal: any;
 })
 export class AlertifyService {
   public $swal = Swal;
+  timerInterval: NodeJS.Timeout;
   constructor() { }
   private Toast = Swal.mixin({
     toast: true,
@@ -18,6 +19,7 @@ export class AlertifyService {
       toast.addEventListener('mouseleave', Swal.resumeTimer);
     }
   });
+
   confirm(title: string, message: string, okCallback: () => void) {
     Swal.fire({
       title,

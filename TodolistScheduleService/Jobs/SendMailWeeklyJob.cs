@@ -8,9 +8,19 @@ namespace TodolistScheduleService.Jobs
 {
     public class SendMailWeeklyJob : IJob
     {
-        public Task Execute(IJobExecutionContext context)
+        public async Task Execute(IJobExecutionContext context)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var dataMap = context.JobDetail.JobDataMap;
+                var doneList = dataMap.GetString("DoneList");
+                var cost = dataMap.GetString("Cost");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            await Console.Out.WriteLineAsync($"SendMailWeeklyJob: Yeu cau server gui mail vao luc: {DateTime.Now.Hour}:{DateTime.Now.Minute}");
         }
     }
 }

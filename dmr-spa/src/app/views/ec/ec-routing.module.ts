@@ -37,6 +37,7 @@ import { Bpfc1Component } from './bpfc-1/bpfc-1.component';
 import { GlueTypeComponent } from './glue-type/glue-type.component';
 import { BuildingLunchTimeComponent } from './buildingLunchTime/building-lunch-Time.component';
 import { MailingComponent } from './mailing/mailing.component';
+import { DecentralizationComponent } from './decentralization/decentralization.component';
 
 const routes: Routes = [
   {
@@ -193,6 +194,14 @@ const routes: Routes = [
             data: {
               title: 'mailing',
               breadcrumb: 'Mailing'
+            }
+          },
+          {
+            path: 'decentralization',
+            component: DecentralizationComponent,
+            data: {
+              title: 'Decentralization',
+              breadcrumb: 'Decentralization'
             }
           }
         ]
@@ -390,7 +399,15 @@ const routes: Routes = [
                 component: TodolistComponent,
               },
               {
+                path: ':tab',
+                component: TodolistComponent,
+              },
+              {
                 path: ':tab/:glueName',
+                component: TodolistComponent,
+              },
+              {
+                path: ';tab=:tab;glueName=:glueName',
                 component: TodolistComponent,
               },
               {

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HubConnectionState } from '@microsoft/signalr';
+import { HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { IBuilding } from 'src/app/_core/_model/building';
 import { IMixingInfo } from 'src/app/_core/_model/plan.js';
@@ -12,12 +12,15 @@ import { IngredientService } from 'src/app/_core/_service/ingredient.service';
 import { MakeGlueService } from 'src/app/_core/_service/make-glue.service';
 import { PlanService } from 'src/app/_core/_service/plan.service.js';
 import { SettingService } from 'src/app/_core/_service/setting.service.js';
-import * as signalr from '../../../../assets/js/ec-client.js';
+// import * as signalr from '../../../../assets/js/ec-client.js';
+// import * as signalr from '../../../../assets/js/weighing-scale-client.js';
 
 import { debounceTime } from 'rxjs/operators';
 import { IScanner } from 'src/app/_core/_model/IToDoList.js';
 import { TodolistService } from 'src/app/_core/_service/todolist.service.js';
 import { IMixingDetailForResponse } from 'src/app/_core/_model/IMixingInfo.js';
+import { environment } from 'src/environments/environment.js';
+import { MixingService } from 'src/app/_core/_service/mixing.service';
 
 const SUMMARY_RECIEVE_SIGNALR = 'ok';
 const BIG_MACHINE_UNIT = 'k';
@@ -26,12 +29,17 @@ const BUILDING_LEVEL = 2;
 declare var $: any;
 const ADMIN = 1;
 const SUPERVISOR = 2;
-
+const CONNECTION_WEIGHING_SCALE_HUB = new HubConnectionBuilder()
+  .withUrl(environment.scalingHubLocal)
+  .withAutomaticReconnect([1000, 3000, 5000, 10000, 30000])
+  // .configureLogging(signalR.LogLevel.Information)
+  .build();
 
 @Component({
   selector: 'app-mixing',
   templateUrl: './mixing.component.html',
-  styleUrls: ['./mixing.component.css']
+  styleUrls: ['./mixing.component.css'],
+  providers: [MixingService]
 })
 export class MixingComponent implements OnInit, OnDestroy {
   ingredients: IIngredient[];
@@ -80,18 +88,29 @@ export class MixingComponent implements OnInit, OnDestroy {
     private ingredientService: IngredientService,
     private makeGlueService: MakeGlueService,
     private abnormalService: AbnormalService,
-    private planService: PlanService,
+    private mixingService: MixingService,
     private router: Router,
     private settingService: SettingService,
     public todolistService: TodolistService
   ) {
-
+    console.log('========Collapse========');
   }
   ngOnDestroy(): void {
     this.subscription.forEach(item => item.unsubscribe());
     this.offSignalr();
+    this.mixingService.numberOfAttempts = 5;
+    this.mixingService.close().then((result) => {
+      console.log('Mixing service stopped connection');
+    }).catch((err) => {
+      console.log('Mixing service can not stopped connection', err);
+    });
+    CONNECTION_WEIGHING_SCALE_HUB.stop().then((result) => {
+      console.log('stopped connection');
+    }).catch((err) => {
+    });
   }
   ngOnInit() {
+    this.mixingService.connect();
     this.checkQRCode();
     this.checkedSmallScale = false;
     const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
@@ -104,6 +123,22 @@ export class MixingComponent implements OnInit, OnDestroy {
     this.startTime = new Date();
     this.getScalingSetting();
     this.onRouteChange();
+   // this.start();
+  }
+  start() {
+    CONNECTION_WEIGHING_SCALE_HUB.start().then( () => {
+
+      CONNECTION_WEIGHING_SCALE_HUB.on('UserConnected', (conId) => {
+        console.log('CONNECTION_WEIGHING_SCALE_HUB UserConnected', conId);
+      });
+      CONNECTION_WEIGHING_SCALE_HUB.on('UserDisconnected', (conId) => {
+        console.log('CONNECTION_WEIGHING_SCALE_HUB UserDisconnected', conId);
+
+      });
+      console.log('Signalr CONNECTION_WEIGHING_SCALE_HUB connected');
+    }).catch( (err) => {
+      setTimeout(() => this.start(), 5000);
+    });
   }
   onChangeScale(args) {
     const scaleName = args.target.value;
@@ -432,11 +467,12 @@ export class MixingComponent implements OnInit, OnDestroy {
         this.ingredients[i].focusReal = false;
       }
     }
-    if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
-      this.signal();
-    } else {
-      this.startScalingHub();
-    }
+    this.signal();
+    // if (CONNECTION_WEIGHING_SCALE_HUB.state === HubConnectionState.Connected) {
+    //   this.signal();
+    // } else {
+    //   this.startScalingHub();
+    // }
   }
   checkValidPosition(ingredient, args) {
     let min;
@@ -632,10 +668,11 @@ export class MixingComponent implements OnInit, OnDestroy {
     this.changeReal(ingredient.code, +args);
   }
   private offSignalr() {
-    signalr.CONNECTION_HUB.off('Welcom');
+    CONNECTION_WEIGHING_SCALE_HUB.off('Welcom');
+    this.mixingService.offWeighingScale();
   }
   private onSignalr() {
-    signalr.CONNECTION_HUB.on('Welcom');
+    // CONNECTION_WEIGHING_SCALE_HUB.on('Welcom', () => {});
   }
   private changeScanStatusByLength(length, item) {
     switch (length) {
@@ -721,12 +758,12 @@ export class MixingComponent implements OnInit, OnDestroy {
     }
   }
   private startScalingHub() {
-    signalr.CONNECTION_HUB.start().then(() => {
-      signalr.CONNECTION_HUB.on('Scaling Hub UserConnected', (conId) => {
+    CONNECTION_WEIGHING_SCALE_HUB.start().then(() => {
+      CONNECTION_WEIGHING_SCALE_HUB.on('Scaling Hub UserConnected', (conId) => {
         console.log('Scaling Hub UserConnected', conId);
         this.signal();
       });
-      signalr.CONNECTION_HUB.on('Scaling Hub User Disconnected', (conId) => {
+      CONNECTION_WEIGHING_SCALE_HUB.on('Scaling Hub User Disconnected', (conId) => {
         console.log('Scaling Hub User Disconnected', conId);
       });
       console.log('Scaling Hub Signalr connected');
@@ -735,60 +772,108 @@ export class MixingComponent implements OnInit, OnDestroy {
     });
   }
   private signal() {
-    if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
-      signalr.CONNECTION_HUB.on(
-        'Welcom',
-        (scalingMachineID, message, unit) => {
-          if (this.scalingSetting.includes(+scalingMachineID)) {
-            if (unit === this.scalingKG) {
-              this.volume = parseFloat(message);
-              this.unit = unit;
-              console.log('Unit', unit, message, scalingMachineID);
-              /// update real A sau do show real B, tinh lai expected
-              switch (this.position) {
-                case 'A':
-                  this.volumeA = this.volume;
-                  break;
-                case 'B':
-                  if (unit !== SMALL_MACHINE_UNIT) {
-                    // update realA
-                    this.volumeB = this.volume;
-                    this.changeActualByPosition('A', this.volumeB, unit);
-                    this.checkValidPosition(this.ingredientsTamp, this.volumeB);
-                  } else {
-                    this.volumeB = this.volume;
-                    this.changeActualByPosition('A', this.volumeB, unit);
-                    this.checkValidPosition(this.ingredientsTamp, this.volumeB);
-                  }
-                  break;
-                case 'C':
-                  this.volumeC = this.volume;
-                  this.changeActualByPosition('B', this.volumeC, unit);
-                  this.checkValidPosition(this.ingredientsTamp, this.volumeC);
-                  break;
-                case 'D':
-                  this.volumeD = this.volume;
-                  this.changeActualByPosition('C', this.volumeD, unit);
-                  this.checkValidPosition(this.ingredientsTamp, this.volumeD);
-                  break;
-                case 'E':
-                  this.volumeE = this.volume;
-                  this.changeActualByPosition('D', this.volumeE, unit);
-                  this.checkValidPosition(this.ingredientsTamp, this.volumeE);
-                  break;
-                case 'H':
-                  this.volumeH = this.volume;
-                  this.changeActualByPosition('E', this.volumeH, unit);
-                  this.checkValidPosition(this.ingredientsTamp, this.volumeH);
-                  break;
-              }
+    this.mixingService.receiveAmount.subscribe( res => {
+      const unit = res.unit;
+      const scalingMachineID = res.weighingScaleID;
+      const message = res.amount;
+      if (unit === this.scalingKG) {
+        this.volume = parseFloat(message);
+        this.unit = unit;
+        console.log('Unit', unit, message, scalingMachineID);
+        /// update real A sau do show real B, tinh lai expected
+        switch (this.position) {
+          case 'A':
+            this.volumeA = this.volume;
+            break;
+          case 'B':
+            if (unit !== SMALL_MACHINE_UNIT) {
+              // update realA
+              this.volumeB = this.volume;
+              this.changeActualByPosition('A', this.volumeB, unit);
+              this.checkValidPosition(this.ingredientsTamp, this.volumeB);
+            } else {
+              this.volumeB = this.volume;
+              this.changeActualByPosition('A', this.volumeB, unit);
+              this.checkValidPosition(this.ingredientsTamp, this.volumeB);
             }
-          }
+            break;
+          case 'C':
+            this.volumeC = this.volume;
+            this.changeActualByPosition('B', this.volumeC, unit);
+            this.checkValidPosition(this.ingredientsTamp, this.volumeC);
+            break;
+          case 'D':
+            this.volumeD = this.volume;
+            this.changeActualByPosition('C', this.volumeD, unit);
+            this.checkValidPosition(this.ingredientsTamp, this.volumeD);
+            break;
+          case 'E':
+            this.volumeE = this.volume;
+            this.changeActualByPosition('D', this.volumeE, unit);
+            this.checkValidPosition(this.ingredientsTamp, this.volumeE);
+            break;
+          case 'H':
+            this.volumeH = this.volume;
+            this.changeActualByPosition('E', this.volumeH, unit);
+            this.checkValidPosition(this.ingredientsTamp, this.volumeH);
+            break;
         }
-      );
-    } else {
-      this.startScalingHub();
-    }
+      }
+    });
+    // if (CONNECTION_WEIGHING_SCALE_HUB.state === HubConnectionState.Connected) {
+    //   CONNECTION_WEIGHING_SCALE_HUB.on(
+    //     'Welcom',
+    //     (scalingMachineID, message, unit) => {
+    //       if (this.scalingSetting.includes(+scalingMachineID)) {
+    //         if (unit === this.scalingKG) {
+    //           this.volume = parseFloat(message);
+    //           this.unit = unit;
+    //           console.log('Unit', unit, message, scalingMachineID);
+    //           /// update real A sau do show real B, tinh lai expected
+    //           switch (this.position) {
+    //             case 'A':
+    //               this.volumeA = this.volume;
+    //               break;
+    //             case 'B':
+    //               if (unit !== SMALL_MACHINE_UNIT) {
+    //                 // update realA
+    //                 this.volumeB = this.volume;
+    //                 this.changeActualByPosition('A', this.volumeB, unit);
+    //                 this.checkValidPosition(this.ingredientsTamp, this.volumeB);
+    //               } else {
+    //                 this.volumeB = this.volume;
+    //                 this.changeActualByPosition('A', this.volumeB, unit);
+    //                 this.checkValidPosition(this.ingredientsTamp, this.volumeB);
+    //               }
+    //               break;
+    //             case 'C':
+    //               this.volumeC = this.volume;
+    //               this.changeActualByPosition('B', this.volumeC, unit);
+    //               this.checkValidPosition(this.ingredientsTamp, this.volumeC);
+    //               break;
+    //             case 'D':
+    //               this.volumeD = this.volume;
+    //               this.changeActualByPosition('C', this.volumeD, unit);
+    //               this.checkValidPosition(this.ingredientsTamp, this.volumeD);
+    //               break;
+    //             case 'E':
+    //               this.volumeE = this.volume;
+    //               this.changeActualByPosition('D', this.volumeE, unit);
+    //               this.checkValidPosition(this.ingredientsTamp, this.volumeE);
+    //               break;
+    //             case 'H':
+    //               this.volumeH = this.volume;
+    //               this.changeActualByPosition('E', this.volumeH, unit);
+    //               this.checkValidPosition(this.ingredientsTamp, this.volumeH);
+    //               break;
+    //           }
+    //         }
+    //       }
+    //     }
+    //   );
+    // } else {
+    //   this.startScalingHub();
+    // }
   }
   // event
   showArrow(item): boolean {
@@ -1070,7 +1155,7 @@ export class MixingComponent implements OnInit, OnDestroy {
   // api
   back() {
     this.router.navigate([
-      `/ec/execution/todolist-2/${this.tab}/${this.glueName}`
+      `/ec/execution/todolist-2/${this.tab}`
     ]);
   }
   private getScalingSetting() {
@@ -1133,8 +1218,8 @@ export class MixingComponent implements OnInit, OnDestroy {
       details
     };
 
-    console.log('details', details);
-    this.onSignalr();
+    // console.log('details', details);
+    // this.onSignalr();
     if (mixing) {
       this.makeGlueService.add(mixing).subscribe((glue: any) => {
         // this.checkValidPosition(item, args);

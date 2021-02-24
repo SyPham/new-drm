@@ -225,6 +225,10 @@
     "Notify": "Sau 12 giờ trưa vui lòng nhấn nút 'Tải Lại Trang' ở trang 'Danh Sách Việc Làm' để cập nhật lại danh sách việc làm của anh/chị! Vui lòng tạo kế hoạch làm việc của ngày mai vào buổi chiều hôm nay lúc 3 giờ 30 phút!",
     "Manual": "Thủ công",
     "Overtime": "Tăng ca",
-    "No overtime": "Không tăng ca"
+    "Time": "Thời Gian",
+    "No overtime": "Không tăng ca",
+    "Decentralization": "Phân Quyền Cho Người Giao Keo",
+    "Building LunchTime": "Cài Đặt Giờ Ăn Trưa Theo Tòa Nhà",
+    "Mailing": "Cài Đặt Gửi Mail"
 
 }
