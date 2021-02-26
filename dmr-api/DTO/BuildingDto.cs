@@ -14,5 +14,7 @@ namespace DMR_API.DTO
         public int Level { get; set; }
         public int LunchTimeID { get; set; }
         public int? ParentID { get; set; }
+        public int? KindID { get; set; }
+        
     }
 }

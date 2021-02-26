@@ -65,7 +65,7 @@ namespace DMR_API.Controllers
             return Ok(result);
         }
         [HttpPost]
-        public async Task<IActionResult> RemoveLineUser([FromBody] BuildingUserDto buildingUserDto)
+        public async Task<IActionResult> RemoveLineUser([FromBody] BuildingUserForRemoveDto buildingUserDto)
         {
             var result = await _buildingUserService.RemoveLineUser(buildingUserDto);
             if (result.Status == true)
@@ -73,10 +73,10 @@ namespace DMR_API.Controllers
             return BadRequest("Không xóa được dữ liệu!");
 
         }
-        [HttpGet("{userid}/{buildingid}")]
-        public async Task<IActionResult> MapLineUser(int userid, int buildingid)
+        [HttpPost]
+        public async Task<IActionResult> MapLineUser(BuildingUserForMapDto buildingUserDto)
         {
-            var result = await _buildingUserService.MapLineUser(userid, buildingid);
+            var result = await _buildingUserService.MapLineUser(buildingUserDto);
             return Ok(result);
         }
 
@@ -94,7 +94,7 @@ namespace DMR_API.Controllers
             return Ok(result);
         }
         [HttpPost]
-        public async Task<IActionResult> RemoveMultipleBuildingUser([FromBody] BuildingUserDto buildingUserDto)
+        public async Task<IActionResult> RemoveMultipleBuildingUser([FromBody] BuildingUserForRemoveDto buildingUserDto)
         {
             var result = await _buildingUserService.RemoveMultipleBuildingUser(buildingUserDto);
             if (result.Status == true)
@@ -102,10 +102,10 @@ namespace DMR_API.Controllers
             return BadRequest("Không xóa được dữ liệu!");
 
         }
-        [HttpGet("{userid}/{buildingid}")]
-        public async Task<IActionResult> MapMultipleBuildingUser(int userid, int buildingid)
+        [HttpPost]
+        public async Task<IActionResult> MapMultipleBuildingUser(BuildingUserForMapDto dto)
         {
-            var result = await _buildingUserService.MapMultipleBuildingUser(userid, buildingid);
+            var result = await _buildingUserService.MapMultipleBuildingUser(dto);
             return Ok(result);
         }
     }

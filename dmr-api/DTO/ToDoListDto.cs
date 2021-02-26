@@ -17,6 +17,7 @@ namespace DMR_API.DTO
         public int BPFCID { get; set; }
         public int GlueNameID { get; set; }
         public string LineName { get; set; }
+        public bool IsEVA_UV { get; set; }
         public string GlueName { get; set; }
         public string Supplier { get; set; }
         public bool Status { get; set; }

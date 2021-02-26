@@ -44,5 +44,6 @@ namespace DMR_API.Models
         public int DeleteBy { get; set; }
         public int CreatedBy { get; set; }
         public ICollection<DispatchListDetail> DispatchListDetails { get; set; }
+        public ICollection<Dispatch> Dispatches { get; set; }
     }
 }

@@ -60,6 +60,5 @@ export class MakeGlueService {
   }
   deliveredHistory() {
     return this.http.get(this.baseUrl + 'MakeGlue/DeliveredHistory', {});
-
   }
 }

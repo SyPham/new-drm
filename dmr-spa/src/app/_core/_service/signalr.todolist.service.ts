@@ -1,6 +1,6 @@
 import { Injectable, OnInit } from '@angular/core';
 // import * as signalR from '@aspnet/signalr';
-import { HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -36,7 +36,7 @@ export class SignalrTodolistService {
 
   startConnection = async () => {
     this.hubConnection = new HubConnectionBuilder()
-      .withUrl(this.connectionUrl)
+      .withUrl(this.connectionUrl, { transport: HttpTransportType.WebSockets })
       .build();
     this.setSignalrClientMethods();
     try {

@@ -10,18 +10,21 @@ import { environment } from 'src/environments/environment';
 import { Tooltip } from '@syncfusion/ej2-angular-popups';
 import { IBuilding } from 'src/app/_core/_model/building';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { CheckBoxSelectionService } from '@syncfusion/ej2-angular-dropdowns';
 const DISPATCHER = 6;
 @Component({
   selector: 'app-decentralization',
   templateUrl: './decentralization.component.html',
   styleUrls: ['./decentralization.component.css'],
-  providers: [ToolbarService, EditService, PageService]
+  providers: [ToolbarService, EditService, PageService, CheckBoxSelectionService]
 })
 export class DecentralizationComponent implements OnInit {
   userData: any;
+  public mode: string;
   buildings: IBuilding[];
   buildingDatas: IBuilding[];
-  fieldsBuilding: object = { text: 'name', value: 'name' };
+  fieldsBuilding: object = { text: 'name', value: 'id' };
+  fieldsLine: object = { text: 'name', value: 'id' };
   fieldsRole: object = { text: 'name', value: 'name' };
   editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
   buildingUsers: [];
@@ -43,6 +46,10 @@ export class DecentralizationComponent implements OnInit {
   locale = localStorage.getItem('lang');
   lines: IBuilding[];
   public fields: object = { text: 'name', value: 'id' };
+  lineList = [];
+  lineRemovingList = [];
+  buildingList = [];
+  buildingRemovingList = [];
   constructor(
     private accountService: AccountService,
     private roleService: RoleService,
@@ -52,6 +59,7 @@ export class DecentralizationComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.mode = 'CheckBox';
     this.roleID = 0;
     this.buildingID = 0;
     this.getRoles();
@@ -65,49 +73,7 @@ export class DecentralizationComponent implements OnInit {
     this.setFocus = args.column; // Get the column from Double click event
   }
   actionBegin(args) {
-    if (args.requestType === 'save' && args.action === 'add') {
-      this.userCreate = {
-        id: 0,
-        username: args.data.username ,
-        password: args.data.password,
-        email: args.data.email,
-        roleid: 2,
-        employeeID: args.data.employeeID,
-        isLeader: false,
-        systemCode: environment.systemCode
-      };
-      if (args.data.employeeID === undefined) {
-        this.alertify.error('Please key in a account!');
-        args.cancel = true;
-        return;
-      }
-      if (args.data.password === undefined) {
-        this.alertify.error('Please key in a password!');
-        args.cancel = true;
-        return;
-      }
-      if (this.roleID > 0) {
-        this.create();
-      } else {
-        args.cancel = true;
-        this.alertify.error('Please select a role!');
-        return;
-      }
-    }
     if (args.requestType === 'save' && args.action === 'edit') {
-      this.userUpdate = {
-        id: args.data.id,
-        username: args.data.username,
-        password: args.data.password || '',
-        email: args.data.email || '',
-        roleid: 2,
-        employeeID: args.data.employeeID,
-        isLeader: false
-      };
-      this.update();
-    }
-    if (args.requestType === 'delete') {
-      this.delete(args.data[0].id);
     }
   }
   tooltip(args: QueryCellInfoEventArgs) {
@@ -127,14 +93,14 @@ export class DecentralizationComponent implements OnInit {
     }
   }
   actionComplete(args) {
-    if (args.requestType === 'beginEdit' ) {
-      if (this.setFocus.field !== 'role' && this.setFocus.field !== 'building') {
-        args.form.elements.namedItem(this.setFocus.field).focus(); // Set focus to the Target element
-      }
-    }
-    if (args.requestType === 'add') {
-      args.form.elements.namedItem('employeeID').focus(); // Set focus to the Target element
-    }
+    // if (args.requestType === 'beginEdit' ) {
+    //   if (this.setFocus.field !== 'role' && this.setFocus.field !== 'building') {
+    //     args.form.elements.namedItem(this.setFocus.field).focus(); // Set focus to the Target element
+    //   }
+    // }
+    // if (args.requestType === 'add') {
+    //   args.form.elements.namedItem('employeeID').focus(); // Set focus to the Target element
+    // }
   }
   dataBound() {
    // document.querySelectorAll('button[aria-label=Update] > span.e-tbar-btn-text')[0].innerHTML = 'Save';
@@ -154,6 +120,8 @@ export class DecentralizationComponent implements OnInit {
     this.accountService.getBuildings().subscribe((result: any) => {
       this.buildingDatas = result || [];
       const data = this.buildingDatas.filter((item: any) => item.level === 2);
+      this.lines = this.buildingDatas.filter((item: any) => item.level === 3);
+      this.buildings = this.buildingDatas.filter((item: any) => item.level === 2);
       this.buildingDatas = data;
     }, error => {
       this.alertify.error(error);
@@ -272,52 +240,80 @@ export class DecentralizationComponent implements OnInit {
       this.password = '';
     });
   }
+  removing(args) {
+    this.lineList = this.lineList.filter(item => item !== args.itemData.id);
+    this.lineRemovingList.push(args.itemData.id);
+    console.log('tag', this.lineRemovingList);
+  }
+  onSelect(args) {
+    const data = args.itemData;
+    this.lineList.push(data.id );
+    console.log('tag', this.lineList);
+  }
+  removingBuilding(args) {
+    this.buildingList = this.buildingList.filter(item => item !== args.itemData.id);
+    this.buildingRemovingList.push(args.itemData.id);
+    console.log('tag', this.buildingRemovingList);
+  }
+  onSelectBuilding(args) {
+    const data = args.itemData;
+    this.buildingList.push(data.id);
+    console.log('tag', this.buildingList);
+  }
   // end api
   NO(index) {
     return (this.grid.pageSettings.currentPage - 1) * this.pageSettings.pageSize + Number(index) + 1;
   }
-  checkboxChange(args, data) {
-    console.log('checkboxChange', args);
-    const checked = args.checked;
-    if (checked === true) {
-      this.accountService.mapLineUser(this.userID, data.id).subscribe(res => {
-        if (res.status) {
-          this.alertify.success(res.message);
-          this.getLineByUserID();
-        } else {
-          this.alertify.warning(res.message);
-        }
-      }, err => this.alertify.error(err));
-    } else {
-      const obj = {
-        userID: this.userID, buildingID: data.id
-      };
-      this.accountService.removeLineUser(obj).subscribe(res => {
-          this.alertify.success('Thành công!');
-          this.getLineByUserID();
-      }, err => this.alertify.error(err));
-    }
-  }
+  // checkboxChange(args, data) {
+  //   console.log('checkboxChange', args);
+  //   const checked = args.checked;
+  //   if (checked === true) {
+  //     this.accountService.mapLineUser(this.userID, data.id).subscribe(res => {
+  //       if (res.status) {
+  //         this.alertify.success(res.message);
+  //         this.getLineByUserID();
+  //       } else {
+  //         this.alertify.warning(res.message);
+  //       }
+  //     }, err => this.alertify.error(err));
+  //   } else {
+  //     const obj = {
+  //       userID: this.userID, buildingID: data.id
+  //     };
+  //     this.accountService.removeLineUser(obj).subscribe(res => {
+  //         this.alertify.success('Thành công!');
+  //         this.getLineByUserID();
+  //     }, err => this.alertify.error(err));
+  //   }
+  // }
   checkboxChangeBuilding(args, data) {
     const checked = args.checked;
     if (checked === true) {
-      this.accountService.mapMultipleBuildingUser(this.userID, data.id).subscribe(res => {
-        if (res.status) {
-          this.alertify.success(res.message);
+      const obj = {
+        userID: this.userID, buildings: this.lineList
+      };
+      this.accountService.mapMultipleBuildingUser(obj).subscribe(res => {
+          this.alertify.success('Thành công!');
           this.getBuildingByUserID();
-        } else {
-          this.alertify.warning(res.message);
-        }
       }, err => this.alertify.error(err));
     } else {
       const obj = {
-        userID: this.userID, buildingID: data.id
+        userID: this.userID, buildings: this.lineRemovingList
       };
       this.accountService.removeMultipleBuildingUser(obj).subscribe(res => {
         this.alertify.success('Thành công!');
         this.getLineByUserID();
       }, err => this.alertify.error(err));
     }
+  }
+  onCreatedLine(value) {
+    // this.userID = value.id;
+    // this.buildingID = this.buildingDatas.filter(item => item.name === value.building)[0].id;
+    // this.getLineByUserID();
+  }
+  onCreatedBuilding(value) {
+    // this.userID = value.id;
+    // this.getBuildingByUserID();
   }
   showLineModal(name, value) {
     this.userID = value.id;

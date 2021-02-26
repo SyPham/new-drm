@@ -219,61 +219,75 @@ namespace DMR_API._Services.Services
             throw new NotImplementedException();
         }
 
-        public async Task<ResponseDetail<object>> RemoveLineUser(BuildingUserDto buildingUserDto)
+        public async Task<ResponseDetail<object>> RemoveLineUser(BuildingUserForRemoveDto dto)
         {
             var lineLevel = 3;
-            var item = await _buildingUserRepository.FindAll().Include(x => x.Building).FirstOrDefaultAsync(x => x.Building.Level == lineLevel && x.UserID == buildingUserDto.UserID && x.BuildingID == buildingUserDto.BuildingID);
-            if (item != null)
+            var item = await _buildingUserRepository.FindAll()
+                .Include(x => x.Building)
+                .Where(x => x.Building.Level == lineLevel
+                && x.UserID == dto.UserID
+                && dto.Buildings.Contains(x.BuildingID)).ToListAsync();
+            if (item.Count != 0)
             {
-                _buildingUserRepository.Remove(item);
-                try
-                {
-                    await _buildingUserRepository.SaveAll();
-                    return new ResponseDetail<object>()
-                    {
-                        Status = true,
-                        Message = "Delete Successfully!"
-                    };
-                }
-                catch (Exception)
-                {
-                    return new ResponseDetail<object>()
-                    {
-                        Status = false,
-                        Message = "Failed on delete!"
-                    };
-                }
+                _buildingUserRepository.RemoveMultiple(item);
+                await _buildingUserRepository.SaveAll();
             }
-            else
+            try
             {
-
-                return new ResponseDetail<object>()
+                var list = new List<BuildingUser>();
+                foreach (var buildingid in dto.Buildings)
                 {
-                    Status = false,
-                    Message = ""
+                    list.Add(new BuildingUser
+                    {
+                        UserID = dto.UserID,
+                        BuildingID = buildingid,
+                        CreatedDate = DateTime.Now
+                    });
+                }
+                _buildingUserRepository.AddRange(list);
+
+                await _buildingUserRepository.SaveAll();
+                return new ResponseDetail<object>
+                {
+                    Status = true,
+                    Message = "Mapping Successfully!"
                 };
             }
-        }
-        public async Task<ResponseDetail<object>> MapLineUser(int userid, int buildingid)
-        {
-            var lineLevel = 3;
-            var item = await _buildingUserRepository.FindAll().Include(x => x.Building).FirstOrDefaultAsync(x => x.Building.Level == lineLevel && x.UserID == userid && x.BuildingID == buildingid);
-            if (item != null)
+            catch (Exception)
             {
                 return new ResponseDetail<object>
                 {
                     Status = false,
-                    Message = "Đã map chuyền này rồi!"
+                    Message = "Failed on save!"
                 };
+            }
+        }
+        public async Task<ResponseDetail<object>> MapLineUser(BuildingUserForMapDto dto)
+        {
+            var lineLevel = 3;
+            var item = await _buildingUserRepository.FindAll()
+               .Include(x => x.Building)
+               .Where(x => x.Building.Level == lineLevel
+               && x.UserID == dto.UserID
+               && dto.Buildings.Contains(x.BuildingID)).ToListAsync();
+            if (item.Count != 0)
+            {
+                _buildingUserRepository.RemoveMultiple(item);
+                await _buildingUserRepository.SaveAll();
             }
             try
             {
-                _buildingUserRepository.Add(new BuildingUser
+                var list = new List<BuildingUser>();
+                foreach (var buildingid in dto.Buildings)
                 {
-                    UserID = userid,
-                    BuildingID = buildingid,
-                    CreatedDate = DateTime.Now
-                });
+                    list.Add(new BuildingUser
+                    {
+                        UserID = dto.UserID,
+                        BuildingID = buildingid,
+                        CreatedDate = DateTime.Now
+                    });
+                }
+                _buildingUserRepository.AddRange(list);
 
                 await _buildingUserRepository.SaveAll();
                 return new ResponseDetail<object>
@@ -313,13 +327,17 @@ namespace DMR_API._Services.Services
             };
         }
 
-        public async Task<ResponseDetail<object>> RemoveMultipleBuildingUser(BuildingUserDto buildingUserDto)
+        public async Task<ResponseDetail<object>> RemoveMultipleBuildingUser(BuildingUserForRemoveDto dto)
         {
             var buildingLevel = 2;
-            var item = await _buildingUserRepository.FindAll().Include(x => x.Building).FirstOrDefaultAsync(x => x.Building.Level == buildingLevel && x.UserID == buildingUserDto.UserID && x.BuildingID == buildingUserDto.BuildingID);
+            var item = await _buildingUserRepository.FindAll()
+             .Include(x => x.Building)
+             .Where(x => x.Building.Level == buildingLevel
+             && x.UserID == dto.UserID
+             && dto.Buildings.Contains(x.BuildingID)).ToListAsync();
             if (item != null)
             {
-                _buildingUserRepository.Remove(item);
+                _buildingUserRepository.RemoveMultiple(item);
                 try
                 {
                     await _buildingUserRepository.SaveAll();
@@ -348,26 +366,32 @@ namespace DMR_API._Services.Services
                 };
             }
         }
-        public async Task<ResponseDetail<object>> MapMultipleBuildingUser(int userid, int buildingid)
+        public async Task<ResponseDetail<object>> MapMultipleBuildingUser(BuildingUserForMapDto dto)
         {
             var buildingLevel = 2;
-            var item = await _buildingUserRepository.FindAll().Include(x => x.Building).FirstOrDefaultAsync(x => x.Building.Level == buildingLevel && x.UserID == userid && x.BuildingID == buildingid);
-            if (item != null)
+            var item = await _buildingUserRepository.FindAll()
+                .Include(x => x.Building)
+                .Where(x => x.Building.Level == buildingLevel 
+                && x.UserID == dto.UserID 
+                && dto.Buildings.Contains(x.BuildingID)).ToListAsync();
+            if (item.Count != 0)
             {
-                return new ResponseDetail<object>
-                {
-                    Status = false,
-                    Message = "Đã map tào nhà này rồi!"
-                };
+                _buildingUserRepository.RemoveMultiple(item);
+                await _buildingUserRepository.SaveAll();
             }
             try
             {
-                _buildingUserRepository.Add(new BuildingUser
+                var list = new List<BuildingUser>();
+                foreach (var buildingid in dto.Buildings)
                 {
-                    UserID = userid,
-                    BuildingID = buildingid,
-                    CreatedDate = DateTime.Now
-                });
+                    list.Add(new BuildingUser
+                    {
+                        UserID = dto.UserID,
+                        BuildingID = buildingid,
+                        CreatedDate = DateTime.Now
+                    });
+                }
+                _buildingUserRepository.AddRange(list);
 
                 await _buildingUserRepository.SaveAll();
                 return new ResponseDetail<object>

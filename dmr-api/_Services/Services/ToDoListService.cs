@@ -89,7 +89,7 @@ namespace DMR_API._Services.Services
             _repoDispatchList = repoDispatchList;
             _repoDispatchListDetail = repoDispatchListDetail;
             _jwtService = jwtService;
-        } 
+        }
         #endregion
 
         #region LoadData
@@ -265,7 +265,7 @@ namespace DMR_API._Services.Services
             foreach (var todo in groupBy)
             {
                 var item = todo.FirstOrDefault();
-                var lineList = todo.Select(x => x.LineName).DistinctBy(x=> x).OrderBy(x => x).ToList();
+                var lineList = todo.Select(x => x.LineName).DistinctBy(x => x).OrderBy(x => x).ToList();
                 var stdTotal = todo.Select(x => x.StandardConsumption).Sum();
                 var stddeliver = todo.Select(x => x.DeliveredConsumption).Sum();
 
@@ -309,7 +309,7 @@ namespace DMR_API._Services.Services
             }
 
             // GroupBy period and then by glueName
-            var modelTemp = todolist.OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime}).ToList();
+            var modelTemp = todolist.OrderBy(x => x.EstimatedStartTime).GroupBy(x => new { x.EstimatedStartTime, x.EstimatedFinishTime }).ToList();
             var result = new List<ToDoListDto>();
             foreach (var item in modelTemp)
             {
@@ -525,7 +525,7 @@ namespace DMR_API._Services.Services
             foreach (var todo in groupBy)
             {
                 var item = todo.FirstOrDefault();
-                var lineList = todo.Select(x => x.LineName).DistinctBy(x=> x).OrderBy(x => x).ToList();
+                var lineList = todo.Select(x => x.LineName).DistinctBy(x => x).OrderBy(x => x).ToList();
 
                 var itemTodolist = new DispatchListDto();
                 itemTodolist.ID = item.ID;
@@ -1115,6 +1115,7 @@ namespace DMR_API._Services.Services
                         plan.CreatedDate,
                         glue.Consumption,
                         GlueID = glue.ID,
+                        KindID = glue.KindID ?? 0,
                         glue.GlueNameID,
                         GlueName = glue.Name,
                         ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
@@ -1172,7 +1173,6 @@ namespace DMR_API._Services.Services
             {
                 foreach (var item in glue)
                 {
-
                     if (item.ChemicalA is null) return new
                     {
                         status = false,
@@ -1216,6 +1216,7 @@ namespace DMR_API._Services.Services
                             todo.LineName = item.Building.Name;
                             todo.PlanID = item.PlanID;
                             todo.BPFCID = item.BPFCID;
+                            todo.IsEVA_UV = item.KindID == (int)Enums.Kind.EVA_UV;
                             todo.Supplier = item.ChemicalA.Supplier.Name;
                             todo.PlanID = item.PlanID;
                             todo.GlueNameID = item.GlueNameID.Value;
@@ -1241,6 +1242,7 @@ namespace DMR_API._Services.Services
                             todo.LineName = item.Building.Name;
                             todo.PlanID = item.PlanID;
                             todo.BPFCID = item.BPFCID;
+                            todo.IsEVA_UV = item.KindID == (int)Enums.Kind.EVA_UV;
                             todo.Supplier = item.ChemicalA.Supplier.Name;
                             todo.PlanID = item.PlanID;
                             todo.GlueNameID = item.GlueNameID.Value;
@@ -1250,14 +1252,14 @@ namespace DMR_API._Services.Services
                             todo.EstimatedFinishTime = estimatedFinishTime;//12:30
 
                             // neu ton tai roi thi khong them nua
-                          
+
                             if (item.StartWorkingTime.TimeOfDay <= period.StartTime.TimeOfDay
                                 || item.StartWorkingTime.TimeOfDay >= period.StartTime.TimeOfDay
                                 && item.StartWorkingTime.TimeOfDay <= period.EndTime.TimeOfDay
                                 )
                             {
                                 // 8:37 > 7:30
-                              
+
                                 if (estimatedStartTime.TimeOfDay <= item.CreatedDate.TimeOfDay
                                         && estimatedFinishTime.TimeOfDay >= item.CreatedDate.TimeOfDay
                                         ||
@@ -1265,7 +1267,7 @@ namespace DMR_API._Services.Services
                                         && estimatedStartTime.TimeOfDay >= item.CreatedDate.TimeOfDay
                                         )
                                 {
-                                   
+
                                     todolist.Add(todo);
                                 }
                             }
@@ -1578,6 +1580,7 @@ namespace DMR_API._Services.Services
                         plan.CreatedDate,
                         glue.Consumption,
                         GlueID = glue.ID,
+                        KindID = glue.KindID ?? 0,
                         glue.GlueNameID,
                         GlueName = glue.Name,
                         ChemicalA = glue.GlueIngredients.FirstOrDefault(x => x.Position == "A").Ingredient,
@@ -1608,7 +1611,6 @@ namespace DMR_API._Services.Services
             {
                 foreach (var item in glue)
                 {
-
                     var checmicalA = item.ChemicalA;
                     var startLunchTime = item.DueDate.Date.Add(new TimeSpan(startLunchTimeBuilding.Hour, startLunchTimeBuilding.Minute, 0));
                     var endLunchTime = item.DueDate.Date.Add(new TimeSpan(endLunchTimeBuilding.Hour, endLunchTimeBuilding.Minute, 0));
@@ -1665,7 +1667,8 @@ namespace DMR_API._Services.Services
                                 todo.StartTimeOfPeriod = startTimeOfPeriod;
                                 todo.FinishTimeOfPeriod = finishTimeOfPeriod;
 
-                                dispatchlist.Add(todo);
+                                if (item.KindID == 0)
+                                    dispatchlist.Add(todo);
                                 startDispatchTimeTemp = endDispatchTime; // 8:00
                             }
                         }
@@ -1728,7 +1731,8 @@ namespace DMR_API._Services.Services
                                         startDispatchTimeTemp.TimeOfDay >= item.CreatedDate.TimeOfDay
                                     && endDispatchTime.TimeOfDay >= item.CreatedDate.TimeOfDay
                                     )
-                                        dispatchlist.Add(todo);
+                                        if (item.KindID == 0)
+                                            dispatchlist.Add(todo);
                                 }
                                 startDispatchTimeTemp = endDispatchTime; // 8:00
                             }
@@ -1932,11 +1936,11 @@ namespace DMR_API._Services.Services
             var userID = _jwtService.GetUserID();
             var ct = DateTime.Now.ToRemoveSecond();
             var result = await _repoToDoList.FindAll()
-                            .Where(x => x.BuildingID == building 
-                                && x.EstimatedStartTime.Date == ct.Date 
-                                && x.GlueNameID == glueNameID 
-                                && x.AbnormalStatus == false 
-                                && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay 
+                            .Where(x => x.BuildingID == building
+                                && x.EstimatedStartTime.Date == ct.Date
+                                && x.GlueNameID == glueNameID
+                                && x.AbnormalStatus == false
+                                && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay
                                 && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay)
                             .ToListAsync();
             var model = new List<ToDoList>();
@@ -1974,22 +1978,22 @@ namespace DMR_API._Services.Services
                 };
             }
             var dispatchResult = await _repoDispatchList.FindAll()
-                                    .Where(x => x.BuildingID == building 
-                                            && x.EstimatedStartTime.Date == ct.Date 
-                                            && x.GlueNameID == glueNameID 
-                                            && x.AbnormalStatus == false 
-                                            && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay 
-                                            && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay 
+                                    .Where(x => x.BuildingID == building
+                                            && x.EstimatedStartTime.Date == ct.Date
+                                            && x.GlueNameID == glueNameID
+                                            && x.AbnormalStatus == false
+                                            && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay
+                                            && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay
                                             && x.FinishDispatchingTime != null)
                                     .ToListAsync();
             var dispatchModel = new List<DispatchList>();
 
             var checkExistDispatch = await _repoDispatchList.FindAll()
-                                            .Where(x => x.BuildingID == building 
-                                                && x.EstimatedStartTime.Date == ct.Date 
-                                                && x.GlueNameID == glueNameID 
-                                                && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay 
-                                                && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay 
+                                            .Where(x => x.BuildingID == building
+                                                && x.EstimatedStartTime.Date == ct.Date
+                                                && x.GlueNameID == glueNameID
+                                                && x.EstimatedStartTime.TimeOfDay <= ct.TimeOfDay
+                                                && x.EstimatedFinishTime.TimeOfDay >= ct.TimeOfDay
                                                 && x.FinishDispatchingTime == null)
                                             .AnyAsync();
             if (!checkExistDispatch)
@@ -4652,7 +4656,7 @@ namespace DMR_API._Services.Services
         {
             var currentTime = DateTime.Now.ToLocalTime();
             var currentDate = currentTime.Date;
-           
+
             var doneTodolistModel = await _repoToDoList.FindAll(x =>
                    x.IsDelete == false
                    && x.EstimatedStartTime.Date == currentDate
@@ -4699,7 +4703,7 @@ namespace DMR_API._Services.Services
                     ArticleNO = x.Plan.BPFCEstablish.ArticleNo == null ? "N/A" : x.Plan.BPFCEstablish.ArticleNo.Name,
                 })
                .ToListAsync();
-            
+
 
             var delayTodolistModel = await _repoToDoList.FindAll(x =>
                   x.IsDelete == false
@@ -4753,7 +4757,7 @@ namespace DMR_API._Services.Services
                 .OrderBy(x => x.Key.EstimatedStartTime)
                 .ThenBy(x => x.Key.GlueName)
                 .ToList();
-           
+
             foreach (var groupByItem in groupBy.Select((value, i) => new { i, value }))
             {
                 var sequence = groupByItem.i + 1;

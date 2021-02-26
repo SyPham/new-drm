@@ -15,5 +15,11 @@ namespace DMR_API.Models
         public List<Period> Periods { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+
+        public DateTime CreatedTime { get; set; }
+        public DateTime UpdatedTime { get; set; }
+        public int CreatedBy { get; set; }
+        public int UpdatedBy { get; set; }
+
     }
 }

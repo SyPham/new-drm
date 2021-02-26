@@ -17,9 +17,12 @@ namespace DMR_API.DTO
         public int UserRoleID { get; set; }
         public string Role { get; set; }
         public string Building { get; set; }
+        public string Line { get; set; }
         public int BuildingUserID { get; set; }
         public bool IsLock { get; set; }
         public byte[] PasswordHash { get; set; }
+        public List<int> Buildings { get; set; }
+        public List<int> Lines { get; set; }
         public byte[] PasswordSalt { get; set; }
     }
 }

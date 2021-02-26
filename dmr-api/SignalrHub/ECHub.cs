@@ -98,9 +98,9 @@ namespace DMR_API.SignalrHub
                 _connections.Add(keyBase, Context.ConnectionId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, "Online");
 
-                await Clients.Group("Online").SendAsync("Online", _connections.Count);
                 var entries = _connections.GetKey().Select(x => x.UserName).Distinct().ToList();
                 var usernames = string.Join(",", entries);
+                await Clients.Group("Online").SendAsync("Online", entries.Count);
                 await Clients.Group("Online").SendAsync("UserOnline", usernames);
             }
             else
@@ -108,9 +108,9 @@ namespace DMR_API.SignalrHub
                 _connections.Add(keyBase, Context.ConnectionId);
                 await Groups.AddToGroupAsync(Context.ConnectionId, "Online");
 
-                await Clients.Group("Online").SendAsync("Online", _connections.Count);
                 var entries = _connections.GetKey().Select(x => x.UserName).Distinct().ToList();
                 var usernames = string.Join(",", entries);
+                await Clients.Group("Online").SendAsync("Online", entries.Count);
                 await Clients.Group("Online").SendAsync("UserOnline", usernames);
             }
         }
@@ -164,10 +164,10 @@ namespace DMR_API.SignalrHub
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, "ReloadDispatch");
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, "ReloadTodo");
 
-                await Clients.Group("Online").SendAsync("Online", _connections.Count);
 
                 var entries = _connections.GetKey().Select(x => x.UserName).Distinct().ToList();
                 var usernames = string.Join(",", entries);
+                await Clients.Group("Online").SendAsync("Online", entries.Count);
                 await Clients.Group("Online").SendAsync("UserOnline", usernames);
             }
             await base.OnDisconnectedAsync(exception);

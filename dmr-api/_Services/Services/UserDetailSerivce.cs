@@ -126,12 +126,21 @@ namespace DMR_API._Services.Services
             var data = await response.Content.ReadAsStringAsync();
             var users = JsonConvert.DeserializeObject<List<UserDto>>(data);
             var userRole = await _repoUserRole.FindAll().Include(x => x.Role).ToListAsync();
-            var buildingUser = await _repoBuildingUser.FindAll().Include(x => x.Building).ToListAsync();
+            var buildingUser = await _repoBuildingUser.FindAll()
+                .Include(x => x.Building)
+                .Where(x=> x.Building.Level == 2).ToListAsync();
+            var lines = await _repoBuildingUser.FindAll()
+              .Include(x => x.Building)
+              .Where(x => x.Building.Level == 3).ToListAsync();
             var result = new List<UserDto>();
             foreach (var x in users)
             {
                 var userRoleItem = userRole.FirstOrDefault(a => a.UserID == x.ID);
                 var buildingUserItem = buildingUser.FirstOrDefault(a => a.UserID == x.ID);
+                var line = lines.Where(a => a.UserID == x.ID).Select(a => new { a.Building.Name , a.Building.ID}).ToList();
+                var lineTemp = line.Count == 0 ? "#N/A" : string.Join(" , ", line.Select(x => x.Name));
+                var building = buildingUser.Where(a=> a.UserID == x.ID).Select(a => new { a.Building.Name, a.Building.ID }).ToList();
+                var buildingTemp = building.Count == 0 ? "#N/A" : string.Join(" , ", building.Select(x=> x.Name));
                 result.Add(new UserDto
                 {
                     ID = x.ID,
@@ -146,7 +155,10 @@ namespace DMR_API._Services.Services
                     UserRoleID = userRoleItem != null ? userRoleItem.RoleID : 0,
                     BuildingUserID = buildingUserItem != null ? buildingUserItem.BuildingID : 0,
                     Role = userRoleItem != null ? userRoleItem.Role.Name : "#N/A",
-                    Building = buildingUserItem != null ? buildingUserItem.Building.Name : "#N/A",
+                    Building = buildingTemp,
+                    Line = lineTemp,
+                      Buildings = building.Select(a => a.ID).ToList(),
+                    Lines = line.Select(a => a.ID).ToList()
                 });
             }
 

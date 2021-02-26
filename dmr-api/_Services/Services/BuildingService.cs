@@ -178,6 +178,7 @@ namespace DMR_API._Services.Services
 
         public async Task<bool> AddOrUpdateLunchTime(LunchTimeDto lunchTimeDto)
         {
+            var userID = _jwtService.GetUserID();
             var ct = DateTime.Now;
 
             using var transaction = new TransactionScopeAsync().Create();
@@ -223,17 +224,17 @@ namespace DMR_API._Services.Services
                        {new Period
                     {
                             LunchTimeID = lunchTime.ID,
-                        Sequence = 4,
-                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
-                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day,0, 00,00),
+                            Sequence = 4,
+                            StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
+                            EndTime = new DateTime(ct.Year,ct.Month,ct.Day,0, 00,00),
 
                     }},
                         {new Period
                     {
                              LunchTimeID = lunchTime.ID,
-                        Sequence = 5,
-                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
-                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
+                            Sequence = 5,
+                            StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
+                            EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
 
                     }},
                         {new Period
@@ -245,6 +246,10 @@ namespace DMR_API._Services.Services
 
                     }}
                 };
+                        periodList.ForEach(x => { 
+                            x.CreatedBy = userID; 
+                            x.CreatedTime = DateTime.Now; 
+                        });
                         _repoPeriod.AddRange(periodList);
                         await _repoPeriod.SaveAll();
                         transaction.Complete();
@@ -273,6 +278,8 @@ namespace DMR_API._Services.Services
                             {
                                 item.StartTime = new DateTime(ct.Year, ct.Month, ct.Day, 0, 0, 00);
                                 item.EndTime = new DateTime(ct.Year, ct.Month, ct.Day, 0, 00, 00);
+                                item.CreatedBy = userID;
+                                item.CreatedTime = DateTime.Now;
                             });
                             _repoPeriod.UpdateRange(periodList);
                             await _repoPeriod.SaveAll();

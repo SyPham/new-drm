@@ -200,6 +200,8 @@ namespace DMR_API
             services.AddScoped<IPeriodRepository, PeriodRepository>();
             services.AddScoped<IPeriodRepository, PeriodRepository>();
             services.AddScoped<IDispatchListDetailRepository, DispatchListDetailRepository>();
+            services.AddScoped<ISubpackageRepository, SubpackageRepository>();
+
 
 
             //Services

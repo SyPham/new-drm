@@ -17,12 +17,11 @@ namespace DMR_API._Services.Interface
         Task<object> MapBuildingUser(int userid, int buildingid);
         Task<ResponseDetail<List<BuildingDto>>> GetLineByUserID( int userid, int buildingid);
 
-        Task<ResponseDetail<object>> RemoveLineUser(BuildingUserDto buildingUserDto);
-        Task<ResponseDetail<object>> MapLineUser(int userid, int buildingid);
-
+        Task<ResponseDetail<object>> RemoveLineUser(BuildingUserForRemoveDto dto);
+        Task<ResponseDetail<object>> MapLineUser(BuildingUserForMapDto dto);
         Task<ResponseDetail<List<BuildingDto>>> GetBuildingByUserID(int userid);
-        Task<ResponseDetail<object>> RemoveMultipleBuildingUser(BuildingUserDto buildingUserDto);
-        Task<ResponseDetail<object>> MapMultipleBuildingUser(int userid, int buildingid);
+        Task<ResponseDetail<object>> RemoveMultipleBuildingUser(BuildingUserForRemoveDto dto);
+        Task<ResponseDetail<object>> MapMultipleBuildingUser(BuildingUserForMapDto dto);
         Task<ResponseDetail<List<BuildingDto>>> GetBuildingUserByUserID(int userid);
     }
 }

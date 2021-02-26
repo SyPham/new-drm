@@ -9,6 +9,7 @@ namespace dmr_api.Models
     {
         public int ID { get; set; }
         public double Amount { get; set; }
+        public double RemainingAmount { get; set; }
         public string Unit { get; set; }
         public DateTime? DeliveryTime { get; set; }
         public DateTime? DeleteTime { get; set; }
@@ -21,6 +22,8 @@ namespace dmr_api.Models
         public int CreateBy { get; set; }
         public bool IsDelete { get; set; }
         public int DeleteBy { get; set; }
+        public int? DispatchListID { get; set; }
+        public int CreatedBy { get; set; }
         public int LineID { get; set; }
         [ForeignKey("LineID")]
         public Building Building { get; set; }

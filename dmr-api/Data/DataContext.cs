@@ -52,8 +52,10 @@ namespace DMR_API.Data
         public DbSet<Station> Stations { get; set; }
         public DbSet<Mailing> Mailings { get; set; }
         public DbSet<Period> Period { get; set; }
+        public DbSet<Subpackage> Subpackages { get; set; }
         public DbSet<DispatchList> DispatchList { get; set; }
         public DbSet<DispatchListDetail> DispatchListDetail { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             var ct = DateTime.Now;

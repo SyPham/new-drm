@@ -33,31 +33,31 @@
                 #
               </ng-template>
             </e-column>
-            <e-column field="username" textAlign='Center' headerText="Username"> </e-column>
-            <e-column field="employeeID" textAlign='Center' headerText="Account"> </e-column>
+            <e-column field="username" isPrimaryKey="true" textAlign='Center' headerText="Username"> </e-column>
+            <e-column field="employeeID" isPrimaryKey="true" textAlign='Center' headerText="Account"> </e-column>
             <!-- <e-column field="password" textAlign='Center' headerText="Password">
               <ng-template #template let-data>
                 ************
               </ng-template>
             </e-column> -->
             <!-- <e-column field="email" textAlign='Center' headerText="Email"> </e-column> -->
-            <e-column field="role" textAlign='Center' headerText="Role">
-              <ng-template #editTemplate let-data>
+            <e-column field="role" textAlign='Center' isPrimaryKey="true" headerText="Role">
+              <!-- <ng-template #editTemplate let-data>
                 <ejs-dropdownlist #positionDropdownlist [dataSource]='roles' [value]="data.role"
                   [fields]='fieldsRole' [allowFiltering]='true'
                   (change)='onChangeRole($event,data)'>
                 </ejs-dropdownlist>
-              </ng-template>
+              </ng-template> -->
             </e-column>
             <e-column field="building" textAlign='Center' headerText="Building">
               <!-- <ng-template #template let-data>
                 {{data.building}}
               </ng-template> -->
               <ng-template #editTemplate let-data>
-                <ejs-dropdownlist *ngIf="data.role === 'Dispatcher'" #positionDropdownlist [dataSource]='buildingDatas' [value]="data.building"
-                  [fields]='fieldsBuilding' [allowFiltering]='true' (change)='onChangeBuilding($event,data)'>
-                </ejs-dropdownlist>
-               
+                 <ejs-multiselect [dataSource]='buildings' (created)='onCreatedBuilding(data)'
+                 (removing)='removingBuilding($event)' (select)="onSelectBuilding($event)" [(ngModel)]="data.buildings"
+                  [mode]='mode' [fields]='fieldsBuilding' placeholder='Select building'>
+                </ejs-multiselect>
               </ng-template>
             </e-column>
             <e-column field="line" textAlign='Center' headerText="Line">
@@ -65,38 +65,10 @@
                             {{data.building}}
                           </ng-template> -->
               <ng-template #editTemplate let-data>
-                <ejs-multiselect [dataSource]='lines'
-                  mode='checkBox' [fields]='fields' placeholder='Select line'>
+                <ejs-multiselect [dataSource]='lines' (created)='onCreatedLine(data)'
+                 (removing)='removing($event)' (select)="onSelect($event)" [(ngModel)]="data.lines"
+                  [mode]='mode' [fields]='fieldsLine' placeholder='Select line'>
                 </ejs-multiselect>
-              </ng-template>
-            </e-column>
-
-            <e-column field="option" width="100" textAlign='Center' headerText="Option">
-              <ng-template #template let-data>
-                <div class="btn-group">
-                  <button type="button" *ngIf="data.isLock" (click)='lock(data)' class="btn btn-xs btn-danger"><i class="fa fa-lock"></i></button>
-                </div>
-                <div class="btn-group">
-                  <button type="button" *ngIf="!data.isLock" (click)='lock(data)' class="btn btn-xs btn-success"><i class="fa fa-unlock"></i></button>
-                </div>
-                <div class="btn-group ml-2" *ngIf="data.role === 'Dispatcher' && data.building !== '#N/A'">
-                  <button type="button" (click)='showLineModal(lineModal, data)' class="btn btn-xs btn-primary"><i class="fa fa-eye"></i></button>
-                </div>
-                  <div class="btn-group ml-2" *ngIf="data.role === 'Worker'">
-                    <button type="button" (click)='showBuildingModal(buildingModal, data)' class="btn btn-xs btn-primary"><i
-                        class="fa fa-building"></i></button>
-                  </div>
-              </ng-template>
-              <ng-template #editTemplate let-data>
-                <div class="btn-group">
-                  <button type="button" *ngIf="data.isLock" (click)='lock(data)' class="btn btn-xs btn-danger"><i
-                      class="fa fa-lock"></i></button>
-                </div>
-                <div class="btn-group">
-                  <button type="button" *ngIf="!data.isLock" (click)='lock(data)' class="btn btn-xs btn-success"><i
-                      class="fa fa-unlock"></i></button>
-                </div>
-               
               </ng-template>
             </e-column>
           </e-columns>

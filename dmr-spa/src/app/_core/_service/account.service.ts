@@ -55,15 +55,18 @@ export class AccountService {
   getBuildingUsers() {
       return this.http.get(`${this.baseUrl}BuildingUser/GetAllBuildingUsers`);
   }
-  mapLineUser(userid, buildingid) { return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/mapLineUser/${userid}/${buildingid}`); }
+  // mapLineUser(userid, buildingid) { return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/mapLineUser/${userid}/${buildingid}`); }
   getLineByUserID(userid: number, buildingID: number) {
     return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/GetLineByUserID/${userid}/${buildingID}`);
   }
   removeLineUser(create) { return this.http.post(`${this.baseUrl}BuildingUser/RemoveLineUser`, create); }
+  mapLineUser(create) { return this.http.post(`${this.baseUrl}BuildingUser/mapLineUser`, create); }
 
-  mapMultipleBuildingUser(userid, buildingid) { return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/MapMultipleBuildingUser/${userid}/${buildingid}`); }
+  // mapMultipleBuildingUser(userid, buildingid) { return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/MapMultipleBuildingUser/${userid}/${buildingid}`); }
   getBuildingByUserID(userid: number) {
     return this.http.get<ResponseDetail<any>>(`${this.baseUrl}BuildingUser/GetBuildingByUserID/${userid}`);
   }
   removeMultipleBuildingUser(create) { return this.http.post(`${this.baseUrl}BuildingUser/RemoveMultipleBuildingUser`, create); }
+  mapMultipleBuildingUser(create) { return this.http.post(`${this.baseUrl}BuildingUser/MapMultipleBuildingUser}`, create); }
+
 }

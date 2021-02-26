@@ -84,6 +84,7 @@
       <ejs-toolbar #toolbarTodo (created)='createdTodo()' (clicked)='onClickToolbar($event)'>
         <e-items>
           <e-item id='todo' prefixIcon="fa fa-tasks" text=" {{ 'Todo' | translate }} ({{todoTotal}})"> </e-item>
+          <e-item id='eva_uv' prefixIcon="fa fa-tasks" text=" {{ 'EVA_UV' }} "> </e-item>
           <e-item id='delay' prefixIcon="fa fa-clock" text=" {{ 'UNDONE' | translate }} ({{delayTotal}})"> </e-item>
           <e-item type='Separator'></e-item>
           <e-item id='dispatch' prefixIcon='fa fa-check' text="{{ 'Dispatch' | translate }} ({{todoDispatchTotal}})"></e-item>
@@ -91,8 +92,7 @@
             text=" {{ 'Delay' | translate }} ({{delayDispatchTotal}})"></e-item>
           <e-item type='Separator'></e-item>
           <e-item id='done' prefixIcon='fa fa-check' text=" {{ 'Done' | translate }} ({{doneTotal}})"></e-item>
-          <e-item id='per' text=" {{'% of Done' | translate}} {{percentageOfDone }}% ({{doneTotal}} / {{total}})">
-          </e-item>
+          <!-- <e-item id='per' text=" {{'% of Done' | translate}} {{percentageOfDone }}% ({{doneTotal}} / {{total}})"> </e-item>-->
 
           <e-item align='right'>
             <ng-template #template>
