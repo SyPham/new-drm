@@ -117,7 +117,7 @@
                 </ng-template>
                 <ng-template #editTemplate let-data>
                   <ejs-dropdownlist #kindDropdownlist [dataSource]='kinds' [(ngModel)]="data.kindName"
-                    [fields]='fieldsKindEdit' [allowFiltering]='true' (change)='onChangeKindEdit($event)'>
+                    [fields]='fieldsKindEdit' [allowFiltering]='true' (select)='onChangeKindEdit($event)'>
                   </ejs-dropdownlist>
                 </ng-template>
               </e-column>
@@ -128,7 +128,7 @@
                 <ng-template #editTemplate let-data>
                   <ejs-dropdownlist #glueDropdownlist [dataSource]='parts' [(ngModel)]="data.partName"
                     popupHeight='200px' popupWidth='250px' [fields]='fieldsPartEdit' [allowFiltering]='true'
-                    (change)='onChangePartEdit($event)'>
+                    (select)='onChangePartEdit($event)'>
                   </ejs-dropdownlist>
                 </ng-template>
               </e-column>
@@ -139,7 +139,7 @@
                 <ng-template #editTemplate let-data>
                   <ejs-dropdownlist #glueDropdownlist [dataSource]='materials' [(ngModel)]="data.materialName"
                     popupHeight='200px' popupWidth='250px' [fields]='fieldsMaterialEdit' [allowFiltering]='true'
-                    (change)='onChangeMaterialEdit($event)'>
+                    (select)='onChangeMaterialEdit($event)'>
                   </ejs-dropdownlist>
                 </ng-template>
               </e-column>

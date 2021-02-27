@@ -20,12 +20,14 @@ namespace DMR_API._Services.Services
     {
         private readonly IUserDetailRepository _repoUserDetail;
         private readonly IBuildingUserRepository _repoBuildingUser;
+        private readonly IBuildingRepository _buildingRepository;
         private readonly IUserRoleRepository _repoUserRole;
         private readonly IConfiguration _configuration;
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configMapper;
         public UserDetailService(IUserDetailRepository repoBrand,
             IBuildingUserRepository repoBuildingUser,
+            IBuildingRepository buildingRepository,
             IUserRoleRepository repoUserRole,
             IConfiguration configuration,
              IMapper mapper,
@@ -36,6 +38,7 @@ namespace DMR_API._Services.Services
             _configuration = configuration;
             _repoUserDetail = repoBrand;
             _repoBuildingUser = repoBuildingUser;
+            _buildingRepository = buildingRepository;
             _repoUserRole = repoUserRole;
         }
 
@@ -163,6 +166,102 @@ namespace DMR_API._Services.Services
             }
 
             return result;
+        }
+
+        public async Task<object> GetAllUserInfoRoles()
+        {
+            var appsettings = _configuration.GetSection("AppSettings").Get<Appsettings>();
+            var DMRSystemCode = appsettings.SystemCode;
+            using var client = new HttpClient();
+            var response = await client.GetAsync($"{appsettings.API_AUTH_URL}Users/GetUserBySystemID/{DMRSystemCode}");
+            var data = await response.Content.ReadAsStringAsync();
+            var users = JsonConvert.DeserializeObject<List<UserDto>>(data);
+            var userRole = await _repoUserRole.FindAll().Include(x => x.Role)
+                .Where(x => x.RoleID == (int)Enums.Role.Worker
+            || x.RoleID == (int)Enums.Role.Dispatcher)
+                .ToListAsync();
+            users = users.Where(x => userRole.Select(a => a.UserID).Contains(x.ID)).ToList();
+            var buildingUser = await _repoBuildingUser.FindAll()
+                .Include(x => x.Building)
+                .Where(x => x.Building.Level == 2).ToListAsync();
+            var lines = await _repoBuildingUser.FindAll()
+              .Include(x => x.Building)
+              .Where(x => x.Building.Level == 3).ToListAsync();
+
+           
+            var linesUser = await _repoBuildingUser.FindAll().Include(x => x.Building)
+               .Where(x => x.Building.Level == 3).Select(x => x.Building.ParentID.Value).ToListAsync();
+
+           
+
+            var result = new List<UserDto>();
+            foreach (var x in users)
+            {
+                var userRoleItem = userRole.FirstOrDefault(a => a.UserID == x.ID);
+                var buildings = await _repoBuildingUser.FindAll().Include(x => x.Building)
+              .Where(_ => _.Building.Level == 2 && _.UserID == x.ID).Select(x => x.Building.ID).ToListAsync();
+
+                var buildingsModel =await (from a in _buildingRepository.FindAll(_ => _.Level == 2)
+                                           join b in _repoBuildingUser.FindAll(_ => _.UserID == x.ID) on a.ID equals b.BuildingID into ab
+                                           from c in ab.DefaultIfEmpty()
+                                           select new BuildingDto
+                                           {
+                                               ID = a.ID,
+                                               Level = a.Level,
+                                               Status = c == null ? false : true,
+                                               Name = a.Name
+                                           }).ToListAsync();
+                var linesModel =await (from a in _buildingRepository.FindAll(_ => buildings.Contains(_.ParentID.Value))
+                                       join b in _repoBuildingUser.FindAll(_ => _.UserID == x.ID) on a.ID equals b.BuildingID into ab
+                                       from c in ab.DefaultIfEmpty()
+                                       select new BuildingDto
+                                       {
+                                           ID = a.ID,
+                                           Level = a.Level,
+                                           Status = c == null ? false : true,
+                                           Name = a.Name
+                                       }).ToListAsync();
+
+
+                var line = lines.Where(a => a.UserID == x.ID).Select(a => new { a.Building.Name, a.Building.ID }).ToList();
+                var lineTemp = line.Count == 0 ? "#N/A" : string.Join(" , ", line.Select(x => x.Name));
+              
+                var building = buildingUser.Where(a => a.UserID == x.ID).Select(a => new { a.Building.Name, a.Building.ID }).ToList();
+                var buildingTemp = building.Count == 0 ? "#N/A" : string.Join(" , ", building.Select(x => x.Name));
+                var item = new BuildingDto
+                {
+                    ID = -1,
+                    Level = 0,
+                    Status = false,
+                    Name = "#N/A"
+                };
+                var lineIDList = line.Select(a => a.ID).ToList();
+                var buildingIDList = building.Select(a => a.ID).ToList();
+                var emptyItem = new List<int> { -1 };
+                result.Add(new UserDto
+                {
+                    ID = x.ID,
+                    Username = x.Username,
+                    Password = x.Password,
+                    EmployeeID = x.EmployeeID,
+                    Email = x.Email,
+                    PasswordSalt = x.PasswordSalt,
+                    PasswordHash = x.PasswordHash,
+                    IsLock = userRoleItem != null ? userRoleItem.IsLock : false,
+                    SystemID = DMRSystemCode,
+                    RoleID = x.RoleID,
+                    UserRoleID = userRoleItem != null ? userRoleItem.RoleID : 0,
+                    Role = userRoleItem != null ? userRoleItem.Role.Name : "#N/A",
+                    Building = buildingTemp,
+                    Line = lineTemp,
+                    BuildingsData = buildingsModel.Prepend(item).OrderBy(x=>x.Level).ToList(),
+                    LinesData = linesModel.Prepend(item).OrderBy(x => x.Level).ToList(),
+                    Buildings = buildingIDList.Count == 0 ? emptyItem : buildingIDList,
+                    Lines = lineIDList.Count == 0 ? emptyItem : lineIDList
+                });
+            }
+
+            return result.ToList();
         }
     }
 }

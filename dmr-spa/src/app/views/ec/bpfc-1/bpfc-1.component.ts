@@ -326,7 +326,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     private alertify: AlertifyService,
     public modalService: NgbModal,
     private route: ActivatedRoute,
-    private authService: AuthService,
     private bPFCEstablishService: BPFCEstablishService,
     private modelNoService: ModelNoService,
     private articleNoService: ArticleNoService,

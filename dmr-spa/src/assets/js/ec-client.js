@@ -19,11 +19,28 @@ function start() {
             console.log("UserDisconnected", conId);
 
         });
-
+        invoke();
         console.log("Signalr connected");
     }).catch(function (err) {
         setTimeout(() => start(), 5000);
     });
+}
+function invoke() {
+    CONNECTION_HUB
+        .invoke('JoinReloadDispatch')
+        .catch(error => {
+            console.log(`JoinReloadDispatch error: ${error}`);
+        }
+        );
+
+    CONNECTION_HUB
+        .invoke('JoinReloadTodo')
+        .catch(error => {
+            console.log(`JoinReloadTodo error: ${error}`);
+        }
+        );
+
+
 }
 // CONNECTION_HUB.onclose((error) => {
 //     CONNECTION_HUB.start();

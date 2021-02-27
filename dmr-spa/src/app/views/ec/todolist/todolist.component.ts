@@ -24,7 +24,7 @@ import { Button } from '@syncfusion/ej2-angular-buttons';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { DatePipe } from '@angular/common';
 import { PrintGlueDispatchListComponent } from '../print-glue-dispatch-list/print-glue-dispatch-list.component';
-import { SignalrTodolistService } from 'src/app/_core/_service/signalr.todolist.service';
+import { HubConnectionState } from '@microsoft/signalr';
 declare var $: any;
 const ADMIN = 1;
 const SUPERVISOR = 2;
@@ -36,7 +36,7 @@ const DISPATCHER = 6;
   selector: 'app-todolist',
   templateUrl: './todolist.component.html',
   styleUrls: ['./todolist.component.css'],
-  providers: [DatePipe, SignalrTodolistService]
+  providers: [DatePipe]
 })
 export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   // Start Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
@@ -120,6 +120,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   DELAY = 'delay';
   DISPATCH = 'dispatch';
   DISPATCH_DELAY = 'dispatchDelay';
+  tabs = [this.TODO, this.DONE, this.DELAY, this.DISPATCH, this.DISPATCH_DELAY];
   dispatchData: any;
   // tslint:disable-next-line:variable-name
   current_Date_Time = this.datePipe.transform(new Date(), 'HH:mm');
@@ -148,8 +149,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     private router: Router,
     private datePipe: DatePipe,
     private spinner: NgxSpinnerService,
-    public todolistService: TodolistService,
-    public signalrTodolistService: SignalrTodolistService
+    public todolistService: TodolistService
   ) {
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
@@ -158,15 +158,17 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   ngOnDestroy() {
     this.subscription.forEach(subscription => subscription.unsubscribe());
-    this.signalrTodolistService.close();
+    if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
+      signalr.CONNECTION_HUB.stop().then().catch(err => console.log(err));
+    }
   }
   ngAfterViewInit() {
   }
   ngOnInit() {
-    this.hasCloseScreen = false;
-    this.IsAdmin = false;
     this.focusDone = this.TODO;
     this.isShowTab = this.TODO;
+    this.hasCloseScreen = false;
+    this.IsAdmin = false;
     this.checkRole();
     this.onEventHub();
     this.gridConfig();
@@ -179,19 +181,21 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     this.onRouteChange();
   }
   onEventHub() {
-    this.signalrTodolistService.reloadTodo.subscribe(() => {
-      if (this.isShowTab === this.TODO) {
-        this.loadData();
-        console.log('Reload Todo', '');
-      }
-    });
+    if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
+      signalr.CONNECTION_HUB.on('ReloadTodo', () => {
+        if (this.isShowTab === this.TODO) {
+          this.loadData();
+          console.log('Reload Todo', '');
+        }
+      });
 
-    this.signalrTodolistService.reloadDispatch.subscribe(() => {
-      if (this.isShowTab === this.DISPATCH) {
-        this.loadData();
-        console.log('Reload dispatch', '');
-      }
-    });
+      signalr.CONNECTION_HUB.on('ReloadDispatch', () => {
+        if (this.isShowTab === this.DISPATCH) {
+          this.loadData();
+          console.log('Reload dispatch', '');
+        }
+      });
+    }
 
   }
   onRouteChange() {
@@ -328,9 +332,6 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
         break;
       case this.DISPATCH:
         this.dispatchList();
-        break;
-      case this.DISPATCH_DELAY:
-        this.dispatchListDelay();
         break;
     }
   }
@@ -570,6 +571,18 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     // };
   }
   createdTodo() {
+    const tab = window.location.pathname;
+    for (const item of this.tabs) {
+      if (tab.includes(`-2/${item}`)) {
+        this.focusDone = item;
+        this.isShowTab = item;
+        break;
+      } else {
+        this.focusDone = this.TODO;
+        this.isShowTab = this.TODO;
+      }
+    }
+    console.log('oninit', this.isShowTab, this.focusDone);
     const toolbarTodo = this.toolbarTodo.element;
     const span = document.createElement('span');
     span.className = 'e-clear-icon';
@@ -1009,7 +1022,10 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
 
   }
   reloadPage() {
-    window.location.reload();
+    this.router.navigateByUrl('/TodolistComponent', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['/ec/execution/todolist-2/' + this.isShowTab]);
+    });
+    // window.location.reload();
   }
   // Start Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
   onChangeGlue(args) {

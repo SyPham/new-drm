@@ -68,6 +68,12 @@ namespace DMR_API.Controllers
                 return NoContent();
             return BadRequest($"Updating user detail {update.ID} failed on save");
         }
+        
+             [HttpGet]
+        public async Task<IActionResult> GetAllUserInfoRoles()
+        {
+            return Ok(await _userDetailService.GetAllUserInfoRoles());
+        }
         [HttpGet]
         public async Task<IActionResult> GetAllUserInfo()
         {

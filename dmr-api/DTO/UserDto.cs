@@ -16,6 +16,7 @@ namespace DMR_API.DTO
         public int SystemID { get; set; }
         public int UserRoleID { get; set; }
         public string Role { get; set; }
+        public int RoleID { get; set; }
         public string Building { get; set; }
         public string Line { get; set; }
         public int BuildingUserID { get; set; }
@@ -23,6 +24,10 @@ namespace DMR_API.DTO
         public byte[] PasswordHash { get; set; }
         public List<int> Buildings { get; set; }
         public List<int> Lines { get; set; }
+
+        public List<BuildingDto> BuildingsData { get; set; }
+        public List<BuildingDto> LinesData { get; set; }
+
         public byte[] PasswordSalt { get; set; }
     }
 }

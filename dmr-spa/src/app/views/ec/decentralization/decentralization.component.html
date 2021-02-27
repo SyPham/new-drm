@@ -14,15 +14,9 @@
           [showColumnMenu]='true'
           gridLines='Both'
           [locale]='locale'
-          (created)='createdUsers()'
-          (dataBound)='dataBound()'
-          (actionBegin)="actionBegin($event)"
-          (actionComplete)="actionComplete($event)"
           [pageSettings]='pageSettings'
           [allowExcelExport]='true'
-          (queryCellInfo)='tooltip($event)' 
-          [editSettings]='editSettings'
-          (recordDoubleClick)='onDoubleClick($event)'
+          (rowSelected)='rowSelected($event)'
         >
           <e-columns>
             <e-column field="ID" textAlign='Center' width="80" isPrimaryKey="true" headerText="ID">
@@ -35,39 +29,21 @@
             </e-column>
             <e-column field="username" isPrimaryKey="true" textAlign='Center' headerText="Username"> </e-column>
             <e-column field="employeeID" isPrimaryKey="true" textAlign='Center' headerText="Account"> </e-column>
-            <!-- <e-column field="password" textAlign='Center' headerText="Password">
-              <ng-template #template let-data>
-                ************
-              </ng-template>
-            </e-column> -->
-            <!-- <e-column field="email" textAlign='Center' headerText="Email"> </e-column> -->
             <e-column field="role" textAlign='Center' isPrimaryKey="true" headerText="Role">
-              <!-- <ng-template #editTemplate let-data>
-                <ejs-dropdownlist #positionDropdownlist [dataSource]='roles' [value]="data.role"
-                  [fields]='fieldsRole' [allowFiltering]='true'
-                  (change)='onChangeRole($event,data)'>
-                </ejs-dropdownlist>
-              </ng-template> -->
             </e-column>
             <e-column field="building" textAlign='Center' headerText="Building">
-              <!-- <ng-template #template let-data>
-                {{data.building}}
-              </ng-template> -->
-              <ng-template #editTemplate let-data>
-                 <ejs-multiselect [dataSource]='buildings' (created)='onCreatedBuilding(data)'
-                 (removing)='removingBuilding($event)' (select)="onSelectBuilding($event)" [(ngModel)]="data.buildings"
-                  [mode]='mode' [fields]='fieldsBuilding' placeholder='Select building'>
+              <ng-template #template let-data>
+                 <ejs-multiselect [dataSource]='data.buildingsData' (close)='closeBuilding()'
+                 (removing)='removingBuilding($event, data)' (select)="onSelectBuilding($event, data)" [(ngModel)]="data.buildings"
+                  [mode]='mode' [fields]='fieldsBuilding' [showDropDownIcon]='true'  placeholder='Select building'>
                 </ejs-multiselect>
               </ng-template>
             </e-column>
             <e-column field="line" textAlign='Center' headerText="Line">
-              <!-- <ng-template #template let-data>
-                            {{data.building}}
-                          </ng-template> -->
-              <ng-template #editTemplate let-data>
-                <ejs-multiselect [dataSource]='lines' (created)='onCreatedLine(data)'
-                 (removing)='removing($event)' (select)="onSelect($event)" [(ngModel)]="data.lines"
-                  [mode]='mode' [fields]='fieldsLine' placeholder='Select line'>
+              <ng-template #template let-data>
+                <ejs-multiselect [dataSource]='data.linesData'  (close)='closeLine()'
+                 (removing)='removing($event, data)' (select)="onSelect($event, data)" [(ngModel)]="data.lines"
+                  [mode]='mode' [fields]='fieldsLine' [showDropDownIcon]='true'  placeholder='Select line'>
                 </ejs-multiselect>
               </ng-template>
             </e-column>
@@ -78,71 +54,3 @@
     </div>
   </div>
 </div>
-
-<ng-template #lineModal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title">
-      <i class="fas fa-plus"></i> Line Detail
-    </h4>
-    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <div class="row">
-      <div class="col-md-12">
-        <ejs-grid [dataSource]='lines' #lineGrid rowHeight='38' height='300'
-          [allowSorting]='true'
-          [toolbar]='toolbarOptions'>
-          <e-columns>
-            <e-column type='#'  width='60'>
-              <ng-template #template let-data>
-                <ejs-checkbox #checkbox [checked]='data.status' (change)='checkboxChange($event, data)'></ejs-checkbox>
-              </ng-template>
-            </e-column>
-            <e-column field='name' textAlign='Center' headerText='Line Name' width='80'></e-column>
-          </e-columns>
-        </ejs-grid>
-      </div>
-    </div>
-
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">Close</button>
-  </div>
-
-</ng-template>
-
-
-<ng-template #buildingModal let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title">
-      <i class="fas fa-plus"></i> Building Detail
-    </h4>
-    <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-    <div class="row">
-      <div class="col-md-12">
-        <ejs-grid [dataSource]='buildings' #lineGrid rowHeight='38' height='300' [allowSorting]='true'
-           [toolbar]='toolbarOptions'>
-          <e-columns>
-            <e-column type='#' width='60'>
-              <ng-template #template let-data>
-                <ejs-checkbox #checkbox [checked]='data.status' (change)='checkboxChangeBuilding($event, data)'></ejs-checkbox>
-              </ng-template>
-            </e-column>
-            <e-column field='name' textAlign='Center' headerText='Building Name' width='80'></e-column>
-          </e-columns>
-        </ejs-grid>
-      </div>
-    </div>
-
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">Close</button>
-  </div>
-
-</ng-template>

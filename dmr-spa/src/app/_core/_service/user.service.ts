@@ -82,4 +82,7 @@ export class UserService {
   getAllUserInfo() {
     return this.http.get(`${this.baseUrlEC}UserDetail/getAllUserInfo`);
   }
+  getAllUserInfoRoles() {
+    return this.http.get(`${this.baseUrlEC}UserDetail/GetAllUserInfoRoles`);
+  }
 }

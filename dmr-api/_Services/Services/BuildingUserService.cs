@@ -234,17 +234,17 @@ namespace DMR_API._Services.Services
             }
             try
             {
-                var list = new List<BuildingUser>();
-                foreach (var buildingid in dto.Buildings)
-                {
-                    list.Add(new BuildingUser
-                    {
-                        UserID = dto.UserID,
-                        BuildingID = buildingid,
-                        CreatedDate = DateTime.Now
-                    });
-                }
-                _buildingUserRepository.AddRange(list);
+                //var list = new List<BuildingUser>();
+                //foreach (var buildingid in dto.Buildings)
+                //{
+                //    list.Add(new BuildingUser
+                //    {
+                //        UserID = dto.UserID,
+                //        BuildingID = buildingid,
+                //        CreatedDate = DateTime.Now
+                //    });
+                //}
+                //_buildingUserRepository.AddRange(list);
 
                 await _buildingUserRepository.SaveAll();
                 return new ResponseDetail<object>
@@ -309,7 +309,18 @@ namespace DMR_API._Services.Services
 
         public async Task<ResponseDetail<List<BuildingDto>>> GetLineByUserID(int userid, int buildingid)
         {
-            var model = from a in _buildingRepository.FindAll(x => x.Level == 3 && x.ParentID == buildingid)
+            var buildings = await _buildingUserRepository.FindAll().Include(x => x.Building)
+                .Where(x => x.Building.Level == 2 && x.UserID == userid).Select(x=>x.Building.ID).ToListAsync();
+            if (buildings.Count == 0)
+            {
+                return new ResponseDetail<List<BuildingDto>>
+                {
+                    Data = new List<BuildingDto>(),
+                    Status = false,
+                    Message = "Vui lòng cài đặt tòa nhà cho tài khoản này trước tiên!"
+                };
+            }
+            var model = from a in _buildingRepository.FindAll(x => buildings.Contains(x.ParentID.Value) )
                         join b in _buildingUserRepository.FindAll(x => x.UserID == userid) on a.ID equals b.BuildingID into ab
                         from c in ab.DefaultIfEmpty()
                         select new BuildingDto
