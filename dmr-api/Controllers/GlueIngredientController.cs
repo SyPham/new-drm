@@ -94,13 +94,14 @@ namespace DMR_API.Controllers
         [HttpPost("MapGlueIngredientByGlueID")]
         public IActionResult MapGlueIngredientWithGlueID(GlueIngredientParams glueIngredients)
         {
-            if ( _glueIngredientService.MapGlueIngredientByGlueID(glueIngredients))
+            var result = _glueIngredientService.MapGlueIngredientByGlueID(glueIngredients);
+            if (result.Status)
             {
                 return NoContent();
             }
             else
             {
-                return NoContent();
+                return BadRequest(result.Message);
             }
             //throw new Exception("Creating the brand failed on save");
         }

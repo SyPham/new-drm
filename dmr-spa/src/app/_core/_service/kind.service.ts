@@ -18,6 +18,9 @@ export class KindService {
     return this.http.get(this.baseUrl + 'Kind/GetAll', {});
   }
 
+  getAllKindType() {
+    return this.http.get(this.baseUrl + 'Kind/getAllKindType', {});
+  }
   create(model) {
     return this.http.post(this.baseUrl + 'Kind/Create', model);
   }

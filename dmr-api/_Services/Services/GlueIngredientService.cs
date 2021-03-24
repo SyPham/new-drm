@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -73,7 +73,6 @@ namespace DMR_API._Services.Services
             return await PagedList<IngredientDto>.CreateAsync(lists, param.PageNumber, param.PageSize);
         }
 
-
         public async Task<object> GetIngredientsByGlueID(int glueid, int subID)
         {
             var glueIngredient = _repoGlueIngredient.GetAll();
@@ -139,6 +138,7 @@ namespace DMR_API._Services.Services
 
             return lists2;
         }
+
         public async Task<bool> MapGlueIngredient(GlueIngredient glueIngredient)
         {
             if (glueIngredient.Position.IsNullOrEmpty())
@@ -268,7 +268,7 @@ namespace DMR_API._Services.Services
             return flag;
         }
 
-        public bool MapGlueIngredientByGlueID(GlueIngredientParams model)
+        public ResponseDetail<object> MapGlueIngredientByGlueID(GlueIngredientParams model)
         {
             var glueID = model.GlueID;
             var glueName = model.GlueName;
@@ -280,7 +280,10 @@ namespace DMR_API._Services.Services
                 {
                     var glue = _repoGlue.FindAll(x => x.ID == glueID).FirstOrDefault();
 
-                    if (glue is null) return false;
+                    if (glue is null) return new ResponseDetail<object> { 
+                        Status = false,
+                        Message = "Lỗi!"
+                    };
                     // neu glueName co trong bang glueName roi thi update ID vao bang Glues
                     var glueNameModal = _repoGlueName.FindAll(x => x.Name == glueName).FirstOrDefault();
                     if (glueNameModal is null)
@@ -309,7 +312,11 @@ namespace DMR_API._Services.Services
                         if (glueIngredient.Position.IsNullOrEmpty())
                         {
                             scope.Dispose();
-                            return false;
+                            return new ResponseDetail<object>
+                            {
+                                Status = false,
+                                Message = "Ví trí không được để là rỗng!"
+                            };
                         }
                         var item = _repoGlueIngredient.FindAll().FirstOrDefault(x => x.GlueID == glueIngredient.GlueID && x.IngredientID == glueIngredient.IngredientID);
                         if (item == null)
@@ -329,12 +336,20 @@ namespace DMR_API._Services.Services
 
                     }
                     scope.Complete();
-                    return true;
+                    return new ResponseDetail<object>
+                    {
+                        Status = true,
+                        Message = "Thành công!"
+                    };
                 }
-                catch
+                catch(Exception ex)
                 {
                     scope.Dispose();
-                    return false;
+                    return new ResponseDetail<object>
+                    {
+                        Status = false,
+                        Message = ex.Message
+                    };
                 }
             }
             throw new NotImplementedException();

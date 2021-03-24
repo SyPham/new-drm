@@ -22,7 +22,7 @@ export class AuthService {
   currentUser: User;
   roleValue = new BehaviorSubject<IRole>({ id: 0, name: '' });
   buildingValue = new BehaviorSubject<IBuilding[]>([
-    { id: 0, name: '', lunchTime: '', lunchTimeID: 0, level: 0, parentID: 0 , settings: null, plans: null}]);
+    {} as IBuilding ]);
   decodedToken: any;
   levelSource = new BehaviorSubject<any>({});
   currentLevel = this.levelSource.asObservable();

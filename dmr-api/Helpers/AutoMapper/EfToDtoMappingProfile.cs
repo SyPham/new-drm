@@ -5,6 +5,7 @@ using AutoMapper;
 using System.Linq;
 using dmr_api.Models;
 using System.Collections.Generic;
+using DMR_API.Constants;
 
 namespace DMR_API.Helpers.AutoMapper
 {
@@ -26,6 +27,7 @@ namespace DMR_API.Helpers.AutoMapper
                 .ForMember(d => d.MaterialName, o => o.MapFrom(s => s.Material == null ? string.Empty : s.Material.Name))
                 .ForMember(d => d.Chemical, o => o.MapFrom(s => new GlueDto1 { ID = s.ID, Name = s.Name }))
                 .ForMember(d => d.CreatedDate, o => o.MapFrom(s => s.CreatedDate.ToParseStringDateTime()));
+
             CreateMap<Ingredient, IngredientDto>()
                 .ForMember(d => d.Supplier, o => o.MapFrom(x => x.Supplier.Name))
                 .ForMember(d => d.GlueType, o => o.MapFrom(x => x.GlueType))
@@ -34,7 +36,7 @@ namespace DMR_API.Helpers.AutoMapper
                 .ForMember(d => d.CreatedDate, o => o.MapFrom(s => s.CreatedDate.ToParseStringDateTime()));
             CreateMap<Role, RoleDto>();
             CreateMap<LunchTime, LunchTimeDto>()
-                .ForMember(x => x.Content, o => o.Ignore());
+                .ForMember(d => d.Content, o => o.MapFrom(x => $"{x.StartTime.ToString("HH:mm")} - {x.EndTime.ToString("HH:mm")}"));
             CreateMap<Ingredient, IngredientDto1>()
                 .ForMember(d => d.Supplier, o => o.MapFrom(x => x.Supplier.Name))
                 .ForMember(d => d.GlueType, o => o.MapFrom(x => x.GlueType))
@@ -45,11 +47,12 @@ namespace DMR_API.Helpers.AutoMapper
             CreateMap<Station, StationDto>()
                 .ForMember(d => d.GlueName, o => o.MapFrom(x => x.Glue.GlueName.Name));
             CreateMap<Plan, PlanDto>()
-                 .ForMember(d => d.Glues, o => o.MapFrom(x => x.BPFCEstablish.Glues.Where(x => x.isShow).Select(x => x.Name)))
-                 .ForMember(d => d.StartTime, o => o.MapFrom(x => new TimeDto(x.StartWorkingTime)))// 16:30 >= 16:30
-                 .ForMember(d => d.EndTime, o => o.MapFrom(x => new TimeDto(x.FinishWorkingTime)))
-                 .ForMember(d => d.IsGenerate, o => o.MapFrom(x => x.ToDoList.Count > 0))
-                 .ForMember(d => d.ModelName, o => o.MapFrom(x => x.BPFCEstablish.ModelName.Name))
+                .ForMember(d => d.Glues, o => o.MapFrom(x => x.BPFCEstablish.Glues.Where(x => x.isShow).Select(x =>  $"{x.Name}{( x.KindID.HasValue ? $" | {x.Kind.Name}" : String.Empty)}" )))
+                .ForMember(d => d.StartTime, o => o.MapFrom(x => new TimeDto(x.StartWorkingTime)))// 16:30 >= 16:30
+                .ForMember(d => d.EndTime, o => o.MapFrom(x => new TimeDto(x.FinishWorkingTime)))
+                .ForMember(d => d.IsGenerate, o => o.MapFrom(x => x.ToDoList.Count > 0))
+                .ForMember(d => d.ModelName, o => o.MapFrom(x => x.BPFCEstablish.ModelName.Name))
+                .ForMember(d => d.LineKind, o => o.MapFrom(x => x.Building.Kind != null ? x.Building.Kind.Name : string.Empty))
                 .ForMember(d => d.ModelNoName, o => o.MapFrom(x => x.BPFCEstablish.ModelNo.Name))
                 .ForMember(d => d.ArticleName, o => o.MapFrom(x => x.BPFCEstablish.ArticleNo.Name))
                 .ForMember(d => d.BuildingName, o => o.MapFrom(x => x.Building.Name))
@@ -62,7 +65,8 @@ namespace DMR_API.Helpers.AutoMapper
             CreateMap<ModelNo, ModelNoDto>();
             CreateMap<ArtProcess, ArtProcessDto>();
             CreateMap<Process, ProcessDto>();
-            CreateMap<Kind, KindDto>();
+            CreateMap<Kind, KindDto>()
+                .ForMember(d => d.KindTypeName, o => o.MapFrom(x => x.KindType == null ? "N/A" : x.KindType.Name));
             CreateMap<Part, PartDto>();
             CreateMap<Material, MaterialDto>();
             CreateMap<ModelName, ModelNameDto>();
@@ -70,9 +74,23 @@ namespace DMR_API.Helpers.AutoMapper
             CreateMap<Supplier, SuppilerDto>();
             CreateMap<ArticleNo, ArticleNoDto>();
             CreateMap<Building, BuildingDto>()
+                .ForMember(d => d.Name, o => o.MapFrom(x => $"{x.Name}{(x.KindID.HasValue ? $" | {x.Kind.Name}" : string.Empty)}"))
+                .ForMember(d => d.KindName, o => o.MapFrom(x => x.KindID.HasValue ? x.Kind.Name : "N/A"))
+                .ForMember(d => d.BuildingTypeName, o => o.MapFrom(x => x.BuildingType == null ? "N/A" : x.BuildingType.Name))
                 .ForMember(d => d.ParentID, o => o.MapFrom(x => x.ParentID == 0 || x.ParentID == null ? null : x.ParentID))
                 .ForMember(d => d.LunchTimeID, o => o.MapFrom(x => x.LunchTime == null ? 0 : x.LunchTime.ID))
+                .ForMember(d => d.BuildingTypeID, o => o.MapFrom(x => x.BuildingTypeID == 0 || x.KindID == null ? null : x.BuildingTypeID))
+                .ForMember(d => d.IsSTF, o => o.MapFrom(x=> x.BuildingType == null ? false : x.BuildingType.Code == BuildingTypeOption.STF))
                 .ForMember(d => d.LunchTime, o => o.MapFrom(x => x.LunchTime == null ? "N/A" : $"{x.LunchTime.StartTime.Hour.ToString("D2")}:{x.LunchTime.StartTime.Minute.ToString("D2")} - {x.LunchTime.EndTime.Hour.ToString("D2")}:{x.LunchTime.EndTime.Minute.ToString("D2")}"));
+            CreateMap<Building, BuildingTreeDto>()
+                .ForMember(d => d.KindName, o => o.MapFrom(x => x.KindID.HasValue ? x.Kind.Name : "N/A"))
+                .ForMember(d => d.BuildingTypeName, o => o.MapFrom(x => x.BuildingType == null ? "N/A" : x.BuildingType.Name))
+                .ForMember(d => d.ParentID, o => o.MapFrom(x => x.ParentID == 0 || x.ParentID == null ? null : x.ParentID))
+            .ForMember(d => d.BuildingTypeID, o => o.MapFrom(x => x.BuildingTypeID == 0 || x.KindID == null ? null : x.BuildingTypeID))
+                .ForMember(d => d.LunchTimeID, o => o.MapFrom(x => x.LunchTime == null ? 0 : x.LunchTime.ID))
+                .ForMember(d => d.IsSTF, o => o.MapFrom(x => x.BuildingType == null ? false : x.BuildingType.Code == BuildingTypeOption.STF))
+                .ForMember(d => d.LunchTime, o => o.MapFrom(x => x.LunchTime == null ? "N/A" : $"{x.LunchTime.StartTime.Hour.ToString("D2")}:{x.LunchTime.StartTime.Minute.ToString("D2")} - {x.LunchTime.EndTime.Hour.ToString("D2")}:{x.LunchTime.EndTime.Minute.ToString("D2")}"));
+
             CreateMap<BuildingUser, BuildingUserDto>();
             CreateMap<Comment, CommentDto>();
             CreateMap<BPFCEstablish, BPFCEstablishDto>()
@@ -82,6 +100,8 @@ namespace DMR_API.Helpers.AutoMapper
                 .ForMember(d => d.ArticleNo, o => o.MapFrom(x => x.ArticleNo.Name))
                 .ForMember(d => d.ArtProcess, o => o.MapFrom(x => x.ArtProcess.Process.Name));
             CreateMap<BPFCEstablish, BPFCStatusDto>()
+              .ForMember(d => d.Glues, o => o.MapFrom(x => x.Glues.Where(x=> x.isShow).Select(x => $"{x.Name}{(x.KindID.HasValue ? $" | {x.Kind.Name}" : String.Empty)}").ToList()))
+              .ForMember(d => d.Kinds, o => o.MapFrom(x => x.Glues.Where(x=> x.isShow).Select(x=> x.KindID.Value).Where(x=> x > 0).ToList()))
               .ForMember(d => d.ModelName, o => o.MapFrom(x => x.ModelName.Name))
               .ForMember(d => d.ModelNo, o => o.MapFrom(x => x.ModelNo.Name))
               .ForMember(d => d.ArticleNo, o => o.MapFrom(x => x.ArticleNo.Name))
@@ -98,7 +118,10 @@ namespace DMR_API.Helpers.AutoMapper
 
             CreateMap<MixingInfoForCreateDto, MixingInfo>();
             CreateMap<DispatchList, DispatchListDto>();
-            
+
+            CreateMap<Subpackage, SubpackageDto>()
+                 .ForMember(d => d.ExpiredTime, o => o.MapFrom(x => x.MixingInfo.ExpiredTime));
+
             CreateMap<BPFCEstablish, BPFCEstablish>()
              .ForMember(d => d.ModelName, o => o.MapFrom(x => x.ModelName.Name))
              .ForMember(d => d.ModelNo, o => o.MapFrom(x => x.ModelNo.Name))

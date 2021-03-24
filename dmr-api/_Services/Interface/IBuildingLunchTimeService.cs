@@ -10,8 +10,17 @@ namespace DMR_API._Services.Interface
 {
     public interface IBuildingLunchTimeService 
     {
-        Task<List<Period>> GetPeriodByLunchTime( int lunchTimeID);
-        Task<ResponseDetail<object>> UpdatePeriod(Period period);
+        Task<List<PeriodMixing>> GetPeriodMixingByBuildingID( int buildingID);
+        Task<ResponseDetail<object>> UpdatePeriodMixing(PeriodMixing period);
+        Task<ResponseDetail<object>> AddPeriodMixing(PeriodMixing period);
+        Task<ResponseDetail<object>> DeletePeriodMixing(int id);
+
+        Task<ResponseDetail<object>> AddLunchTimeBuilding(Building building);
+
+        Task<List<PeriodDispatch>> GetPeriodDispatchByPeriodMixingID(int periodMixingID);
+        Task<ResponseDetail<object>> UpdatePeriodDispatch(PeriodDispatch period);
+        Task<ResponseDetail<object>> AddPeriodDispatch(PeriodDispatch period);
+        Task<ResponseDetail<object>> DeletePeriodDispatch(int id);
 
     }
 }

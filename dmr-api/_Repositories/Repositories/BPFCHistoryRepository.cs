@@ -12,10 +12,7 @@ namespace DMR_API._Repositories.Repositories
     public class BPFCHistoryRepository : ECRepository<BPFCHistory>, IBPFCHistoryRepository
     {
         private readonly DataContext _context;
-        public BPFCHistoryRepository(DataContext context) : base(context)
-        {
-            _context = context;
-        }
+        public BPFCHistoryRepository(DataContext context) : base(context) => _context = context;
 
         public async Task<bool> CheckGlueID(int code)
         {

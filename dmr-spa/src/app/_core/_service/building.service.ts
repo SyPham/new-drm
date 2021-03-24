@@ -33,6 +33,9 @@ export class BuildingService {
   getBuildings() {
     return this.http.get<Array<IBuilding>>(`${this.baseUrl}Building/GetBuildings`);
   }
+  getAllBuildingType() {
+    return this.http.get(`${this.baseUrl}Building/getAllBuildingType`);
+  }
   getBuildingsForSetting() {
     return this.http.get(`${this.baseUrl}Building/GetBuildingsForSetting`);
   }

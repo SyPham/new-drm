@@ -17,6 +17,7 @@ export interface IIngredient  {
     replacementFrequency: number;
     prepareTime: number;
     glueTypeID: number;
+    standardCycle: number;
 }
 export interface IGlueType {
     id: number;

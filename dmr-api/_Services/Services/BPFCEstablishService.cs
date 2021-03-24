@@ -664,7 +664,11 @@ namespace DMR_API._Services.Services
 
         public async Task<List<BPFCStatusDto>> FilterByApprovedStatus()
         {
-            var lists = await _repoBPFCEstablish.FindAll().Where(x => x.ApprovalStatus == true && x.FinishedStatus == true && !x.IsDelete).ProjectTo<BPFCStatusDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            var lists = await _repoBPFCEstablish.FindAll()
+                .Include(x=> x.Glues)
+                .ThenInclude(x=> x.GlueName)
+                .Include(x => x.Glues)
+                .Where(x => x.ApprovalStatus == true && x.FinishedStatus == true && !x.IsDelete).ProjectTo<BPFCStatusDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
             return lists;
         }
 
@@ -780,14 +784,21 @@ namespace DMR_API._Services.Services
         {
             var bpfc = await _repoBPFCEstablish
                         .FindAll()
-                        .Include(x => x.Glues).ThenInclude(x => x.GlueIngredients)
+                        .Include(x => x.ModelName)
+                        .Include(x => x.ModelNo)
+                        .Include(x => x.ArticleNo)
+                        .Include(x => x.ArtProcess)
+                            .ThenInclude(x => x.Process)
+                        .Include(x => x.Glues)
+                        .ThenInclude(x => x.GlueIngredients)
+                        .ProjectTo<BPFCEstablishDto>(_configMapper)
                        .FirstOrDefaultAsync(x =>
                           x.ModelNameID == bpfcInfo.ModelNameID
                          && x.ModelNoID == bpfcInfo.ModelNoID
                          && x.ArticleNoID == bpfcInfo.ArticleNoID
                          && x.ArtProcessID == bpfcInfo.ArtProcessID
                         );
-            return _mapper.Map<BPFCEstablish, BPFCEstablishDto>(bpfc);
+            return bpfc;
         }
         public async Task<bool> UpdateSeason(BPFCEstablishUpdateSeason entity)
         {

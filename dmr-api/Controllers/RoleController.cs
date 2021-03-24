@@ -25,6 +25,35 @@ namespace DMR_API.Controllers
             var role = await _roleService.GetAllAsync();
             return Ok(role);
         }
-     
+        [HttpPost]
+        public async Task<IActionResult> Create(RoleDto create)
+        {
+
+            if (_roleService.GetById(create.ID) != null)
+                return BadRequest("Role ID already exists!");
+            //create.CreatedDate = DateTime.Now;
+            if (await _roleService.Add(create))
+            {
+                return NoContent();
+            }
+
+            throw new Exception("Creating the kind failed on save");
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> Update(RoleDto update)
+        {
+            if (await _roleService.Update(update))
+                return NoContent();
+            return BadRequest($"Updating Role {update.ID} failed on save");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            if (await _roleService.Delete(id))
+                return NoContent();
+            throw new Exception("Error deleting the Role");
+        }
     }
 }

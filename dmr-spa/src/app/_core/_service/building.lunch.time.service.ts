@@ -27,13 +27,35 @@ export class BuildingLunchTimeService {
   getBuildings() {
     return this.http.get<Array<IBuilding>>(`${this.baseUrl}BuildingLunchTime/GetAllBuildings`);
   }
-  getAllPeriodByLunchTime(lunchTimeID: number) {
-    return this.http.get(`${this.baseUrl}BuildingLunchTime/GetAllPeriodByLunchTime/${lunchTimeID}`);
+  getPeriodMixingByBuildingID(buildingID: number) {
+    return this.http.get(`${this.baseUrl}BuildingLunchTime/getPeriodMixingByBuildingID/${buildingID}`);
   }
   addOrUpdateLunchTime(item: any) {
     return this.http.post(`${this.baseUrl}BuildingLunchTime/AddOrUpdateLunchTime`, item);
   }
-  updatePeriod(item: any) {
-    return this.http.post(`${this.baseUrl}BuildingLunchTime/UpdatePeriod`, item);
+  updatePeriodMixing(item: any) {
+    return this.http.put(`${this.baseUrl}BuildingLunchTime/updatePeriodMixing`, item);
+  }
+  addPeriodMixing(item: any) {
+    return this.http.post(`${this.baseUrl}BuildingLunchTime/addPeriodMixing`, item);
+  }
+  deletePeriodMixing(id) {
+    return this.http.delete(`${this.baseUrl}BuildingLunchTime/deletePeriodMixing/${id}`);
+  }
+
+  addLunchTimeBuilding(item: any) {
+    return this.http.put(`${this.baseUrl}BuildingLunchTime/AddLunchTimeBuilding`, item);
+  }
+  updatePeriodDispatch(item: any) {
+    return this.http.put(`${this.baseUrl}BuildingLunchTime/updatePeriodDispatch`, item);
+  }
+  addPeriodDispatch(item: any) {
+    return this.http.post(`${this.baseUrl}BuildingLunchTime/addPeriodDispatch`, item);
+  }
+  deletePeriodDispatch(id) {
+    return this.http.delete(`${this.baseUrl}BuildingLunchTime/deletePeriodDispatch/${id}`);
+  }
+  getPeriodDispatchByPeriodMixingID(periodMixingID: number) {
+    return this.http.get(`${this.baseUrl}BuildingLunchTime/GetPeriodDispatchByPeriodMixingID/${periodMixingID}`);
   }
 }

@@ -1,9 +1,0 @@
- .disablecheckbox{ 
-    pointer-events: none; 
-    opacity: 0.5; 
-} 
-
-.e-grid .e-altrow
- { 
-    background-color: #d6d8db; 
-} 

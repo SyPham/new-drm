@@ -27,5 +27,6 @@ namespace DMR_API.DTO
         public int CreatedBy { get; set; }
         public int IngredientID { get; set; }
         public int BPFCEstablishID { get; set; }
+        public List<GlueIngredient> GlueIngredients { get; set; }
     }
 }

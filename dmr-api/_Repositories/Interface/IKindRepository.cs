@@ -10,5 +10,6 @@ namespace DMR_API._Repositories.Interface
 {
     public interface IKindRepository : IECRepository<Kind>
     {
+      
     }
 }

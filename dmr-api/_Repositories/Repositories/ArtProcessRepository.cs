@@ -12,11 +12,7 @@ namespace DMR_API._Repositories.Repositories
     public class ArtProcessRepository : ECRepository<ArtProcess>, IArtProcessRepository
     {
         private readonly DataContext _context;
-        public ArtProcessRepository(DataContext context) : base(context)
-        {
-            _context = context;
-        }
-
+        public ArtProcessRepository(DataContext context) : base(context) => _context = context;
 
         //Login khi them repo
     }

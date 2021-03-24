@@ -32,10 +32,27 @@ namespace DMR_API.Models
         public bool IsChangeBPFC { get; set; }
         public bool IsDelete { get; set; }
         public bool IsOvertime { get; set; }
+        public bool IsOffline { get; set; } // v102
+
+        public DateTime? UpdatedOffline { get; set; }
+        public DateTime? UpdatedOnline { get; set; }
+
+        public DateTime? UpdatedOvertime { get; set; }
+        public DateTime? UpdatedNoOvertime { get; set; }
+
         public DateTime DeleteTime { get; set; }
         public DateTime ModifyTime { get; set; }
+        public DateTime? UpdatedTime { get; set; }
         public int DeleteBy { get; set; }
-        public int CreateBy { get; set; }
+        public int CreateBy { get; set; }// v102
+        public int UpdatedBy { get; set; }// v102
+
+        public int UpdatedOfflineBy { get; set; }// v102
+        public int UpdatedOnlineBy { get; set; }// v102
+
+        public int UpdatedOvertimeBy { get; set; }// v102
+        public int UpdatedNoOvertimeBy { get; set; }// v102
+
         public Building Building { get; set; }
         public BPFCEstablish BPFCEstablish { get; set; }
         public ICollection<PlanDetail> PlanDetails { get; set; }

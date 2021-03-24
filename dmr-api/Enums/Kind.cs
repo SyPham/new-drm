@@ -7,8 +7,8 @@ namespace DMR_API.Enums
 {
     public enum Kind
     {
-        RUBBER = 1,
+        EVA_UV = 1,
         ATTACHING = 2,
-        EVA_UV = 3,
+        RUBBER = 3,
     }
 }

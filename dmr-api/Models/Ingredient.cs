@@ -24,6 +24,7 @@ namespace DMR_API.Models
         public double VOC { get; set; }
         public double ExpiredTime { get; set; }
         public double DaysToExpiration { get; set; }
+        public double StandardCycle { get; set; }
         public double Real { get; set; }
         public double CBD { get; set; }
         public double ReplacementFrequency { get; set; }

@@ -38,4 +38,13 @@ export class RoleService {
   getRoleByUserID(userid: number) {
     return this.http.get<IUserRole>(`${this.baseUrl}UserRole/GetRoleByUserID/${userid}`);
   }
+  create(model) {
+    return this.http.post(this.baseUrl + 'Role/Create', model);
+  }
+  update(model) {
+    return this.http.put(this.baseUrl + 'Role/Update', model);
+  }
+  delete(id: number) {
+    return this.http.delete(this.baseUrl + 'Role/Delete/' + id);
+  }
 }

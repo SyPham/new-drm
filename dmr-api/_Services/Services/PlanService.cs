@@ -144,24 +144,50 @@ namespace DMR_API._Services.Services
             {
                 lines = await _repoBuilding.FindAll(x => x.ParentID == building).Select(x => x.ID).ToListAsync();
             }
+            // sua ngay 3/15/2021 2:28pm
+            //return await _repoPlan.FindAll()
+            //    .Where(x => x.DueDate.Date >= min.Date && x.DueDate.Date <= max.Date && lines.Contains(x.BuildingID))
+            //    .Include(x => x.Building)
+            //        .ThenInclude(x => x.LunchTime)
+            //        .ThenInclude(x => x.Periods)
+            //    .Include(x => x.ToDoList)
+            //    .Include(x => x.BPFCEstablish)
+            //        .ThenInclude(x => x.Glues)
+            //    .Include(x => x.BPFCEstablish)
+            //        .ThenInclude(x => x.ModelName)
+            //    .Include(x => x.BPFCEstablish)
+            //        .ThenInclude(x => x.ModelNo)
+            //    .Include(x => x.BPFCEstablish)
+            //        .ThenInclude(x => x.ArticleNo)
+            //    .Include(x => x.BPFCEstablish)
+            //        .ThenInclude(x => x.ArtProcess)
+            //        .ThenInclude(x => x.Process)
+            //    .ProjectTo<PlanDto>(_configMapper)
+            //    .OrderByDescending(x => x.BuildingName)
+            //    .ToListAsync();
+            // sua ngay 3/15/2021 2:28pm
             return await _repoPlan.FindAll()
-                .Where(x => x.DueDate.Date >= min.Date && x.DueDate.Date <= max.Date && lines.Contains(x.BuildingID))
-                .Include(x => x.Building)
-                    .ThenInclude(x => x.LunchTime)
-                    .ThenInclude(x => x.Periods)
-                .Include(x => x.ToDoList)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ModelName)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ModelNo)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ArticleNo)
-                .Include(x => x.BPFCEstablish)
-                    .ThenInclude(x => x.ArtProcess)
-                    .ThenInclude(x => x.Process)
-                .ProjectTo<PlanDto>(_configMapper)
-                .OrderByDescending(x => x.BuildingName)
-                .ToListAsync();
+              .Where(x => x.DueDate.Date >= min.Date && x.DueDate.Date <= max.Date && lines.Contains(x.BuildingID))
+              .Include(x => x.Building)
+                  .ThenInclude(x => x.PeriodMixingList)
+                     .Include(x => x.Building)
+                  .ThenInclude(x => x.Kind)
+              .Include(x => x.ToDoList)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.Glues)
+                  .ThenInclude(x => x.Kind)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelName)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelNo)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ArticleNo)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ArtProcess)
+                  .ThenInclude(x => x.Process)
+              .ProjectTo<PlanDto>(_configMapper)
+              .OrderByDescending(x => x.BuildingName)
+              .ToListAsync();
         }
 
         //Lấy danh sách Plan và phân trang
@@ -249,8 +275,8 @@ namespace DMR_API._Services.Services
                 CreatedDate = x.CreatedDate,
                 BPFCEstablishID = x.BPFCEstablishID,
                 PartName = x.PartName,
-                PartNameID = x.PartNameID,
-                MaterialNameID = x.MaterialNameID,
+                PartID = x.PartID,
+                MaterialID = x.MaterialID,
                 MaterialName = x.MaterialName,
                 Consumption = x.Consumption,
                 Chemical = new GlueDto1 { ID = x.GlueID, Name = x.Name }
@@ -273,8 +299,8 @@ namespace DMR_API._Services.Services
                 CreatedDate = x.CreatedDate,
                 BPFCEstablishID = x.BPFCEstablishID,
                 PartName = x.PartName,
-                PartNameID = x.PartNameID,
-                MaterialNameID = x.MaterialNameID,
+                PartID = x.PartID,
+                MaterialID = x.MaterialID,
                 MaterialName = x.MaterialName,
                 Consumption = x.Consumption,
                 Chemical = new GlueDto1 { ID = x.GlueID, Name = x.Name }
@@ -288,15 +314,10 @@ namespace DMR_API._Services.Services
             if (item == null) return new List<BuildingDto>();
             if (item.Level == 2)
             {
-                var lineList = _repoBuilding.FindAll().Where(x => x.ParentID == item.ID);
+                var lineList = _repoBuilding.FindAll().Include(x => x.Kind).Where(x => x.ParentID == item.ID);
                 return await lineList.ProjectTo<BuildingDto>(_configMapper).ToListAsync();
             }
-            else
-            {
-                var lineList = _repoBuilding.FindAll().Where(x => x.Level == 5);
-                return await lineList.ProjectTo<BuildingDto>(_configMapper).ToListAsync();
-            }
-
+            return new List<BuildingDto>();
         }
 
         public PlanDto FindByID(int ID)
@@ -327,22 +348,23 @@ namespace DMR_API._Services.Services
         }
 
         // Lay thoi gian bat dau de tao task
-        public async Task<ResponseDetail<Period>> GetStartTimeFromPeriod(int buildingID)
+        public async Task<ResponseDetail<PeriodMixing>> GetStartTimeFromPeriod(int buildingID)
         {
-            var model = await _repoBuilding.FindAll(x => x.ID == buildingID).Include(x => x.LunchTime).ThenInclude(x => x.Periods).FirstOrDefaultAsync();
 
-            var period = model.LunchTime.Periods.FirstOrDefault(x => x.Sequence == 1);
+            var model = await _repoBuilding.FindAll(x => x.ID == buildingID).Include(x => x.PeriodMixingList).FirstOrDefaultAsync();
+
+            var period = model.PeriodMixingList.OrderBy(x => x.StartTime.TimeOfDay).FirstOrDefault();
 
             if (period == null)
             {
-                return new ResponseDetail<Period>()
+                return new ResponseDetail<PeriodMixing>()
                 {
                     Data = null,
                     Status = false,
                     Message = $"Vui lòng cập nhật period cho buiding {model.Name}!"
                 };
             }
-            return new ResponseDetail<Period>()
+            return new ResponseDetail<PeriodMixing>()
             {
                 Data = period,
                 Status = true,
@@ -373,7 +395,6 @@ namespace DMR_API._Services.Services
             throw new System.NotImplementedException();
 
         }
-
 
         public Task<object> Summary(int building)
         {
@@ -572,6 +593,7 @@ namespace DMR_API._Services.Services
             .FindAll(x => x.EstimatedTime == estimatedTime && x.GlueName == glue).Include(x => x.MixingInfoDetails).FirstOrDefaultAsync();
             return mixingInfo;
         }
+
         public async Task<string> FindDeliver(string glue, DateTime estimatedTime)
         {
             var mixingInfo = await FindMixingInfo(glue, estimatedTime);
@@ -1015,7 +1037,7 @@ namespace DMR_API._Services.Services
             }
             return true;
         }
-        
+
         public async Task<object> ClonePlan(List<PlanForCloneDto> plansDto)
         {
             var plans = _mapper.Map<List<Plan>>(plansDto);
@@ -1253,7 +1275,6 @@ namespace DMR_API._Services.Services
             }
 
             return resAll;
-            throw new NotImplementedException();
         }
 
         public MixingInfo PrintGlue(int mixingÌnoID)
@@ -1264,6 +1285,7 @@ namespace DMR_API._Services.Services
         // Doi giay o workplan page
         public async Task<ResponseDetail<object>> ChangeBPFC(int planID, int bpfcID)
         {
+            var userID = _jwtService.GetUserID();
             var plan = await _repoPlan.FindAll(x => x.ID == planID).FirstOrDefaultAsync();
             if (plan == null) return new ResponseDetail<object>(null, false, "Không có kế hoạch làm việc nào tồn tại!");
 
@@ -1367,6 +1389,176 @@ namespace DMR_API._Services.Services
             }
 
 
+        }
+
+        public async Task<ResponseDetail<object>> Online(int planID)
+        {
+            // B1: Túm cổ từ trong database ra
+
+            // B2: Cập nhật lại isOfflineStatus = true
+
+            // B3: Vào bảng Building lấy period ra lấy ra giờ kết thúc làm việc
+
+            // B4: Vào bảng Todolist lấy hết danh sách ra theo planID điều kiện là isdelete = true Neu khong tang ca thi khoi mo tang ca ra, Cập nhật lại là false
+
+            // B5: Vào bảng DispatchList lấy hết danh sách ra theo planID điều kiện là isdelete = true Neu khong tang ca thi khoi mo tang ca ra, Cập nhật lại là false
+            // -------------------------------------------
+            // B1: Túm cổ từ trong database ra
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    var userID = _jwtService.GetUserID();
+                    var ct = DateTime.Now.ToRemoveSecond();
+                    var currentDate = ct.Date;
+                    var planUpdate = await _repoPlan.FindAll(x => planID == x.ID).Include(x => x.Building).FirstOrDefaultAsync();
+                    if (planUpdate == null) return new ResponseDetail<object>
+                    {
+                        Status = false,
+                        Message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
+                    };
+                    planUpdate.UpdatedOnline = ct;
+                    planUpdate.UpdatedOnlineBy = userID;
+                    planUpdate.IsOffline = false;
+                    _repoPlan.Update(planUpdate);
+                    await _repoPlan.SaveAll();
+
+                    // B3: Vào bảng Building lấy period ra lấy ra giờ kết thúc làm việc
+
+                    var building = await _repoBuilding.FindAll(x => x.ID == planUpdate.Building.ParentID)
+                      .Include(x => x.PeriodMixingList)
+                      .FirstOrDefaultAsync();
+
+                    var periods = building.PeriodMixingList;
+
+                    // Chi tao gio tang ca
+                    periods = periods.Where(x => x.IsOvertime == true).ToList();
+                    var finishWorkingTimeOfWorkplan = periods.OrderBy(x => x.EndTime).FirstOrDefault().StartTime;
+
+                    // B4: Vào bảng Todolist lấy hết danh sách ra theo planID điều kiện là isdelete = true nếu có tăng ca thì mở lại, Cập nhật lại là false
+
+                    var timeOfDay = ct.ToRemoveSecond().TimeOfDay;
+                    var todoDelete = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay >= timeOfDay && x.PlanID == planID && x.IsDelete == true).ToListAsync();
+                    // Neu khong tang ca thi khoi mo tang ca ra
+                    if (planUpdate.IsOvertime == false)
+                    {
+                        todoDelete = todoDelete.Where(x => x.EstimatedStartTime.TimeOfDay < finishWorkingTimeOfWorkplan.TimeOfDay).ToList();
+                    }
+                    todoDelete.ForEach(item =>
+                    {
+                        item.IsDelete = false;
+                    });
+                    _repoToDoList.UpdateRange(todoDelete);
+                    await _repoToDoList.SaveAll();
+
+                    // B5: Vào bảng DispatchList lấy hết danh sách ra theo planID điều kiện là isdelete = true Neu khong tang ca thi khoi mo tang ca ra, Cập nhật lại là false
+                    var deletingList = await _repoDispatchList.FindAll(x => x.EstimatedStartTime.TimeOfDay >= timeOfDay && x.EstimatedFinishTime.TimeOfDay > timeOfDay && x.PlanID == planID && x.IsDelete == true).ToListAsync();
+                    // Neu khong tang ca thi khoi mo tang ca ra
+                    if (planUpdate.IsOvertime == false)
+                    {
+                        deletingList = deletingList.Where(x => x.EstimatedStartTime.TimeOfDay < finishWorkingTimeOfWorkplan.TimeOfDay).ToList();
+                    }
+                    deletingList.ForEach(item =>
+                    {
+                        item.IsDelete = false;
+                    });
+                    //cap nhat dispatchlist
+                    _repoDispatchList.UpdateRange(deletingList);
+                    await _repoDispatchList.SaveAll();
+
+                    transaction.Complete();
+                    return new ResponseDetail<object>
+                    {
+                        Status = true,
+                        Message = $"Đã ngưng chuyền {planUpdate.Building.Name}!"
+                    };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Dispose();
+                    return new ResponseDetail<object>
+                    {
+                        Status = false,
+                        Message = ex.Message
+                    };
+                }
+            }
+        }
+
+        public async Task<ResponseDetail<object>> Offline(int planID)
+        {
+            // B1: Túm cổ từ trong database ra
+
+            // B2: Cập nhật lại isOfflineStatus = true
+
+            // B3: Vào bảng Todolist lấy hết danh sách ra theo planID điều kiện là isdelete = false, Cập nhật lại là true
+
+            // B4: Vào bảng DispatchList lấy hết danh sách ra theo planID điều kiện là isdelete = false, Cập nhật lại là true
+            // ------------------------------------------------------------------
+            using var transaction = new TransactionScopeAsync().Create();
+            {
+                try
+                {
+                    var userID = _jwtService.GetUserID();
+                    var ct = DateTime.Now.ToRemoveSecond();
+                    var currentDate = ct.Date;
+                    // B1: Túm cổ từ trong database ra
+                    var planUpdate = await _repoPlan.FindAll(x => planID == x.ID)
+                                            .Include(x => x.Building).FirstOrDefaultAsync();
+                    if (planUpdate == null) return new ResponseDetail<object>
+                    {
+                        Status = false,
+                        Message = "Không có danh sách keo nào cho kế hoạch làm việc này!"
+                    };
+                    planUpdate.UpdatedOffline = ct;
+                    planUpdate.UpdatedOfflineBy = userID;
+                    planUpdate.IsOffline = true;
+                    // cap nhat workplan
+                    _repoPlan.Update(planUpdate);
+                    await _repoPlan.SaveAll();
+
+
+
+                    var timeOfDay = ct.ToRemoveSecond().TimeOfDay;
+
+
+                    // B3: Vào bảng Todolist lấy hết danh sách ra theo planID điều kiện là isdelete = false, Cập nhật lại là true
+
+                    var todoDelete = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay >= timeOfDay && x.PlanID == planID && x.IsDelete == false).ToListAsync();
+                    todoDelete.ForEach(item =>
+                    {
+                        item.IsDelete = true;
+                    });
+                    _repoToDoList.UpdateRange(todoDelete);
+                    await _repoToDoList.SaveAll();
+
+                    // B4: Vào bảng DispatchList lấy hết danh sách ra theo planID điều kiện là isdelete = false, Cập nhật lại là true
+                    var deletingList = await _repoDispatchList.FindAll(x => x.EstimatedStartTime.TimeOfDay >= timeOfDay && x.EstimatedFinishTime.TimeOfDay > timeOfDay && x.PlanID == planID && x.IsDelete == false).ToListAsync();
+                    deletingList.ForEach(item =>
+                    {
+                        item.IsDelete = true;
+                    });
+
+                    _repoDispatchList.UpdateRange(deletingList);
+                    await _repoDispatchList.SaveAll();
+
+                    transaction.Complete();
+                    return new ResponseDetail<object>
+                    {
+                        Status = true,
+                        Message = $"Chuyền {planUpdate.Building.Name} đã online!"
+                    };
+                }
+                catch (Exception ex)
+                {
+                    transaction.Dispose();
+                    return new ResponseDetail<object>
+                    {
+                        Status = false,
+                        Message = $"{ex.Message}"
+                    };
+                }
+            }
         }
 
         // Khong su dung
@@ -2681,6 +2873,105 @@ namespace DMR_API._Services.Services
             return glueIngredient == null ? 0 : glueIngredient.Percentage;
         }
 
+        public async Task<ResponseDetail<Byte[]>> ExportExcel(ExcelExportDto dto)
+        {
+            var plans = await _repoPlan.FindAll()
+                .Where(x => dto.Plans.Contains(x.ID))
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ModelName)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ModelNo)
+                .Include(x => x.BPFCEstablish)
+                    .ThenInclude(x => x.ArticleNo)
+                .Select(x => new
+                {
+                    Glues = x.BPFCEstablish.Glues.Where(x => x.isShow),
+                    GlueIngredients = x.BPFCEstablish.Glues.Where(x => x.isShow).SelectMany(x => x.GlueIngredients),
+                    ModelName = x.BPFCEstablish.ModelName.Name,
+                    ModelNo = x.BPFCEstablish.ModelNo.Name,
+                    ArticleNO = x.BPFCEstablish.ArticleNo.Name,
+                    Line = x.Building.Name,
+                    x.DueDate,
+                    x.CreatedDate
+                }).OrderBy(x => x.Line)
+                .ThenBy(x => x.CreatedDate)
+                .ToListAsync();
+
+            try
+            {
+                ExcelPackage.LicenseContext = LicenseContext.Commercial;
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                var memoryStream = new MemoryStream();
+                using (ExcelPackage p = new ExcelPackage(memoryStream))
+                {
+                    // đặt tên người tạo file
+                    p.Workbook.Properties.Author = "Henry Pham";
+
+                    // đặt tiêu đề cho file
+                    p.Workbook.Properties.Title = "Report";
+                    //Tạo một sheet để làm việc trên đó
+                    p.Workbook.Worksheets.Add("Report");
+
+                    // lấy sheet vừa add ra để thao tác
+                    ExcelWorksheet ws = p.Workbook.Worksheets["Report"];
+
+                    // đặt tên cho sheet
+                    ws.Name = "Report";
+                    // fontsize mặc định cho cả sheet
+                    ws.Cells.Style.Font.Size = 11;
+                    // font family mặc định cho cả sheet
+                    ws.Cells.Style.Font.Name = "Calibri";
+                    string[] headers = new string[] { "Model Name", "Model NO", "Article NO", "Line", "Due Date" };
+                    int headerRowIndex = 1;
+                    int headerColIndex = 1;
+                    int patternTypeColIndex = 1;
+                    int backgroundColorColIndex = 1;
+                    foreach (var item in headers.Select((value, index) => new { value, index }))
+                    {
+                        ws.Cells[headerRowIndex, headerColIndex++].Value = headers[item.index];
+
+                        // Style Header
+                        var pattern = ws.Cells[headerRowIndex, patternTypeColIndex++];
+                        pattern.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                        pattern.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#FFFF00"));
+                    }
+
+
+                    // end Style
+
+                    int colIndex = 1;
+                    int rowIndex = 1;
+                    // với mỗi item trong danh sách sẽ ghi trên 1 dòng
+                    foreach (var body in plans)
+                    {
+                        // bắt đầu ghi từ cột 1. Excel bắt đầu từ 1 không phải từ 0 #c0514d
+                        colIndex = 1;
+
+                        // rowIndex tương ứng từng dòng dữ liệu
+                        rowIndex++;
+
+
+                        //gán giá trị cho từng cell                      
+                        ws.Cells[rowIndex, colIndex++].Value = body.ModelName;
+                        ws.Cells[rowIndex, colIndex++].Value = body.ModelNo;
+                        ws.Cells[rowIndex, colIndex++].Value = body.ArticleNO;
+                        ws.Cells[rowIndex, colIndex++].Value = body.Line;
+                        ws.Cells[rowIndex, colIndex++].Value = body.DueDate != null ? body.DueDate.ToString("MM/dd/yyyy") : "N/A";
+                    }
+
+                    //Lưu file lại
+                    Byte[] bin = p.GetAsByteArray();
+                    return new ResponseDetail<Byte[]>(bin, true, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                var mes = ex.Message;
+                Console.Write(mes);
+                return new ResponseDetail<Byte[]>(new Byte[] { }, false, string.Empty);
+            }
+        }
+
         #endregion
 
         #region TroubleShooting
@@ -2787,8 +3078,9 @@ namespace DMR_API._Services.Services
                 return new List<TroubleshootingDto>();
             }
         }
-        
+
+
         #endregion
-       
+
     }
 }

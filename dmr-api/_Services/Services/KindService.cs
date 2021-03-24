@@ -16,17 +16,22 @@ namespace DMR_API._Services.Services
     public class KindService : IKindService
     {
         private readonly IKindRepository _repoLine;
+        private readonly IKindTypeRepository _repoKindType;
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configMapper;
-        public KindService(IKindRepository repoBrand, IMapper mapper, MapperConfiguration configMapper)
+        public KindService(
+            IKindRepository repoKind, 
+            IKindTypeRepository repoKindType,
+            IMapper mapper,
+            MapperConfiguration configMapper)
         {
             _configMapper = configMapper;
             _mapper = mapper;
-            _repoLine = repoBrand;
-
+            _repoLine = repoKind;
+            _repoKindType = repoKindType;
         }
 
-        //Thêm Brand mới vào bảng Line
+        //Thêm Kind mới vào bảng Line
         public async Task<bool> Add(KindDto model)
         {
             var Line = _mapper.Map<Kind>(model);
@@ -36,7 +41,7 @@ namespace DMR_API._Services.Services
 
      
 
-        //Lấy danh sách Brand và phân trang
+        //Lấy danh sách Kind và phân trang
         public async Task<PagedList<KindDto>> GetWithPaginations(PaginationParams param)
         {
             var lists = _repoLine.FindAll().ProjectTo<KindDto>(_configMapper).OrderByDescending(x => x.ID);
@@ -51,7 +56,7 @@ namespace DMR_API._Services.Services
             .OrderByDescending(x => x.ID);
             return await PagedList<KindDto>.CreateAsync(lists, param.PageNumber, param.PageSize);
         }
-        //Xóa Brand
+        //Xóa Kind
         public async Task<bool> Delete(object id)
         {
             var Line = _repoLine.FindById(id);
@@ -59,7 +64,7 @@ namespace DMR_API._Services.Services
             return await _repoLine.SaveAll();
         }
 
-        //Cập nhật Brand
+        //Cập nhật Kind
         public async Task<bool> Update(KindDto model)
         {
             var Line = _mapper.Map<Kind>(model);
@@ -67,17 +72,18 @@ namespace DMR_API._Services.Services
             return await _repoLine.SaveAll();
         }
       
-        //Lấy toàn bộ danh sách Brand 
+        //Lấy toàn bộ danh sách Kind 
         public async Task<List<KindDto>> GetAllAsync()
         {
             return await _repoLine.FindAll().ProjectTo<KindDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
 
-        //Lấy Brand theo Brand_Id
+        //Lấy Kind theo Kind_Id
         public KindDto GetById(object id)
         {
             return  _mapper.Map<Kind, KindDto>(_repoLine.FindById(id));
         }
-
+        public async Task<object> GetAllKindType()
+       => await _repoKindType.FindAll().ToListAsync();
     }
 }

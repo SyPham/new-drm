@@ -8,5 +8,6 @@ namespace DMR_API._Services.Interface
 {
     public interface IKindService : IECService<KindDto>
     {
+        Task<object> GetAllKindType();
     }
 }

@@ -17,14 +17,8 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
   }
   @HostListener('ngModelChange', ['$event']) onChange(value) {
     this.subject.next(value);
-    // const input = value.split('-') || [];
-    // if (input[2]?.length === 8) {
-    //     setTimeout(() => {
-    //       this.host.nativeElement.select();
-    //     }, 0);
-    // }
   }
-  constructor(private host: ElementRef) { }
+  constructor(private host: ElementRef ) { }
   ngAfterViewInit() {
     setTimeout(() => {
       this.host.nativeElement.focus();
@@ -39,5 +33,15 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.subscription.forEach(item => item.unsubscribe());
+  }
+  @HostListener('document:keydown.enter', ['$event'])
+  onKeydownHandler(event: KeyboardEvent) {
+    event.preventDefault();
+    this.host.nativeElement.value = this.host.nativeElement.value + '    ';
+  }
+  @HostListener('document:keydown.tab', ['$event'])
+  onKeydownTabHandler(event: KeyboardEvent) {
+    event.preventDefault();
+    this.host.nativeElement.value = this.host.nativeElement.value + '    ';
   }
 }

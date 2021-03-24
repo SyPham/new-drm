@@ -33,6 +33,12 @@ namespace DMR_API.Controllers
             return Ok(buildings);
         }
         [HttpGet]
+        public async Task<IActionResult> GetAllBuildingType()
+        {
+            var buildings = await _buildingService.GetAllBuildingType();
+            return Ok(buildings);
+        }
+        [HttpGet]
         public async Task<IActionResult> GetAllAsTreeView()
         {
             var buildings = await _buildingService.GetAllAsTreeView();
@@ -80,8 +86,8 @@ namespace DMR_API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateMainBuilding(BuildingDto create)
         {
-
-            return Ok(await _buildingService.CreateMainBuilding(create));
+            var res = await _buildingService.CreateMainBuilding(create);
+            return Ok(res);
 
             throw new Exception("Creating the building failed on save");
         }

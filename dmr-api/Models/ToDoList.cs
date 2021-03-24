@@ -18,11 +18,12 @@ namespace DMR_API.Models
         public int BuildingID { get; set; } 
 
         public int LineID { get; set; }
+        public int KindID { get; set; }
         public int BPFCID { get; set; }
+        public string Supplier { get; set; }
         public string LineName { get; set; }
         public string GlueName { get; set; }
         public bool IsEVA_UV { get; set; }
-        public string Supplier { get; set; }
         public bool Status { get; set; }
         public bool AbnormalStatus { get; set; }
 

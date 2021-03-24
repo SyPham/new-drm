@@ -18,4 +18,4 @@ export const Quarterly: string [] = [
 export const DAYOFMONTH: string [] = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh', 'Eighth', 'Nighth',
 'Tenth', 'Eleventh', 'Twelfth', 'Thirteenth', 'Fourteenth',
 'Fifteenth', 'Sixteenth', 'Seventeenth', 'Eighteenth', 'NineTeenth',
-'Twentieth', 'Twenty-first', 'Twenty-second', 'Twenty-third', 'Twenty-fourth', 'Twenty-fifth', 'Twenty-sixth', 'Twenty-seventh', 'Twenty-eight', 'Twenty-nineth', 'Thirtieth', 'Thirty-first'] ; 
+'Twentieth', 'Twenty-first', 'Twenty-second', 'Twenty-third', 'Twenty-fourth', 'Twenty-fifth', 'Twenty-sixth', 'Twenty-seventh', 'Twenty-eight', 'Twenty-nineth', 'Thirtieth', 'Thirty-first'];

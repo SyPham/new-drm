@@ -47,7 +47,10 @@ namespace DMR_API._Services.Interface
         Task<int?> FindBuildingByLine(int lineID);
         Task<bool> DeletePlan(int id);
         // Lấy thời gian bắt đầu sequence = 1 trong bảng period theo lunchtime
-        Task<ResponseDetail<Period>> GetStartTimeFromPeriod(int buildingID);
+        // sua ngay 3/15/2021 2:28pm
+        //Task<ResponseDetail<Period>> GetStartTimeFromPeriod(int buildingID);
+        // sua ngay 3/15/2021 2:28pm
+        Task<ResponseDetail<PeriodMixing>> GetStartTimeFromPeriod(int buildingID);
 
         Task<bool> CheckExistTimeRange(int lineID, DateTime statTime, DateTime endTime, DateTime dueDate);
         Task<bool> CheckDuplicate(int lineID, int BPFCEstablishID, DateTime dueDate);
@@ -57,10 +60,17 @@ namespace DMR_API._Services.Interface
         /// Đổi kế hoạch làm việc. Lấy ID của kế hoạch làm việc
         /// </summary>
         /// <param name="planID">ID của kế hoạc cũ</param>
-        /// <param name="bpfcID">BPFCID mới</param>
+        /// <param name="bpfcID">BPFCID mới hoac chinh no</param>
         /// <returns></returns>
-        Task<ResponseDetail<object>> ChangeBPFC(int planID, int bpfcID);
-
-
+        Task<ResponseDetail<object>> ChangeBPFC(int planID, int bpfcID);// v102
+        Task<ResponseDetail<object>> Online(int planID);// v102
+        Task<ResponseDetail<object>> Offline(int planID);// v102
+        /// <summary>
+        /// Excel Export
+        /// </summary>
+        /// <param name="plans">Danh sách plan</param>
+        /// <param name="buildingID">BPFCID mới</param>
+        /// <returns></returns>
+        Task<ResponseDetail<Byte[]>> ExportExcel(ExcelExportDto dto);
     }
 }

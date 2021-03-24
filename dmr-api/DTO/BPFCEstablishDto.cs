@@ -29,5 +29,7 @@ namespace DMR_API.DTO
         public DateTime? ModifiedDate { get; set; }
         public DateTime? UpdateTime { get; set; }
 
+        public DateTime? BuildingDate { get; set; }
+
     }
 }

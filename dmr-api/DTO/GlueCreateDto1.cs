@@ -23,16 +23,16 @@ namespace DMR_API.DTO
         public string ModelNo { get; set; }
         public int BPFCEstablishID { get; set; }
         public string PartName { get; set; }
-        public int PartNameID { get; set; }
+        public int? PartNameID { get; set; }
         public string MaterialName { get; set; }
         public string Consumption { get; set; }
         public int ExpiredTime { get; set; }
         public int CreatedBy { get; set; }
         public int MaterialNameID { get; set; }
         public string KindName { get; set; }
-        public int KindID { get; set; }
-        public int PartID { get; set; }
-        public int MaterialID { get; set; }
+        public int? KindID { get; set; }
+        public int? PartID { get; set; }
+        public int? MaterialID { get; set; }
         public List<GlueIngredient> GlueIngredients { get; set; }
         public List<Ingredient> Ingredients { get; set; }
         public GlueDto1 Chemical { get; set; }

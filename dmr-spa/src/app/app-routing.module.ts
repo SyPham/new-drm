@@ -25,7 +25,7 @@ const routes: Routes = [
         path: 'ec',
         loadChildren: () =>
           import('./views/ec/ec.module').then(m => m.ECModule)
-      },
+      }
     ]
   },
   {

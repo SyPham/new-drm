@@ -20,15 +20,12 @@ namespace DMR_API.Helpers
         public T Entity { get; set; }
         public IEnumerable<HierarchyNode<T>> ChildNodes { get; set; }
         public int Depth { get; set; }
-        public bool HasChildren
-        {
-            get { return ChildNodes.Any(); }
-        }
+        public bool HasChildren => ChildNodes.Any();
         public T Parent { get; set; }
     }
     public static class TreeViewHelper
     {
-        public static IEnumerable<T> Flatten<T>(
+        public static IEnumerable<T> Flatten2<T>(
           this IEnumerable<T> source,
           Func<T, IEnumerable<T>> childSelector)
         {

@@ -20,7 +20,6 @@ import { GlueIngredientService } from 'src/app/_core/_service/glue-ingredient.se
 import { GlueService } from 'src/app/_core/_service/glue.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { ChartDataService } from 'src/app/_core/_service/chart-data.service';
-import { IngredientModalComponent } from '../ingredient/ingredient-modal/ingredient-modal.component';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownListComponent } from '@syncfusion/ej2-angular-dropdowns';
 import { IGlueIngredientDetail, IGlueIngredient } from 'src/app/_core/_model/glue-ingredient-detail';
@@ -38,6 +37,7 @@ import { PartService } from 'src/app/_core/_service/part.service';
 import { MaterialService } from 'src/app/_core/_service/material.service';
 import { constants } from 'crypto';
 import { IRole } from 'src/app/_core/_model/role';
+import { IngredientModalComponent } from '../setting/ingredient/ingredient-modal/ingredient-modal.component';
 
 declare const $: any;
 const LEVEL_1 = 3;
@@ -87,6 +87,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
     expiredTime: 0,
     createdBy: 0,
     glueNameID: 0,
+    glueIngredients: []
   };
   ingredient: IIngredient = {
     id: 0,
@@ -106,7 +107,8 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
     cbd: 0,
     glueTypeID: 0,
     replacementFrequency: 0,
-    prepareTime: 0
+    prepareTime: 0,
+    standardCycle: 0
   };
   Editpercentage = {
     glueID: 0,
@@ -671,7 +673,8 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
             cbd: 0,
             glueTypeID: 0,
             replacementFrequency: 0,
-            prepareTime: 0
+            prepareTime: 0,
+            standardCycle: 0
           };
           return ingredient;
         });
@@ -1259,6 +1262,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
               expiredTime: 0,
               glueNameID: 0,
               createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+              glueIngredients: []
             };
             this.glue = glue;
             this.saveGlue();
@@ -1282,6 +1286,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
             expiredTime: 0,
             glueNameID: 0,
             createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+            glueIngredients: []
           };
           this.glue = glue;
           this.saveGlue();

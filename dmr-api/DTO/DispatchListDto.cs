@@ -31,6 +31,7 @@ namespace DMR_API.DTO
         public string GlueName { get; set; }
         public string Supplier { get; set; }
         public bool Status { get; set; }
+        public bool IsEVA_UV { get; set; }
 
         public DateTime? StartDispatchingTime { get; set; }
         public DateTime? FinishDispatchingTime { get; set; }

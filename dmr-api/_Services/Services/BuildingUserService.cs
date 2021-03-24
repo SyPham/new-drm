@@ -2,6 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using DMR_API._Repositories.Interface;
 using DMR_API._Services.Interface;
+using DMR_API.Constants;
 using DMR_API.DTO;
 using DMR_API.Helpers;
 using DMR_API.Models;
@@ -310,7 +311,7 @@ namespace DMR_API._Services.Services
         public async Task<ResponseDetail<List<BuildingDto>>> GetLineByUserID(int userid, int buildingid)
         {
             var buildings = await _buildingUserRepository.FindAll().Include(x => x.Building)
-                .Where(x => x.Building.Level == 2 && x.UserID == userid).Select(x=>x.Building.ID).ToListAsync();
+                .Where(x => x.Building.Level == 2 && x.UserID == userid).Select(x => x.Building.ID).ToListAsync();
             if (buildings.Count == 0)
             {
                 return new ResponseDetail<List<BuildingDto>>
@@ -320,7 +321,7 @@ namespace DMR_API._Services.Services
                     Message = "Vui lòng cài đặt tòa nhà cho tài khoản này trước tiên!"
                 };
             }
-            var model = from a in _buildingRepository.FindAll(x => buildings.Contains(x.ParentID.Value) )
+            var model = from a in _buildingRepository.FindAll(x => buildings.Contains(x.ParentID.Value))
                         join b in _buildingUserRepository.FindAll(x => x.UserID == userid) on a.ID equals b.BuildingID into ab
                         from c in ab.DefaultIfEmpty()
                         select new BuildingDto
@@ -382,8 +383,8 @@ namespace DMR_API._Services.Services
             var buildingLevel = 2;
             var item = await _buildingUserRepository.FindAll()
                 .Include(x => x.Building)
-                .Where(x => x.Building.Level == buildingLevel 
-                && x.UserID == dto.UserID 
+                .Where(x => x.Building.Level == buildingLevel
+                && x.UserID == dto.UserID
                 && dto.Buildings.Contains(x.BuildingID)).ToListAsync();
             if (item.Count != 0)
             {
@@ -447,49 +448,28 @@ namespace DMR_API._Services.Services
         public async Task<ResponseDetail<List<BuildingDto>>> GetBuildingUserByUserID(int userid)
         {
             var buildingLevel = 2;
-
             var role = await _userRoleRepository.FindAll(x => x.UserID == userid).FirstOrDefaultAsync();
-            if (role.RoleID == (int)Enums.Role.Worker)
+            if (role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
             {
-               var data = await _buildingUserRepository.FindAll(x => x.UserID == userid).Include(x=> x.Building).Select(a=> new BuildingDto
-               {
-                   ID = a.Building.ID,
-                   Level = a.Building.Level,
-                   Name = a.Building.Name
-               }).ToListAsync();
+
+                var model = await (from b in _buildingRepository.FindAll(x => x.Level == buildingLevel)
+                                   join l in _buildingRepository.FindAll() on b.ID equals l.ParentID
+                                   join bu in _buildingUserRepository.FindAll(x => x.UserID == userid) on b.ID equals bu.BuildingID
+                                   select b
+                                   ).Distinct().ProjectTo<BuildingDto>(_configMapper).ToListAsync();
                 return new ResponseDetail<List<BuildingDto>>
                 {
-                    Data = data,
-                    Status = true
-                };
-            } 
-            if (role.RoleID == (int)Enums.Role.Admin || role.ID == (int)Enums.Role.Supervisor || role.ID == (int)Enums.Role.Staff)
-            {
-                var data = await _buildingRepository.FindAll(x => x.Level == buildingLevel).Select(a => new BuildingDto
-                {
-                    ID = a.ID,
-                    Level = a.Level,
-                    Name = a.Name
-                }).ToListAsync();
-                return new ResponseDetail<List<BuildingDto>>
-                {
-                    Data = data,
+                    Data = model,
                     Status = true
                 };
             }
-            if (role.RoleID == (int)Enums.Role.Dispatcher )
+            if (role.RoleID == (int)Enums.Role.Admin || role.ID == (int)Enums.Role.Supervisor || role.ID == (int)Enums.Role.Staff)
             {
-                var data = await _buildingUserRepository.FindAll(x => x.UserID == userid)
-                    .Include(x => x.Building)
-                    .Where(x=> x.Building.Level == buildingLevel).Select(a => new BuildingDto
-                {
-                    ID = a.Building.ID,
-                    Level = a.Building.Level,
-                    Name = a.Building.Name
-                }).ToListAsync();
+                var model = await _buildingRepository.FindAll(x => x.Level == buildingLevel)
+                                .ProjectTo<BuildingDto>(_configMapper).ToListAsync();
                 return new ResponseDetail<List<BuildingDto>>
                 {
-                    Data = data,
+                    Data = model,
                     Status = true
                 };
             }

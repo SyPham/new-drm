@@ -18,10 +18,12 @@ namespace DMR_API.Controllers
     public class ToDoListController : ControllerBase
     {
         private readonly IToDoListService _toDoList;
+        private readonly IBottomFactoryService _bottomFactoryService;
         private readonly IHubContext<ECHub> _hubContext;
-        public ToDoListController(IToDoListService toDoList, IHubContext<ECHub> hubContext)
+        public ToDoListController(IToDoListService toDoList, IBottomFactoryService bottomFactoryService, IHubContext<ECHub> hubContext)
         {
             _toDoList = toDoList;
+            _bottomFactoryService = bottomFactoryService;
             _hubContext = hubContext;
         }
 
@@ -46,7 +48,7 @@ namespace DMR_API.Controllers
         public async Task<IActionResult> AdditionDispatch(int glueNameID)
         {
             var res = await _toDoList.AdditionDispatch(glueNameID);
-          if (res.Status)  return NoContent();
+            if (res.Status) return NoContent();
             return BadRequest(res.Message);
         }
 
@@ -149,9 +151,16 @@ namespace DMR_API.Controllers
         [HttpPost]
         public async Task<IActionResult> GenerateToDoList(List<int> plans)
         {
-            var status = await _toDoList.GenerateToDoList(plans);
-            return Ok(status);
-
+            if (await _toDoList.CheckBuildingType(plans))
+            {
+                var status = await _bottomFactoryService.GenerateToDoList(plans);
+                return Ok(status);
+            }
+            else
+            {
+                var status = await _toDoList.GenerateToDoList(plans);
+                return Ok(status);
+            }
         }
         [HttpPost]
         public async Task<IActionResult> GenerateDispatchList(List<int> plans)
@@ -241,8 +250,8 @@ namespace DMR_API.Controllers
         public async Task<IActionResult> UpdateMixingInfoDispatchList(int mixingInfoID, int glueNameID, DateTime estimatedStartTime, DateTime estimatedFinishTime)
         {
             var data = await _toDoList.UpdateMixingInfoDispatchList(mixingInfoID, glueNameID, estimatedStartTime, estimatedFinishTime);
-            
-          if (data.Status)  return NoContent();
+
+            if (data.Status) return NoContent();
             return BadRequest(data.Message);
         }
 
@@ -261,9 +270,6 @@ namespace DMR_API.Controllers
             return Ok(data);
         }
         // them code moi 1/30/2021
-
-
-
         [HttpPost]
         public async Task<IActionResult> AddOvertime(List<int> plans)
         {

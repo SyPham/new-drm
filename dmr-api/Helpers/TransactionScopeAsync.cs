@@ -14,6 +14,7 @@ namespace DMR_API.Helpers
             {
                 IsolationLevel = IsolationLevel.ReadCommitted,
                 Timeout = TransactionManager.MaximumTimeout // use a sensible value here
+                
             };
 
             return new TransactionScope(TransactionScopeOption.Required,

@@ -3,13 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "lint": "node --max_old_space_size=8192 --harmony node_modules/@angular/cli/bin/ng lint",
     "start": "ng serve --open --host 10.4.4.224 --port 1008 --disableHostCheck",
     "pro": "ng serve --open --host 10.4.0.76 --port 1005 --disableHostCheck",
     "dev_henry": "ng serve --open --host 10.4.4.224 --port 1000 --disableHostCheck",
     "dev_leo": "ng serve --open --host 10.4.4.92 --port 1000 --disableHostCheck",
     "build": "ng build --prod",
     "test": "ng test",
-    "lint": "ng lint",
     "e2e": "ng e2e",
     "prod": "node --max_old_space_size=8192 ./node_modules/@angular/cli/bin/ng build --prod  --aot --buildOptimizer --commonChunk --vendorChunk --optimization"
   },

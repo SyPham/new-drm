@@ -132,5 +132,14 @@ export class PlanService {
   changeBPFC(planID: number, bpfcID: number) {
     return this.http.get(`${this.baseUrl}Plan/ChangeBPFC/${planID}/${bpfcID}` );
   }
+  online(planID: number) { // v102
+    return this.http.get(`${this.baseUrl}Plan/Online/${planID}`);
+  }
+  offline(planID: number) { // v102
+    return this.http.get(`${this.baseUrl}Plan/Offline/${planID}`);
+  }
+  exportExcel(obj: { plans: number[], buildingID: number }) {
+    return this.http.post(`${this.baseUrl}Plan/ExportExcel`, obj, { responseType: 'blob' });
+  }
 }
 

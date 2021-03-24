@@ -33,7 +33,12 @@ namespace DMR_API.Controllers
             var lines = await _kindService.GetAllAsync();
             return Ok(lines);
         }
-
+        [HttpGet]
+        public async Task<IActionResult> GetAllKindType()
+        {
+            var lines = await _kindService.GetAllKindType();
+            return Ok(lines);
+        }
         //[HttpGet("{text}")]
         //public async Task<IActionResult> Search([FromQuery]PaginationParams param, string text)
         //{
@@ -41,7 +46,7 @@ namespace DMR_API.Controllers
         //    Response.AddPagination(lists.CurrentPage, lists.PageSize, lists.TotalCount, lists.TotalPages);
         //    return Ok(lists);
         //}
-       
+
         [HttpPost]
         public async Task<IActionResult> Create(KindDto create)
         {

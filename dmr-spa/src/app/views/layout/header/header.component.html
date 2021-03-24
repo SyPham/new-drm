@@ -13,6 +13,18 @@
 
     <div class="collapse navbar-collapse order-3" id="navbarCollapse">
       <ul class="navbar-nav">
+          <li class="nav-item dropdown" >
+            <a class="nav-link dropdown-toggle" style="cursor: pointer" id="navbarDropdown" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              {{ 'System' }}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <a class="dropdown-item" [routerLink]="[ '/ec/system/module']">{{ 'Module' }}</a>
+              <a class="dropdown-item" [routerLink]="[ '/ec/system/function']">{{ 'Function' }}</a>
+              <a class="dropdown-item" [routerLink]="[ '/ec/system/action']">{{ 'Action' }}</a>
+              <a class="dropdown-item" [routerLink]="[ '/ec/system/role']">{{ 'Role' }}</a>
+            </div>
+          </li>
         <li class="nav-item dropdown" *ngIf="level === ADMIN_COSTING">
           <a class="nav-link dropdown-toggle" style="cursor: pointer" id="navbarDropdown" role="button"
             data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -28,10 +40,10 @@
             {{ 'SETTING' | translate }}
           </a>
           <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/account-1']">{{ 'ACCOUNT1' | translate }}</a>
+            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/account']">{{ 'ACCOUNT1' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building']">{{ 'BUILDING' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/supplier']">{{ 'SUPPLIER' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles() || isWorkerRole() || isDispatcherRole()" [routerLink]="[ '/ec/setting/ingredient']">{{ 'INGREDIENT' | translate }} </a>
+            <a class="dropdown-item" *ngIf="areOtherRoles() || isWorkerRole() || isDispatcherRole()" [routerLink]="[ '/ec/setting/chemical']">{{ 'INGREDIENT' | translate }} </a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/kind']">{{ 'KIND' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/part']">{{ 'PART' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/material']">{{ 'MATERIAL' | translate }}</a>
@@ -41,6 +53,9 @@
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/decentralization']">{{ 'Decentralization'| translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/scaling-setting']">{{ 'Scaling Setting' | translate }}</a>
             <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/mailing']">{{ 'Mailing'| translate }}</a>
+            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/lunch-time']">{{ 'Lunch Time'| translate }}</a>
+            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/subpackage-capacity']">{{ 'Subpackage Capacity'| translate }}</a>
+
 
             <a class="dropdown-item" *ngIf="isAdminCostingRole()" [routerLink]="[ '/ec/setting/costing']">{{ 'Cost' | translate }}</a>
             </div>

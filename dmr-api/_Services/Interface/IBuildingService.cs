@@ -10,11 +10,17 @@ namespace DMR_API._Services.Interface
 {
    public interface IBuildingService : IECService<BuildingDto>
     {
-        Task<IEnumerable<HierarchyNode<BuildingDto>>> GetAllAsTreeView();
+        Task<IEnumerable<HierarchyNode<BuildingTreeDto>>> GetAllAsTreeView();
         Task<List<BuildingDto>> GetBuildings();
         Task<object> GetBuildingsForSetting();
         Task<object> CreateMainBuilding(BuildingDto buildingDto);
         Task<object> CreateSubBuilding(BuildingDto buildingDto);
         Task<bool> AddOrUpdateLunchTime(LunchTimeDto lunchTime);
+
+        Task<object> GetAllBuildingType();
+
+        Task<bool> CheckRoot();
+
+
     }
 }

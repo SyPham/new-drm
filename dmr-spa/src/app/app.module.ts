@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
-import { APP_INITIALIZER, NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JwtModule } from '@auth0/angular-jwt';
@@ -30,7 +30,7 @@ export function tokenGetter() {
 // resolvers
 import { ProjectResolver } from './_core/_resolvers/project.resolvers';
 import { ProjectDetailResolver } from './_core/_resolvers/projectDetail.resolvers';
-import { DropDownListAllModule, MultiSelectAllModule } from '@syncfusion/ej2-angular-dropdowns';
+import { DropDownListAllModule } from '@syncfusion/ej2-angular-dropdowns';
 
 import { MultiSelectModule } from '@syncfusion/ej2-angular-dropdowns';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -56,7 +56,6 @@ import {HttpClient} from '@angular/common/http';
 import {TranslateModule, TranslateLoader} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import { GridAllModule } from '@syncfusion/ej2-angular-grids';
-import { SignalrService } from './_core/_service/signalr.service';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {

@@ -408,55 +408,24 @@ namespace ScalingMachineService.Helpers
         public static int ConvertStringDayOfWeekToNumber(this string dayofweek)
         {
             var value = dayofweek.ToSafetyString().ToUpper();
-            int result;
-            switch (value)
+            var result = value switch
             {
-                case "MON":
-                    result = 2;
-                    break;
-                case "TUE":
-                    result = 3;
-                    break;
-                case "WED":
-                    result = 4;
-                    break;
-                case "THU":
-                    result = 5;
-                    break;
-                case "FRI":
-                    result = 6;
-                    break;
-                case "SAT":
-                    result = 7;
-                    break;
-                case "SUN":
-                    result = 8;
-                    break;
-                case "MONDAY":
-                    result = 2;
-                    break;
-                case "TUESDAY":
-                    result = 3;
-                    break;
-                case "WEDNESDAY":
-                    result = 4;
-                    break;
-                case "THURSDAY":
-                    result = 5;
-                    break;
-                case "FRIDAY":
-                    result = 6;
-                    break;
-                case "SATURDAY":
-                    result = 7;
-                    break;
-                case "SUNDAY":
-                    result = 8;
-                    break;
-                default:
-                    result = 0;
-                    break;
-            }
+                "MON" => 2,
+                "TUE" => 3,
+                "WED" => 4,
+                "THU" => 5,
+                "FRI" => 6,
+                "SAT" => 7,
+                "SUN" => 8,
+                "MONDAY" => 2,
+                "TUESDAY" => 3,
+                "WEDNESDAY" => 4,
+                "THURSDAY" => 5,
+                "FRIDAY" => 6,
+                "SATURDAY" => 7,
+                "SUNDAY" => 8,
+                _ => 0,
+            };
             return result;
         }
         public static string ConvertNumberDayOfWeekToString(this int? dayofweek)

@@ -33,7 +33,7 @@ namespace DMR_API.DTO
         public int SupplierID { get; set; }
         public int? GlueTypeID { get; set; }
         public int ModifiedBy { get; set; }
-
+        public double StandardCycle { get; set; }
         public double ReplacementFrequency { get; set; }
         public double ExpiredTime { get; set; }
         public double PrepareTime { get; set; }

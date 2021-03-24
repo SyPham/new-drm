@@ -12,4 +12,5 @@ export interface IGlue  {
     materialID: number;
     glueNameID: number;
     BPFCEstablishID: number;
+    glueIngredients: [];
 }

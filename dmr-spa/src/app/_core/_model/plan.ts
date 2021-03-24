@@ -15,6 +15,13 @@ export interface ITime {
     hour: number;
     minute: number;
 }
+export interface BPFC {
+    id: number;
+    artProcess: string;
+    glues: string[];
+    kinds: number[];
+    name: string;
+}
 export interface Consumtion {
     id: number;
     modelName: string;

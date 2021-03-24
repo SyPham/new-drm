@@ -33,6 +33,7 @@ export class GlueComponent implements OnInit {
     expiredTime: 0,
     glueNameID: 0,
     createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+    glueIngredients: []
   };
   show: boolean;
   pagination: Pagination;

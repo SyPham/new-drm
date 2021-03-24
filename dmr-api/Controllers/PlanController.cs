@@ -177,10 +177,35 @@ namespace DMR_API.Controllers
             }
             throw new Exception("Error deleting the work plan");
         }
+
         [HttpGet("{planID}/{bpfcID}")]
         public async Task<IActionResult> ChangeBPFC(int planID, int bpfcID)
         {
             var model = await _planService.ChangeBPFC(planID, bpfcID);
+
+            if (model.Status)
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveCreatePlan");
+                return NoContent();
+            }
+            return BadRequest(model.Message);
+        }
+        [HttpGet("{planID}")]
+        public async Task<IActionResult> Online(int planID)
+        {
+            var model = await _planService.Online(planID);
+
+            if (model.Status)
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveCreatePlan");
+                return NoContent();
+            }
+            return BadRequest(model.Message);
+        }
+        [HttpGet("{planID}")]
+        public async Task<IActionResult> Offline(int planID)
+        {
+            var model = await _planService.Offline(planID);
 
             if (model.Status)
             {
@@ -290,6 +315,13 @@ namespace DMR_API.Controllers
                 var bin = await _planService.ReportConsumptionCase1(reportParams);
                 return File(bin, "application/octet-stream", "reportConsumption1.xlsx");
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExportExcel(ExcelExportDto dto)
+        {
+            var res = await _planService.ExportExcel(dto);
+            return File(res.Data, "application/octet-stream", $"report{DateTime.Now.ToString("MMddyyyy")}.xlsx");
         }
         [HttpPost]
         public async Task<IActionResult> ReportConsumptionCase2(ReportParams reportParams)

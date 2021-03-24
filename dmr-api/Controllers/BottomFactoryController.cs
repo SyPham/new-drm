@@ -25,7 +25,7 @@ namespace DMR_API.Controllers
             _hubContext = hubContext;
         }
 
-       
+
         [HttpGet("{building}")]
         public async Task<IActionResult> ToDo(int building)
         {
@@ -33,7 +33,7 @@ namespace DMR_API.Controllers
             return Ok(batchs);
         }
 
-      
+
         [HttpGet("{building}")]
         public async Task<IActionResult> DispatchList(int building)
         {
@@ -52,19 +52,86 @@ namespace DMR_API.Controllers
             var batchs = await _factoryService.UndoneList(building);
             return Ok(batchs);
         }
+
         [HttpGet("{building}")]
         public async Task<IActionResult> Done(int building)
         {
             var batchs = await _factoryService.DoneList(building);
             return Ok(batchs);
         }
-        
-        [HttpPost]
-        public IActionResult ScanQRCode(ScanQRCodeParams scanQRCodeParams)
+        [HttpGet("{building}")]
+        public async Task<IActionResult> EVAUVList(int building)
         {
-            var batchs = _factoryService.ScanQRCode(scanQRCodeParams);
+            var batchs = await _factoryService.EVA_UVList(building);
             return Ok(batchs);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> ScanQRCode(ScanQRCodeParams scanQRCodeParams)
+        {
+            var batchs = await _factoryService.ScanQRCodeV110(scanQRCodeParams);
+            return Ok(batchs);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Print(BottomFactoryForPrintParams obj)
+        {
+            var batchs = await _factoryService.Print(obj.Subpackages);
+            return Ok(batchs);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SaveSubpackage(SubpackageParam obj)
+        {
+            var batchs = await _factoryService.SaveSubpackage(obj);
+            return Ok(batchs);
+        }
+        [HttpPost]
+        public async Task<IActionResult> AddDispatch(AddDispatchParams obj)
+        {
+            var batchs = await _factoryService.AddDispatch(obj);
+            return Ok(batchs);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateDispatch(UpdateDispatchParams obj)
+        {
+            var batchs = await _factoryService.UpdateDispatch(obj);
+            if(batchs.Status)
+                return NoContent();
+            return BadRequest("Lỗi máy chủ!");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GenerateScanByNumber(GenerateSubpackageParams obj)
+        {
+            var batchs = await _factoryService.GenerateScanByNumber(obj);
+            return Ok(batchs);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllDispatch([FromQuery] DispatchParamsDto obj)
+        {
+            var batchs = await _factoryService.GetAllDispatch(obj);
+            return Ok(batchs);
+        }
+
+        [HttpGet("{mixingInfoID}")]
+        public async Task<IActionResult> GetMixingInfo(int mixingInfoID)
+        {
+            var batchs = await _factoryService.GetMixingInfo(mixingInfoID);
+            return Ok(batchs);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetSubpackageCapacity()
+        {
+            var batchs = await _factoryService.GetSubpackageCapacity();
+            return Ok(batchs);
+        }
+
+        [HttpGet("{batch}/{glueNameID}/{buildingID}")]
+        public async Task<IActionResult> GetSubpackageLatestSequence(string batch, int glueNameID, int buildingID)
+        {
+            var batchs = await _factoryService.GetSubpackageLatestSequence(batch,glueNameID,buildingID);
+            return Ok(batchs);
+        }
     }
 }

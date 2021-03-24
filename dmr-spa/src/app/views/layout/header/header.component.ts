@@ -16,6 +16,7 @@ import { RoleService } from 'src/app/_core/_service/role.service';
 import { CookieService } from 'ngx-cookie-service';
 import { L10n, loadCldr, setCulture, Ajax } from '@syncfusion/ej2-base';
 import { DataService } from 'src/app/_core/_service/data.service';
+import { PermissionService } from 'src/app/_core/_service/permission.service';
 declare var require: any;
 
 @Component({
@@ -52,11 +53,12 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   public fields = { text: 'name', value: 'id' };
   public value: string;
   zh: any;
+  menus: any;
   constructor(
     private authService: AuthService,
     private roleService: RoleService,
     private alertify: AlertifyService,
-    private signalrService: SignalrService,
+    private permissionService: PermissionService,
     private headerService: HeaderService,
     private calendarsService: CalendarsService,
     private sanitizer: DomSanitizer,
@@ -94,6 +96,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.pageSize = 10;
     // this.signalrService.startConnection();
     this.userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    this.getMenu();
     this.getNotifications();
     this.onService();
     this.currentTime = moment().format('LTS');
@@ -107,6 +110,13 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     } else {
       this.avatar = this.sanitizer.bypassSecurityTrustResourceUrl('data:image/png;base64, ' + img);
     }
+  }
+
+  getMenu() {
+    this.permissionService.getMenuByUserPermission(this.userid).subscribe((menus: []) => {
+      this.menus = menus;
+      console.log(menus);
+    } );
   }
   areOtherRoles() {
     const roles = [this.ADMIN, this.SUPERVISOR, this.STAFF];

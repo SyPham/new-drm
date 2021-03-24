@@ -16,9 +16,11 @@ namespace DMR_API.DTO
         public string ModelNoName { get; set; }
         public string BPFCName { get; set; }
 
+        public string LineKind { get; set; }
         public string ArticleName { get; set; }
         public string ProcessName { get; set; }
         public List<string> Glues { get; set; }
+        public List<string> Kinds { get; set; }
         public int BPFCEstablishID { get; set; }
         public int HourlyOutput { get; set; }
         public int WorkingHour { get; set; }
@@ -30,8 +32,27 @@ namespace DMR_API.DTO
         public bool IsGenerate { get; set; }
         public bool IsChangeBPFC { get; set; }
         public bool IsOvertime { get; set; }
+        public bool IsOffline { get; set; }// v102
+
         public TimeDto StartTime { get; set; }
         public TimeDto EndTime { get; set; }
+
+        public int UpdatedBy { get; set; }
+
+        public int UpdatedOfflineBy { get; set; }// v102
+        public int UpdatedOnlineBy { get; set; }// v102
+
+        public int UpdatedOvertimeBy { get; set; }// v102
+        public int UpdatedNoOvertimeBy { get; set; }// v102
+
+        public DateTime? UpdatedOffline { get; set; }// v102
+        public DateTime? UpdatedOnline { get; set; }// v102
+
+        public DateTime? UpdatedOvertime { get; set; }// v102
+        public DateTime? UpdatedNoOvertime { get; set; }// v102
+
+        public DateTime? UpdatedTime { get; set; }// v102
+
 
         public DateTime DueDate { get; set; }
         public DateTime CreatedDate { get; set; }
@@ -153,5 +174,10 @@ namespace DMR_API.DTO
         public DateTime? DeliveryTime { get; set; }
 
 
+    }
+    public class ExcelExportDto
+    {
+        public int buildingID { get; set; }
+        public List<int> Plans { get; set; }
     }
 }

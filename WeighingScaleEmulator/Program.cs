@@ -40,33 +40,44 @@ namespace WeighingScaleEmulator
                 Parallel.Invoke(
                 async () =>
                 {
-                    double kg = Math.Round(RandomNumber(100, 134), 2);
-                    await _connection.InvokeAsync("Welcom", "3", kg + "", "g");
+                    //double kg = Math.Round(RandomNumber(100, 134), 2);
+                    Thread.Sleep(1000);
+
+                    await _connection.InvokeAsync("Welcom", "3", 255 + "", "g");
                 },
+                 async () =>
+                 {
+                     Thread.Sleep(1000);
+
+                     //double kg = Math.Round(RandomNumber(100, 134), 2);
+                     await _connection.InvokeAsync("Welcom", "3", 245 + "", "g");
+                 },
                 async () =>
                 {
+                    Thread.Sleep(1000);
+
                     double kg = Math.Round(RandomNumber(3.5, 4.2), 2);
-                    await _connection.InvokeAsync("Welcom", "4", kg + "", "k");
-                },
+                    await _connection.InvokeAsync("Welcom", "4", 5 + "", "k");
+                }
 
 
 
-                 async () =>
-                 {
-                     double kg = Math.Round(RandomNumber(100, 124), 2);
-                     await _connection.InvokeAsync("Welcom", "2", kg + "", "k");
-                 },
-                 async () =>
-                 {
-                     double kg = Math.Round(RandomNumber(3, 3.2), 2);
-                     await _connection.InvokeAsync("Welcom", "2", kg + "", "k");
-                 },
+                // async () =>
+                // {
+                //     double kg = Math.Round(RandomNumber(100, 124), 2);
+                //     await _connection.InvokeAsync("Welcom", "2", kg + "", "k");
+                // },
+                // async () =>
+                // {
+                //     double kg = Math.Round(RandomNumber(3, 3.2), 2);
+                //     await _connection.InvokeAsync("Welcom", "2", kg + "", "k");
+                // },
 
-                 async () =>
-                 {
-                     double g = Math.Round(RandomNumber(940, 950), 2);
-                     await _connection.InvokeAsync("Welcom", "1", g.ToString(), "g");
-                 }
+                // async () =>
+                // {
+                //     double g = Math.Round(RandomNumber(940, 950), 2);
+                //     await _connection.InvokeAsync("Welcom", "1", g.ToString(), "g");
+                // }
                 );
 
                 Thread.Sleep(1000);

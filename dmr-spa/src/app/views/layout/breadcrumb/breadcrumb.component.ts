@@ -37,8 +37,9 @@ export class BreadcrumbComponent implements OnInit {
     // If no routeConfig is avalailable we are on the root path
     let label = route.routeConfig && route.routeConfig.data ? route.routeConfig.data.breadcrumb : '';
     const isClickable = route.routeConfig && route.routeConfig.data && route.routeConfig.data.isClickable;
-    let path = route.routeConfig && route.routeConfig.data ? 'ec/' + route.routeConfig.path : '';
+    let path = route.routeConfig && route.routeConfig.data ? '' + route.routeConfig.path : '';
     // If the route is dynamic route such as ':id', remove it
+
     const lastRoutePart = path.split('/').pop();
     const isDynamicRoute = lastRoutePart.startsWith('/');
     if (isDynamicRoute && !!route.snapshot) {
@@ -48,7 +49,8 @@ export class BreadcrumbComponent implements OnInit {
     }
     // In the routeConfig the complete path is not available,
     // so we rebuild it each time
-    const nextUrl = path;
+    // const nextUrl = path;
+    const nextUrl = path ? `${url === '' ? 'ec' : url}/${path}` : url;
     const breadcrumb: IBreadcrumb = {
         label,
         url: nextUrl,
@@ -64,6 +66,9 @@ export class BreadcrumbComponent implements OnInit {
   }
   gotoRouter(data) {
     if (data.label === 'Ingredient' ) {
+      this.router.navigate(['/ec/setting/ingredient']);
+    }
+    if (data.label === 'Excution') {
       this.router.navigate(['/ec/setting/ingredient']);
     }
     if (data.label === 'Todolist' ) {
@@ -82,5 +87,7 @@ export class BreadcrumbComponent implements OnInit {
         this.router.navigate(['/ec/execution/todolist-2']);
       }
     }
+    this.router.navigate([data.url]);
+
   }
 }

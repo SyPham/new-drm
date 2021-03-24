@@ -21,6 +21,8 @@ namespace DMR_API.DTO
         public DateTime? BuildingDate { get; set; }
         public int ApprovalBy { get; set; }
         public string Season { get; set; }
+        public List<string> Glues { get; set; }
+        public List<int> Kinds { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
         public DateTime? UpdateTime { get; set; }

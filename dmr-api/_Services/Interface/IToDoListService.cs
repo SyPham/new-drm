@@ -11,8 +11,22 @@ namespace DMR_API._Services.Interface
     public interface IToDoListService
     {
         Task<ToDoListForReturnDto> Done(int buildingID);
+        /// <summary>
+        /// Kiểm tra đang thêm kế hoạch làm việc cho xưởng đế (STF) hay là thành hình (ASY)
+        /// </summary>
+        /// <param name="plans">Dach dánh ID kế hoạch làm việc.</param>
+        /// <returns>True là xưởng đế (STF), ngược lại thành hình (ASY)</returns>
+        Task<bool> CheckBuildingType(List<int> plans);
+
         Task<ToDoListForReturnDto> DispatchDone(int buildingID);
+
+        /// <summary>
+        /// Tạo danh sách việc làm cho thành hình (ASY)
+        /// </summary>
+        /// <param name="plans">Danh sách ID kế hoạch làm việc.</param>
+        /// <returns>Trả về 1 object chứa status và message</returns>
         Task<object> GenerateToDoList(List<int> plans);
+
         /// <summary>
         ///  Thêm bởi Quỳnh (Leo 1/28/2021 11:46)
         /// </summary>
@@ -22,10 +36,13 @@ namespace DMR_API._Services.Interface
         /// <param name="end"></param>
         /// <returns></returns>
         Task<ToDoListForReturnDto> ToDo(int buildingID);
+
         Task<ToDoListForReturnDto> ToDoAddition(int buildingID);
+
         Task<DispatchListForReturnDto> DispatchAddition(int buildingID);
         
         Task<DispatchListForReturnDto> DispatchList(int buildingID);
+
         Task<DispatchListForReturnDto> DispatchListDelay(int buildingID);
         /// <summary>
         ///  Thêm bởi Quỳnh (Leo 1/28/2021 11:46)

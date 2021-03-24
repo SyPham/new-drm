@@ -77,16 +77,15 @@ namespace DMR_API._Services.Services
             {
                 try
                 {
-
                     var glue = _mapper.Map<Glue>(model);
-                    // Neu chau co GlueName trong bang GlueName thi them moi va cap nhat ID vao Glues
+                    // Neu chua co GlueName trong bang GlueName thi them moi va cap nhat ID vao Glues
                     // nguoc lai thi update
                     var glueNameModal = _repoGlueName.FindAll(x => x.Name == model.Name).FirstOrDefault();
                     if (glueNameModal is null)
                     {
                         var glueNameItem = new GlueName { Name = model.Name };
                         _repoGlueName.Add(glueNameItem);
-                        _repoGlueName.Save();
+                        await _repoGlueName.SaveAll();
 
                         glue.GlueNameID = glueNameItem.ID;
                         glue.Name = model.Name;
@@ -134,8 +133,10 @@ namespace DMR_API._Services.Services
                             _repoGlue.Save();
                         }
                     }
+
+
                     _repoGlue.Add(glue);
-                    _repoGlue.Save();
+                    await _repoGlue.SaveAll();
                     transaction.Complete();
                     return true;
                 }
@@ -147,8 +148,6 @@ namespace DMR_API._Services.Services
             }
 
         }
-
-
 
         //Lấy danh sách Brand và phân trang
         public async Task<PagedList<GlueCreateDto>> GetWithPaginations(PaginationParams param)
@@ -254,9 +253,6 @@ namespace DMR_API._Services.Services
         {
             return await _repoGlue.FindAll().ProjectTo<GlueCreateDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
         }
-
-
-
 
         //Lấy Brand theo Brand_Id
         public GlueCreateDto GetById(object id)

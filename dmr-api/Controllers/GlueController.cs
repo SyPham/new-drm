@@ -75,7 +75,6 @@ namespace DMR_API.Controllers
             if (await _glueService.Update(glueIngredientDto))
             {
                 return NoContent();
-
             }
             return BadRequest($"Updating brand {glueIngredientDto.ID} failed on save");
         }

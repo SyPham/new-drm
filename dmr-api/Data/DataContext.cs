@@ -51,15 +51,33 @@ namespace DMR_API.Data
         public DbSet<GlueName> GlueName { get; set; }
         public DbSet<Station> Stations { get; set; }
         public DbSet<Mailing> Mailings { get; set; }
-        public DbSet<Period> Period { get; set; }
+        public DbSet<PeriodDispatch> PeriodDispatch { get; set; }
+        public DbSet<PeriodMixing> PeriodMixing { get; set; }
         public DbSet<Subpackage> Subpackages { get; set; }
         public DbSet<DispatchList> DispatchList { get; set; }
         public DbSet<DispatchListDetail> DispatchListDetail { get; set; }
+        public DbSet<Shake> Shakes { get; set; }
+        public DbSet<BuildingType> BuildingType { get; set; }
+        public DbSet<KindType> KindType { get; set; }
 
+        public DbSet<Models.Permission> Permisions { get; set; }
+
+        public DbSet<Models.Action> Actions { get; set; }
+
+        public DbSet<ActionInFunctionSystem> ActionInFunctionSystem { get; set; }
+
+        public DbSet<FunctionSystem> FunctionSystem { get; set; }
+        public DbSet<SubpackageCapacity> SubpackageCapacity { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             var ct = DateTime.Now;
             modelBuilder.Entity<BPFCEstablish>().HasKey(x => x.ID);
+
+            modelBuilder.Entity<Permission>()
+            .HasKey(a => new { a.ActionID, a.FunctionSystemID, a.RoleID });
+
+            modelBuilder.Entity<ActionInFunctionSystem>()
+            .HasKey(a => new { a.ActionID, a.FunctionSystemID });
             //var periodList = new List<Period>()
             //{
             //    {new Period

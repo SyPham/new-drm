@@ -17,6 +17,7 @@ namespace DMR_API._Services.Services
     {
 
         private readonly IBuildingRepository _repoBuilding;
+        private readonly IBuildingTypeRepository _repoBuildingType;
         private readonly IPeriodRepository _repoPeriod;
         private readonly IJWTService _jwtService;
         private readonly IUserRoleRepository _userRoleRepository;
@@ -24,8 +25,10 @@ namespace DMR_API._Services.Services
         private readonly ILunchTimeRepository _repoLunchTime;
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configMapper;
+        private readonly int ROOT_LEVEL = 1;
         public BuildingService(
             IBuildingRepository repoBuilding,
+            IBuildingTypeRepository repoBuildingType,
             IPeriodRepository repoPeriod,
             IJWTService jwtService,
             IUserRoleRepository userRoleRepository,
@@ -36,6 +39,7 @@ namespace DMR_API._Services.Services
             _configMapper = configMapper;
             _mapper = mapper;
             _repoBuilding = repoBuilding;
+            _repoBuildingType = repoBuildingType;
             _repoPeriod = repoPeriod;
             _jwtService = jwtService;
             _userRoleRepository = userRoleRepository;
@@ -65,20 +69,40 @@ namespace DMR_API._Services.Services
         public async Task<bool> Delete(object id)
         {
             var Building = _repoBuilding.FindById(id);
-            _repoBuilding.Remove(Building);
+            var data = _repoBuilding.FindAll().ToList().AsHierarchy(x => x.ID, y => y.ParentID, id).ToList();
+            var da = data.Flatten2(x => x.ChildNodes).ToList();
+            var list = new List<Building>();
+            foreach (var item in da)
+            {
+                list.Add(item.Entity);
+            }
+            _repoBuilding.RemoveMultiple(list);
+            //_repoBuilding.Remove(Building);
             return await _repoBuilding.SaveAll();
         }
 
         public async Task<bool> Update(BuildingDto model)
         {
-            var building = _mapper.Map<Building>(model);
-            _repoBuilding.Update(building);
-            return await _repoBuilding.SaveAll();
+            try
+            {
+                var building = _mapper.Map<Building>(model);
+                _repoBuilding.Update(building);
+
+                return await _repoBuilding.SaveAll();
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         public async Task<List<BuildingDto>> GetAllAsync()
         {
-            return await _repoBuilding.FindAll().ProjectTo<BuildingDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+            return await _repoBuilding.FindAll()
+                .Include(x => x.LunchTime)
+                .Include(x => x.Kind)
+                .ProjectTo<BuildingDto>(_configMapper)
+                .OrderByDescending(x => x.ID).ToListAsync();
         }
 
         public BuildingDto GetById(object id)
@@ -86,9 +110,14 @@ namespace DMR_API._Services.Services
             return _mapper.Map<Building, BuildingDto>(_repoBuilding.FindById(id));
         }
 
-        public async Task<IEnumerable<HierarchyNode<BuildingDto>>> GetAllAsTreeView()
+        public async Task<IEnumerable<HierarchyNode<BuildingTreeDto>>> GetAllAsTreeView()
         {
-            var lists = (await _repoBuilding.FindAll().Include(x => x.LunchTime).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Name).ToListAsync()).AsHierarchy(x => x.ID, y => y.ParentID);
+            var data = await _repoBuilding.FindAll()
+                .Include(x => x.LunchTime)
+                .Include(x => x.Kind)
+                .ProjectTo<BuildingTreeDto>(_configMapper)
+                .OrderByDescending(x => x.ID).ToListAsync();
+            var lists = data.OrderBy(x => x.Name).AsHierarchy(x => x.ID, y => y.ParentID);
             return lists;
         }
 
@@ -101,16 +130,18 @@ namespace DMR_API._Services.Services
                 case (int)Enums.Role.Admin:
                 case (int)Enums.Role.Supervisor:
                 case (int)Enums.Role.Staff:
-                    return await _repoBuilding.FindAll().Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
+                    return await _repoBuilding.FindAll().Include(x => x.LunchTime).Include(x => x.Kind).Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
                 case (int)Enums.Role.Worker:
                 case (int)Enums.Role.Dispatcher:
-                    return await _buildingUserRepository.FindAll(x => x.UserID == userid).Include(x => x.Building).Select(x => new BuildingDto
-                    {
-                        ID = x.Building.ID,
-                        Level = x.Building.Level,
-                        ParentID = x.Building.ParentID,
-                        Name = x.Building.Name
-                    }).ToListAsync();
+                    return await _buildingUserRepository.FindAll(x => x.UserID == userid)
+                        .Include(x => x.Building).ThenInclude(x => x.Kind).Select(x => new BuildingDto
+                        {
+                            ID = x.Building.ID,
+                            Level = x.Building.Level,
+                            ParentID = x.Building.ParentID,
+                            Name = x.Building.Name,
+                            IsSTF = x.Building.Kind == null ? false : true,
+                        }).ToListAsync();
                 default:
                     return new List<BuildingDto>();
             }
@@ -129,7 +160,7 @@ namespace DMR_API._Services.Services
                 {
                     return new { status = await _repoBuilding.SaveAll(), building = item };
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     return new { status = false };
                 }
@@ -176,126 +207,17 @@ namespace DMR_API._Services.Services
 
         public async Task<object> GetBuildingsForSetting() => await _repoBuilding.FindAll().Where(x => x.Level == 2).Select(x => new { x.ID, x.Name }).OrderBy(x => x.Name).ToListAsync();
 
-        public async Task<bool> AddOrUpdateLunchTime(LunchTimeDto lunchTimeDto)
+        public Task<bool> AddOrUpdateLunchTime(LunchTimeDto lunchTimeDto)
         {
-            var userID = _jwtService.GetUserID();
-            var ct = DateTime.Now;
+            throw new NotImplementedException();
 
-            using var transaction = new TransactionScopeAsync().Create();
-            {
-                try
-                {
-                    lunchTimeDto.EndTime = lunchTimeDto.EndTime.ToLocalTime();
-                    lunchTimeDto.StartTime = lunchTimeDto.StartTime.ToLocalTime();
-                    var lunchTime = _mapper.Map<LunchTime>(lunchTimeDto);
-                    var item = await _repoLunchTime.FindAll(x => x.BuildingID == lunchTime.BuildingID).FirstOrDefaultAsync();
-                    if (item is null)
-                    {
-                        _repoLunchTime.Add(lunchTime);
-                        await _repoLunchTime.SaveAll();
-
-                        // add period
-                        var periodList = new List<Period>()
-                {
-                    {new Period
-                    {
-                        LunchTimeID = lunchTime.ID,
-                        Sequence = 1,
-                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-
-                    }},
-                     {new Period
-                    {
-                          LunchTimeID = lunchTime.ID,
-                        Sequence = 2,
-                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-
-                    }},
-                      {new Period
-                    {
-                           LunchTimeID = lunchTime.ID,
-                        Sequence = 3,
-                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 30,00),
-
-                    }},
-                       {new Period
-                    {
-                            LunchTimeID = lunchTime.ID,
-                            Sequence = 4,
-                            StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
-                            EndTime = new DateTime(ct.Year,ct.Month,ct.Day,0, 00,00),
-
-                    }},
-                        {new Period
-                    {
-                             LunchTimeID = lunchTime.ID,
-                            Sequence = 5,
-                            StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
-                            EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-
-                    }},
-                        {new Period
-                    {
-                             LunchTimeID = lunchTime.ID,
-                        Sequence = 6,
-                        StartTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 0,00),
-                        EndTime = new DateTime(ct.Year,ct.Month,ct.Day, 0, 00,00),
-
-                    }}
-                };
-                        periodList.ForEach(x => { 
-                            x.CreatedBy = userID; 
-                            x.CreatedTime = DateTime.Now; 
-                        });
-                        _repoPeriod.AddRange(periodList);
-                        await _repoPeriod.SaveAll();
-                        transaction.Complete();
-                        return true;
-                    }
-                    else
-                    {
-
-                        if (lunchTimeDto.Content == "N/A")
-                        {
-                            _repoLunchTime.Remove(lunchTime);
-                            await _repoLunchTime.SaveAll();
-
-                            _repoPeriod.RemoveMultiple(_repoPeriod.FindAll(x => x.LunchTimeID == lunchTime.ID).ToList());
-                            await _repoPeriod.SaveAll();
-                        }
-                        else
-                        {
-                            item.BuildingID = lunchTimeDto.BuildingID;
-                            item.EndTime = lunchTimeDto.EndTime.ToLocalTime();
-                            item.StartTime = lunchTimeDto.StartTime.ToLocalTime();
-                            _repoLunchTime.Update(item);
-                            await _repoLunchTime.SaveAll();
-                            var periodList = _repoPeriod.FindAll(x => x.LunchTimeID == lunchTime.ID).ToList();
-                            periodList.ForEach(item =>
-                            {
-                                item.StartTime = new DateTime(ct.Year, ct.Month, ct.Day, 0, 0, 00);
-                                item.EndTime = new DateTime(ct.Year, ct.Month, ct.Day, 0, 00, 00);
-                                item.CreatedBy = userID;
-                                item.CreatedTime = DateTime.Now;
-                            });
-                            _repoPeriod.UpdateRange(periodList);
-                            await _repoPeriod.SaveAll();
-                        }
-                        transaction.Complete();
-                        return true;
-                    }
-                }
-                catch (Exception)
-                {
-                    transaction.Dispose();
-                    return false;
-                }
-
-            }
 
         }
+
+        public async Task<object> GetAllBuildingType()
+        => await _repoBuildingType.FindAll().ToListAsync();
+
+        public async Task<bool> CheckRoot()
+         => await _repoBuilding.FindAll(x => ROOT_LEVEL).AnyAsync();
     }
 }

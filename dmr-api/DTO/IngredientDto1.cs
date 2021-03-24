@@ -28,7 +28,7 @@ namespace DMR_API.DTO
         public int? GlueTypeID { get; set; }
         public int CreateBy { get; set; }
         public int ModifiedBy { get; set; }
-
+        public double StandardCycle { get; set; }
         public double DaysToExpiration { get; set; }
         public double Unit { get; set; }
         public double Real { get; set; }
