@@ -4,6 +4,6 @@ export interface IRole {
 }
 export interface IUserRole {
     roleID: number;
-    userID: string;
+    userID: any;
     isLock: boolean;
 }

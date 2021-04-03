@@ -35,6 +35,7 @@ using DMR_API.SignalrHub.Client;
 using System.Collections.Specialized;
 using Microsoft.AspNetCore.CookiePolicy;
 using DMR_API.Helpers.Extensions;
+using dmr_api.Data;
 
 namespace DMR_API
 {
@@ -75,7 +76,7 @@ namespace DMR_API
                     .AllowAnyHeader()
                     .AllowCredentials());
             });
-
+            services.AddTransient<DbInitializer>();
             //Auto Mapper
             services.AddAutoMapperExention();
 

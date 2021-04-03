@@ -1,32 +1,33 @@
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { MaterialService } from 'src/app/_core/_service/material.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 
 @Component({
   selector: 'app-material',
   templateUrl: './material.component.html',
   styleUrls: ['./material.component.css']
 })
-export class MaterialComponent implements OnInit {
+export class MaterialComponent extends BaseComponent implements OnInit {
   material: any;
   data: any;
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-  toolbarOptions = ['ExcelExport', 'Add', 'Edit', 'Delete', 'Cancel', 'Search'];
   @ViewChild('grid') grid: GridComponent;
   pageSettings = { pageCount: 20, pageSizes: true, pageSize: 10 };
   filterSettings = { type: 'Excel' };
   constructor(
     private materialService: MaterialService,
     private alertify: AlertifyService,
-    ) { }
+    private route: ActivatedRoute,
+    ) { super(); }
 
   ngOnInit() {
+    this.Permission(this.route);
     this.material = {
       id: 0,
       name: ''
     };
-    this.editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
     this.getAllMaterial();
   }
   // api

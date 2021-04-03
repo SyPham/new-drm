@@ -56,7 +56,7 @@
     <div class="row">
       <div class="col-md-12">
         <ejs-grid #grid
-          [dataSource]='periods' 
+          [dataSource]='periods'
           allowPaging='true'
           showColumnMenu='true'
           [allowSorting]='true'
@@ -66,7 +66,7 @@
           [filterSettings]='filterSettings'
           gridLines='Both'
           rowHeight='38'
-          (actionBegin)="actionBeginPeriodsGrid($event)" [editSettings]='editSettingsPeriod' [toolbar]='toolbarOptions'>
+          (actionBegin)="actionBeginPeriodsGrid($event)" [editSettings]='editSettings' [toolbar]='toolbarOptions'>
           <e-columns>
             <e-column field='period' headerText='Period' isPrimaryKey='true' width='60'>
               <ng-template #template let-data>
@@ -155,7 +155,7 @@
         <ejs-grid #grid [dataSource]='periodsDispatch' allowPaging='true' showColumnMenu='true' [allowSorting]='true'
           allowResizing='true' [allowExcelExport]='true' allowFiltering='true' [filterSettings]='filterSettings'
           gridLines='Both' rowHeight='38' (actionBegin)="actionBeginPeriodsDispatchGrid($event)"
-          [editSettings]='editSettingsPeriod' [toolbar]='toolbarOptions'>
+          [editSettings]='editSettings' [toolbar]='toolbarOptions'>
           <e-columns>
             <e-column field='period' headerText='Period' isPrimaryKey='true' width='60'>
               <ng-template #template let-data>

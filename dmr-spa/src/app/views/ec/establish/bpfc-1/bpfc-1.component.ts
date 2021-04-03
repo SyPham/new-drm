@@ -69,7 +69,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   modelNoClone: any;
   approvalStatus = false;
   createdStatus = false;
-  role = JSON.parse(localStorage.getItem('user')).User.Role;
+  role = JSON.parse(localStorage.getItem('user')).user.role;
   selIndex: number[];
   artQuantity: number;
   articleNoID: number;
@@ -491,8 +491,8 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       this.history.BPFCEstablishID = this.BPFCID;
       this.history.GlueID = this.glueid;
       this.history.After = `Consumption ${args.data.consumption}`;
-      this.history.UserID = JSON.parse(localStorage.getItem('user')).User.ID;
-      this.glue.createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+      this.history.UserID = JSON.parse(localStorage.getItem('user')).user.id;
+      this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
       this.bPFCEstablishService.AddHistoryBPFC(this.history).subscribe(() => {
         const bpfcInfo = {
           modelNameID: this.modelNameID,
@@ -511,7 +511,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         this.history.Before = args.data[0].name;
         this.history.BPFCEstablishID = this.BPFCID;
         this.history.GlueID = args.data[0].id;
-        this.history.UserID = JSON.parse(localStorage.getItem('user')).User.ID;
+        this.history.UserID = JSON.parse(localStorage.getItem('user')).user.id;
         this.bPFCEstablishService.AddHistoryBPFC(this.history).subscribe(() => {
           this.glueService.delete(args.data[0].id).subscribe(
             () => {
@@ -1281,7 +1281,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
               this.glue.id = 0;
               this.glue.name = '1';
               this.glue.BPFCEstablishID = this.BPFCID;
-              this.glue.createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+              this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
               this.saveGlue();
               // this.sortBySup(0);
             })
@@ -1292,7 +1292,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
           this.glue.id = 0;
           this.glue.name = '1';
           this.glue.BPFCEstablishID = this.BPFCID;
-          this.glue.createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+          this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
           this.saveGlue();
           // this.sortBySup(0);
         }
@@ -1605,7 +1605,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     this.modified = true;
   }
   getBuilding() {
-    const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = JSON.parse(localStorage.getItem('user')).user.id;
     // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
     //   res = res || {};
     //   if (res !== {}) {
@@ -1671,7 +1671,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   //   }
   // }
   finished() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     if (this.gridglue.getSelectedRowIndexes().length === 0) {
       this.alertify.warning('Hãy chọn vào 1 glue và tạo công thức sau đó mới bấm hoàn thành!', true);
     } else {
@@ -1814,7 +1814,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     //     flagConsumption = true;
     //   }
     //   if (flagAllow && flagPercentage && flagConsumption) {
-    //     const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    //     const userid = JSON.parse(localStorage.getItem('user')).user.id;
     //     this.bPFCEstablishService.approval(this.BPFCID, userid).subscribe((res) => {
     //       this.alertify.success('The BPFC has been approved!');
     //       this.createdStatus = this.approvalStatus;
@@ -1880,7 +1880,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         }
         flagConsumption = true;
       }
-      const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+      const userid = JSON.parse(localStorage.getItem('user')).user.id;
       this.bPFCEstablishService
         .approval(this.BPFCID, userid)
         .subscribe((res) => {
@@ -1945,7 +1945,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         flagConsumption = true;
       }
       if (flagAllow && flagPercentage && flagConsumption) {
-        const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+        const userid = JSON.parse(localStorage.getItem('user')).user.id;
         const obj = {
           Action: 'Done',
           BPFCEstablishID: this.BPFCID,
@@ -2189,7 +2189,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       articleNOID: this.articleNOIDClone,
       artProcessID: Number(this.artProcessIDClone),
       bpfcID: this.BPFCID,
-      cloneBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      cloneBy: JSON.parse(localStorage.getItem('user')).user.id,
     };
     this.clone(clone);
   }

@@ -21,6 +21,8 @@ export * from './ingredient/ingredient-modal/ingredient-modal.component';
 export * from './ingredient/ingredient.component';
 export * from './ingredient/print-qrcode/print-qrcode.component';
 export * from './costing/costing.component';
+export * from './role/role.component';
+export * from './role/privilege/privilege.component';
 
 
 

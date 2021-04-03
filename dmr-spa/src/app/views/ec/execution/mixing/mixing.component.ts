@@ -1217,7 +1217,7 @@ export class MixingComponent implements OnInit, OnDestroy {
       glueID: this.glueID,
       glueName: this.glueName,
       buildingID: this.BUIDLING_ID,
-      mixBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      mixBy: JSON.parse(localStorage.getItem('user')).user.id,
       estimatedStartTime: this.estimatedStartTime,
       estimatedFinishTime: this.estimatedFinishTime,
       startTime: this.startTime.toISOString(),

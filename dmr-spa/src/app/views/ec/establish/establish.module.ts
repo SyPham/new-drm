@@ -1,3 +1,4 @@
+import { CoreDirectivesModule } from './../../../_core/_directive/core.directives.module';
 // Angular
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -69,19 +70,7 @@ if (lang === 'vi') {
 }
 @NgModule({
   providers: [
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: appInitializer,
-    //   multi: true,
-    //   deps: [AuthService],
-    // },
-    DatePipe,
-    // { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: UnauthorizedInterceptor,
-    //   multi: true,
-    // },
+    DatePipe
   ],
   imports: [
     QRCodeModule,
@@ -114,6 +103,7 @@ if (lang === 'vi') {
     ToolbarModule,
     CheckBoxModule,
     MultiSelectModule,
+    CoreDirectivesModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,

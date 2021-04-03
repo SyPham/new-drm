@@ -22,7 +22,6 @@ export class BuildingModalComponent implements OnInit {
   buildingTypeID: number;
   buildingTypeData: object;
   isBuilding: boolean;
-
   constructor(
     public activeModal: NgbActiveModal,
     private buildingService: BuildingService,

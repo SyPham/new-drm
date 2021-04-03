@@ -23,15 +23,11 @@
         <label for="">Expiry Period (hr.)</label>
         <input type="text" [(ngModel)]="ingredient.expiredTime" class="form-control">
       </div>
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="">Replacement Frequency(hr.)</label>
         <input type="text" [(ngModel)]="ingredient.replacementFrequency" class="form-control">
-        
-      </div>
-      <div class="form-group">
-        <label for="">Standard Cycle</label>
-        <input type="text" [(ngModel)]="ingredient.standardCycle" class="form-control">
-      </div>
+
+      </div> -->
       <div class="form-group">
         <label for="">Choose Glue Type</label>
         <ejs-dropdownlist [dataSource]='glueTypeData' [fields]='fields' [allowFiltering]='true'
@@ -39,7 +35,7 @@
           placeholder="Select a glue type">
         </ejs-dropdownlist>
       </div>
-      
+
     </div>
     <div class="col-md-6">
       <div class="form-group">
@@ -56,11 +52,11 @@
         <input type="text" [(ngModel)]="ingredient.daysToExpiration" class="form-control">
       </div>
 
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="">Prepare Time(hr.)</label>
         <input type="text" [(ngModel)]="ingredient.prepareTime" class="form-control">
-      </div>
-     
+      </div> -->
+
       <div class="form-group">
         <label for="">Choose Supplier</label>
         <ejs-dropdownlist id='glueDropdownlist' #glueDropdownlist [dataSource]='supplier' [fields]='fieldsGlue'
@@ -74,8 +70,6 @@
       </div>
     </div>
   </div>
-
-
 </div>
 <div class="modal-footer justify-content-between">
   <button type="button" class="btn btn-outline-dark" (click)="activeModal.close('Close click')">Close</button>

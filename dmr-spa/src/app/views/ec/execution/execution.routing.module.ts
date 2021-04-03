@@ -1,9 +1,10 @@
 import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
+import { AuthGuard } from "src/app/_core/_guards/auth.guard";
 import {
   GlueHistoryComponent, IncomingComponent, MixingComponent,
   PlanComponent, PlanOutputQuantityComponent, ShakeComponent,
-  StirComponent, SummaryComponent, TodolistComponent,
+  StirComponent, TodolistComponent,
   DispatchComponent} from ".";
 const routes: Routes = [
   {
@@ -15,10 +16,11 @@ const routes: Routes = [
           title: 'todolist',
           breadcrumb: 'Todolist'
         },
+        canActivate: [AuthGuard],
         children: [
           {
             path: '',
-            component: SummaryComponent,
+            component: TodolistComponent,
           },
           {
             path: 'stir',
@@ -50,8 +52,10 @@ const routes: Routes = [
         path: 'todolist-2',
         data: {
           title: 'todolist-2',
-          breadcrumb: 'To Do List 2'
+          breadcrumb: 'To Do List 2',
+          functionCode: 'To Do List 2'
         },
+        canActivate: [AuthGuard],
         children: [
           {
             path: '',
@@ -140,24 +144,30 @@ const routes: Routes = [
         component: PlanComponent,
         data: {
           title: 'Workplan',
-          breadcrumb: 'Work Plan'
-        }
+          breadcrumb: 'Work Plan',
+          functionCode: 'Work Plan'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'output-quantity',
         component: PlanOutputQuantityComponent,
         data: {
           title: 'Output Quantity',
-          breadcrumb: 'Output Quantity'
-        }
+          breadcrumb: 'Output Quantity',
+          functionCode: 'Output Quantity'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'incoming',
         component: IncomingComponent,
         data: {
           title: 'Stock',
-          breadcrumb: 'Stock'
-        }
+          breadcrumb: 'Stock',
+          functionCode: 'Stock'
+        },
+        canActivate: [AuthGuard]
       }
     ]
   }

@@ -166,7 +166,7 @@ export class IncomingComponent implements OnInit, OnDestroy, AfterViewInit {
         const chemical = this.findIngredientCode(qrcode);
         if (this.checkin === true) {
           if (this.checkCode === true) {
-            const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+            const userID = JSON.parse(localStorage.getItem('user')).user.id;
             this.ingredientService.scanQRCodeFromChemicalWareHouse(res.QRCode, this.buildingName, userID).subscribe((status: any) => {
               if (status === true) {
                 this.getAllIngredientInfoByBuilding();
@@ -179,7 +179,7 @@ export class IncomingComponent implements OnInit, OnDestroy, AfterViewInit {
           }
         } else {
           if (this.checkCode === true) {
-            const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+            const userID = JSON.parse(localStorage.getItem('user')).user.id;
             this.ingredientService.scanQRCodeOutput(res.QRCode, this.buildingName, userID).subscribe((status: any) => {
               if (status === true) {
                 this.getAllIngredientInfoOutputByBuilding();

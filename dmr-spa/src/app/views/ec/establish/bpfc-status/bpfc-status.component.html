@@ -175,8 +175,8 @@
 
         </div>
         <div class="modal-footer">
-            <button type="submit" (click)='release()' *ngIf="level !== 3 && level !== 4" class="btn btn-success">Release</button>
-            <button type="submit" (click)='reject()' *ngIf="level !== 3 && level !== 4" class="btn btn-warning">Reject</button>
+            <button type="submit" (click)='release()' appPermission appFunction="BPFC Status" appAction="RELEASE" class="btn btn-success">Release</button>
+            <button type="submit" (click)='reject()' appPermission appFunction="BPFC Status" appAction="REJECT" class="btn btn-warning">Reject</button>
             <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">Close</button>
         </div>
         <div class="modal-body">
@@ -189,7 +189,7 @@
                                     <div class="panel-body">
                                         <textarea class="form-control" [(ngModel)]="content" placeholder="write a comment..." rows="3"></textarea>
                                         <br>
-                                        <button type="button" (click)='createComment()' class="btn btn-info pull-right">Post</button>
+                                        <button type="button" (click)='createComment()'  appPermission appFunction="BPFC Status" appAction="POST" class="btn btn-info pull-right">Post</button>
                                         <div class="clearfix"></div>
                                         <hr>
                                         <ul class="media-list" style="padding: 0;">

@@ -13,110 +13,16 @@
 
     <div class="collapse navbar-collapse order-3" id="navbarCollapse">
       <ul class="navbar-nav">
-          <li class="nav-item dropdown" *ngIf="1!== 1" >
+          <li class="nav-item dropdown" *ngFor="let item of menus">
             <a class="nav-link dropdown-toggle" style="cursor: pointer" id="navbarDropdown" role="button" data-toggle="dropdown"
               aria-haspopup="true" aria-expanded="false">
-              {{ 'System' }}
+              {{ item.module | translate }}
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" [routerLink]="[ '/ec/system/module']">{{ 'Module' }}</a>
-              <a class="dropdown-item" [routerLink]="[ '/ec/system/function']">{{ 'Function' }}</a>
-              <a class="dropdown-item" [routerLink]="[ '/ec/system/action']">{{ 'Action' }}</a>
-              <a class="dropdown-item" [routerLink]="[ '/ec/system/role']">{{ 'Role' }}</a>
-              <a class="dropdown-item" [routerLink]="[ '/ec/system/action-in-function']">{{ 'Action In Function' }}</a>
-              <a class="dropdown-item" [routerLink]="[ '/ec/system/version']">{{ 'Version' }}</a>
+              <a class="dropdown-item" *ngFor="let subItem of item.children"
+               [routerLink]="[ subItem.url]">{{ subItem.code | translate }}</a>
             </div>
           </li>
-        <li class="nav-item dropdown" *ngIf="level === ADMIN_COSTING">
-          <a class="nav-link dropdown-toggle" style="cursor: pointer" id="navbarDropdown" role="button"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ 'SETTING' | translate }}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" [routerLink]="[ '/ec/setting/costing']">{{ 'Cost' | translate }}</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown" *ngIf="areOtherRoles() || level === WORKER || level === DISPATCHER">
-          <a class="nav-link dropdown-toggle" style="cursor: pointer" id="navbarDropdown" role="button"
-            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            {{ 'SETTING' | translate }}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/account']">{{ 'ACCOUNT1' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building']">{{ 'BUILDING' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/supplier']">{{ 'SUPPLIER' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles() || isWorkerRole() || isDispatcherRole()" [routerLink]="[ '/ec/setting/chemical']">{{ 'INGREDIENT' | translate }} </a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/kind']">{{ 'KIND' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/part']">{{ 'PART' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/material']">{{ 'MATERIAL' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/glue-type']">{{ 'Glue Type' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building-setting']">{{ 'Building Setting' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/building-lunch-time']">{{ 'Building LunchTime' | translate }} </a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/decentralization']">{{ 'Decentralization'| translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/scaling-setting']">{{ 'Scaling Setting' | translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/mailing']">{{ 'Mailing'| translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/lunch-time']">{{ 'Lunch Time'| translate }}</a>
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/setting/subpackage-capacity']">{{ 'Subpackage Capacity'| translate }}</a>
-
-
-            <a class="dropdown-item" *ngIf="isAdminCostingRole()" [routerLink]="[ '/ec/setting/costing']">{{ 'Cost' | translate }}</a>
-            </div>
-        </li>
-        <li class="nav-item dropdown"
-          *ngIf="areOtherRoles()">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-            {{ 'ESTABLISH' | translate }}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item"
-              [routerLink]="[ '/ec/establish/bpfc-schedule']">{{ 'BPFC_SCHEDULE' | translate }}</a>
-              <a class="dropdown-item" [routerLink]="[ '/ec/establish/bpfc-1']">{{ 'BPFC' | translate }}</a>
-              <!-- <a class="dropdown-item" [routerLink]="[ '/ec/establish/bpfc']">{{ 'New BPFC' | translate }} </a> -->
-            <a class="dropdown-item" *ngIf="isAdminRole() || isSupervisorRole()" [routerLink]="[ '/ec/establish/bpfc-status']">{{ 'BPFC_STATUS' | translate }}</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown"
-          *ngIf="areOtherRoles() || isWorkerRole() || isDispatcherRole()">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-            {{ 'EXECUTION' | translate }}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" [routerLink]="[ '/ec/execution/workplan']">{{ 'WORK_PLAN' | translate }}</a>
-            <a class="dropdown-item" [routerLink]="[ '/ec/execution/incoming']">{{'INCOMING_LABEL' | translate}}</a>
-            <a class="dropdown-item" [routerLink]="[ '/ec/execution/todolist-2']">{{ 'TODOLIST' | translate }} 2</a>
-            <a class="dropdown-item" [routerLink]="[ '/ec/execution/output-quantity']">{{ 'OUTPUT_QUANTITY' | translate }}</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown"
-          *ngIf="areOtherRoles()">
-          <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-            {{'TROUBLESHOOTING_LABEL' | translate}}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" *ngIf="areOtherRoles()" [routerLink]="[ '/ec/troubleshooting/search']">{{'SEARCH_LABEL' | translate}}</a>
-            <a class="dropdown-item"  *ngIf="areOtherRoles()"
-              [routerLink]="[ '/ec/troubleshooting/Abnormal-List']">{{'BLACK_LIST_LABEL' | translate}}</a>
-          </div>
-        </li>
-        <li class="nav-item dropdown"
-          *ngIf="isAdminRole() || isSupervisorRole()">
-          <a class="nav-link dropdown-toggle" id="navbarDropdown" role="button" data-toggle="dropdown"
-            aria-haspopup="true" aria-expanded="false">
-            {{ 'REPORT' | translate }}
-          </a>
-          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <a class="dropdown-item" *ngIf="isAdminRole() || isSupervisorRole()" [routerLink]="[ '/ec/report/consumption']" >{{ 'Cost' | translate }}</a>
-            <a class="dropdown-item" [routerLink]="[ '/ec/report/consumption-1']" >{{ 'CONSUMPTION_LABEL' | translate }} 1</a>
-            <a class="dropdown-item" [routerLink]="[ '/ec/report/consumption-2']" >{{ 'CONSUMPTION_LABEL' | translate }} 2</a>
-            <a class="dropdown-item" [routerLink]="[ '/ec/report/inventory']">{{'INVENTORY_LABEL' | translate}}</a>
-            <a class="dropdown-item"
-              [routerLink]="[ '/ec/report/delivered-history']">{{'DELIVERED_HISTORY_LABEL' | translate}}</a>
-          </div>
-        </li>
-
       </ul>
     </div>
 
@@ -130,7 +36,7 @@
         <a class="nav-link">
           <i class="fa fa-sign-out"></i>
           <img [src]="avatar" class="user-image img-circle elevation-2" [alt]="currentUser" />
-          <span class="font-weight-bold text-danger">{{ currentUser | titlecase  }}</span>
+          <span class="font-weight-bold text-danger">{{ currentUser  }}</span>
         </a>
       </li>
       <li class="nav-item">

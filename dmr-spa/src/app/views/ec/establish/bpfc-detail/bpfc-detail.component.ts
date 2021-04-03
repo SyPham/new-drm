@@ -70,7 +70,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   modelNoClone: any;
   approvalStatus = false;
   createdStatus = false;
-  role = JSON.parse(localStorage.getItem('user')).User.Role;
+  role = JSON.parse(localStorage.getItem('user')).user.role;
   selIndex: number[];
   artQuantity: number;
   articleNoID: number;
@@ -598,8 +598,8 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       this.history.BPFCEstablishID = this.BPFCID;
       this.history.GlueID = this.glueid;
       this.history.After = `Consumption ${args.data.consumption}`;
-      this.history.UserID = JSON.parse(localStorage.getItem('user')).User.ID;
-      this.glue.createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+      this.history.UserID = JSON.parse(localStorage.getItem('user')).user.id;
+      this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
       this.bPFCEstablishService.AddHistoryBPFC(this.history).subscribe(() => {
         const bpfcInfo = {
           modelNameID: this.modelNameID,
@@ -618,7 +618,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         this.history.Before = args.data[0].name;
         this.history.BPFCEstablishID = this.BPFCID;
         this.history.GlueID = args.data[0].id;
-        this.history.UserID = JSON.parse(localStorage.getItem('user')).User.ID;
+        this.history.UserID = JSON.parse(localStorage.getItem('user')).user.id;
         this.bPFCEstablishService.AddHistoryBPFC(this.history).subscribe(() => {
           this.glueService.delete(args.data[0].id).subscribe(
             () => {
@@ -1387,7 +1387,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
                 materialID: null,
                 consumption: '',
                 expiredTime: 0,
-                createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+                createdBy: JSON.parse(localStorage.getItem('user')).user.id,
                 glueNameID: 0,
                 glueIngredients: []
               };
@@ -1411,7 +1411,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
             materialID: null,
             consumption: '',
             expiredTime: 0,
-            createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+            createdBy: JSON.parse(localStorage.getItem('user')).user.id,
             glueNameID: 0,
             glueIngredients: []
           };
@@ -1723,7 +1723,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
     this.modified = true;
   }
   getBuilding() {
-    const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = JSON.parse(localStorage.getItem('user')).user.id;
     // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
     //   res = res || {};
     //   if (res !== {}) {
@@ -1789,7 +1789,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
   //   }
   // }
   finished() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     if (this.gridglue.getSelectedRowIndexes().length === 0) {
       this.alertify.warning(
         'Hãy chọn vào 1 glue và tạo công thức sau đó mới bấm hoàn thành!',
@@ -1928,7 +1928,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         flagConsumption = true;
       }
-      const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+      const userid = JSON.parse(localStorage.getItem('user')).user.id;
       this.bPFCEstablishService
         .approval(this.BPFCID, userid)
         .subscribe((res) => {
@@ -2004,7 +2004,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
         flagConsumption = true;
       }
       if (flagAllow && flagPercentage && flagConsumption) {
-        const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+        const userid = JSON.parse(localStorage.getItem('user')).user.id;
         const obj = {
           Action: 'Done',
           BPFCEstablishID: this.BPFCID,
@@ -2238,7 +2238,7 @@ export class BpfcDetailComponent implements OnInit, AfterViewInit, OnDestroy {
       artProcessID: Number(this.artProcessIDLeo),
       bpfcID: this.BPFCIDLeo,
       name: this.articleNoNewLeo,
-      cloneBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      cloneBy: JSON.parse(localStorage.getItem('user')).user.id,
     };
 
     this.clone(clone);

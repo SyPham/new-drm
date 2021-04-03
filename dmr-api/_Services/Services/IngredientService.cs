@@ -690,5 +690,24 @@ namespace DMR_API._Services.Services
                                             .OrderByDescending(x => x.ID)
                                             .ToListAsync();
         }
+
+        public async Task<ResponseDetail<object>> Rate()
+        {
+            var model = await _repoIngredient.FindAll(x => x.isShow).Select(x=> new {
+                x.MaterialNO, x.VOC, x.DaysToExpiration, x.Unit, x.ExpiredTime
+            }).ToListAsync();
+            var total = model.Count;
+            var complete = model.Where(x => x.MaterialNO != "" && x.VOC > 0 && x.ExpiredTime > 0 && x.DaysToExpiration > 0 && x.Unit > 0
+            ).Count();
+            var rate = Math.Round((complete / (double)total) * 100);
+           return new ResponseDetail<object>{
+               Data = new {
+                   Total = total,
+                   Complete = complete,
+                   CompleteRate =rate
+               },
+               Status = true
+           };
+        }
     }
 }

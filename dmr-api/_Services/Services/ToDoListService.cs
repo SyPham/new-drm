@@ -514,7 +514,7 @@ namespace DMR_API._Services.Services
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
                 throw;
             }
 
@@ -888,7 +888,7 @@ namespace DMR_API._Services.Services
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
                 throw;
             }
 

@@ -40,7 +40,10 @@
               "./node_modules/alertifyjs/build/alertify.min.js",
               "./node_modules/sweetalert2/dist/sweetalert2.js",
               "./node_modules/bootstrap4-toggle/js/bootstrap4-toggle.min.js",
-              "./node_modules/intro.js/intro.js"
+              "./node_modules/intro.js/intro.js",
+               "./node_modules/@ckeditor/ckeditor5-build-classic/build/translations/vi.js" ,
+               "./node_modules/@ckeditor/ckeditor5-build-classic/build/translations/en-au.js"
+
             ]
           },
           "configurations": {

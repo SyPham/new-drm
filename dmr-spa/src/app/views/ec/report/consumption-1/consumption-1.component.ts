@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { PlanService } from '../../../../_core/_service/plan.service';
 import { Consumtion } from '../../../../_core/_model/plan';
 import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
@@ -17,6 +18,7 @@ import { FilteringEventArgs } from '@syncfusion/ej2-angular-dropdowns';
 import { Query } from '@syncfusion/ej2-data/';
 import { Tooltip } from '@syncfusion/ej2-angular-popups';
 import { IRole } from 'src/app/_core/_model/role';
+import { ActionConstant } from 'src/app/_core/_constants';
 const BUILDING_LEVEL = 2;
 const WORKER = 4;
 const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
@@ -25,13 +27,11 @@ const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
   templateUrl: './consumption-1.component.html',
   styleUrls: ['./consumption-1.component.scss']
 })
-export class Consumption1Component implements OnInit {
+export class Consumption1Component extends BaseComponent implements OnInit {
   @ViewChild('cloneModal') public cloneModal: TemplateRef<any>;
   @ViewChild('planForm')
   public orderForm: FormGroup;
   public pageSettings: PageSettingsModel;
-  public toolbarOptions: object;
-  public editSettings: object;
   level: number;
   public role: IRole;
   public building: IBuilding[];
@@ -74,23 +74,25 @@ export class Consumption1Component implements OnInit {
     // }
   }
   constructor(
-    private route: ActivatedRoute,
     private alertify: AlertifyService,
     public modalService: NgbModal,
     private planService: PlanService,
     public datePipe: DatePipe,
     private spinner: NgxSpinnerService,
     private buildingService: BuildingService,
+    private route: ActivatedRoute,
   ) {
+    super();
     this.buildingID = +localStorage.getItem('buildingID');
   }
-  ngOnInit(): void {
+
+  ngOnInit() {
+    this.Permission(this.route);
     this.startDate = new Date();
     this.endDate = new Date();
     this.role = ROLE;
     this.level = JSON.parse(localStorage.getItem('level')).level;
     this.pageSettings = { pageCount: 20, pageSizes: ['All', 100], pageSize: 100 };
-    this.toolbarOptions = ['ExcelExport', 'Search'];
     if (this.buildingID === 0) {
       this.getBuilding(() => {
         this.alertify.message('Please select a building!', true);
@@ -99,6 +101,30 @@ export class Consumption1Component implements OnInit {
       this.getBuilding(() => {
         this.consumptionByLineCase1();
       });
+    }
+  }
+  Permission(route: ActivatedRoute) {
+    const functionCode = route.snapshot.data.functionCode;
+    this.functions = JSON.parse(localStorage.getItem('functions')).filter(x => x.functionCode === functionCode) || [];
+    for (const item of this.functions) {
+      const toolbarOptions = [];
+      for (const action of item.childrens) {
+        const optionItem = this.makeAction(action.code);
+        toolbarOptions.push(...optionItem.filter(Boolean));
+      }
+      toolbarOptions.push(...['Search']);
+      const uniqueOptionItem = toolbarOptions.filter((elem, index, self) => {
+        return index === self.indexOf(elem);
+      });
+      this.toolbarOptions = uniqueOptionItem;
+    }
+  }
+  makeAction(input: string): any[] {
+    switch (input) {
+      case ActionConstant.EXCEL_EXPORT:
+          return ['ExcelExport'];
+      default:
+        return [undefined];
     }
   }
   headerCellInfo(args) {
@@ -174,8 +200,11 @@ export class Consumption1Component implements OnInit {
     this.consumptionByLineCase1();
   }
   toolbarClick(args: any): void {
-    if (args.item.id.indexOf('excelexport') !== -1) {
+    switch (args.item.id) {
+      /* tslint:disable */
+      case 'grid_excelexport':
         this.reportConsumptionCase1();
+        break;
     }
   }
   tooltip(data) {

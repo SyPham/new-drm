@@ -9,7 +9,6 @@
           </button>
         </div>
       </div>
-
       <ejs-treegrid #treeGrid [dataSource]='data' [toolbar]='toolbarOptions' [treeColumnIndex]='1'
         [editSettings]='editSettingsTree' childMapping='childNodes'
         (actionComplete)="actionComplete($event)"
@@ -24,7 +23,8 @@
               {{NO(data.index)}}
             </ng-template>
           </e-column>
-
+            <e-column field='entity.code' headerText='Function Code' width='200' textAlign='Center'>
+            </e-column>
             <e-column field='entity.name' headerText='Function Name' width='200' textAlign='Center'>
             </e-column>
 

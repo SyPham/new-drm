@@ -1,3 +1,5 @@
+import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
+import { VersionService } from './../../../_core/_service/version.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HubConnectionState } from '@microsoft/signalr';
 import * as signalr from '../../../../assets/js/ec-client.js';
@@ -12,11 +14,23 @@ export class FooterComponent implements OnInit {
   userID: number;
   userName: any;
   modalReference: any;
-  constructor(public modalService: NgbModal) {
-    this.userName = JSON.parse(localStorage.getItem('user')).User.Username;
-    this.userID = +JSON.parse(localStorage.getItem('user')).User.ID;
+  data: [] = [];
+  firstItem: any;
+  constructor(public modalService: NgbModal,
+              private authenticationService: AuthenticationService,
+              private versionService: VersionService) {
+    // this.userName = JSON.parse(localStorage.getItem('user')).user.username;
+    // this.userID = +JSON.parse(localStorage.getItem('user')).user.id;
+    this.authenticationService.user$.subscribe( x => {
+      this.userName = x.username;
+      this.userID = x.id;
+    });
   }
   ngOnInit(): void {
+    this.versionService.getAllVersion().subscribe( (item: any) => {
+      this.data = item;
+      this.firstItem = item[0] || {};
+    });
     if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
       signalr.CONNECTION_HUB
         .invoke('CheckOnline', this.userID, this.userName)

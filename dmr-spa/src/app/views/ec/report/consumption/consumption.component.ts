@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { PlanService } from '../../../../_core/_service/plan.service';
 import { Plan } from '../../../../_core/_model/plan';
 import { Component, OnInit, ViewChild, TemplateRef } from '@angular/core';
@@ -14,6 +15,7 @@ import { BuildingService } from 'src/app/_core/_service/building.service';
 import { FilteringEventArgs } from '@syncfusion/ej2-angular-dropdowns';
 import { Query } from '@syncfusion/ej2-data/';
 import { EmitType } from '@syncfusion/ej2-base';
+import { ActionConstant } from 'src/app/_core/_constants';
 
 const WORKER = 4;
 const BUILDING_LEVEL = 2;
@@ -23,13 +25,11 @@ const BUILDING_LEVEL = 2;
   templateUrl: './consumption.component.html',
   styleUrls: ['./consumption.component.css']
 })
-export class ConsumptionComponent implements OnInit {
+export class ConsumptionComponent extends BaseComponent implements OnInit {
   @ViewChild('cloneModal') public cloneModal: TemplateRef<any>;
   @ViewChild('planForm')
   public orderForm: FormGroup;
   public pageSettings: PageSettingsModel;
-  public toolbarOptions: object;
-  public editSettings: object;
   startDate = new Date();
   endDate = new Date();
   bpfcID: number;
@@ -86,17 +86,21 @@ export class ConsumptionComponent implements OnInit {
   buildings: IBuilding[];
   buildingID = 0;
   constructor(
-    private route: ActivatedRoute,
     private alertify: AlertifyService,
     public modalService: NgbModal,
     private planService: PlanService,
     private bPFCEstablishService: BPFCEstablishService,
     public datePipe: DatePipe,
     private buildingService: BuildingService,
-    private spinner: NgxSpinnerService
-  ) { }
+    private spinner: NgxSpinnerService,
+    private route: ActivatedRoute,
+  ) {
+    super();
+    this.buildingID = +localStorage.getItem('buildingID');
+  }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    this.Permission(this.route);
     const now = new Date();
     this.endDate = new Date();
     this.level = JSON.parse(localStorage.getItem('level')).level;
@@ -104,16 +108,40 @@ export class ConsumptionComponent implements OnInit {
     this.editparams = { params: { popupHeight: '300px' } };
 
     this.editSettings = { showDeleteConfirmDialog: false, allowEditing: false, allowAdding: false, allowDeleting: false, mode: 'Normal' };
-    this.toolbarOptions = [
-      { text: 'Report', tooltipText: 'Report', prefixIcon: 'e-excelexport', id: 'report' },
-      { text: 'Report(new)', tooltipText: 'Report(new)', prefixIcon: 'e-excelexport', id: 'newReport' },
-    'Search'];
+
     this.getAll(this.startDate, this.endDate);
     this.getAllBPFC();
     const buildingID = JSON.parse(localStorage.getItem('level')).id;
     this.getAllLine(buildingID);
     this.getBuilding();
     this.ClearForm();
+  }
+  Permission(route: ActivatedRoute) {
+    const functionCode = route.snapshot.data.functionCode;
+    this.functions = JSON.parse(localStorage.getItem('functions')).filter(x => x.functionCode === functionCode) || [];
+    for (const item of this.functions) {
+      const toolbarOptions = [];
+      for (const action of item.childrens) {
+        const optionItem = this.makeAction(action.code);
+        toolbarOptions.push(...optionItem.filter(Boolean));
+      }
+      toolbarOptions.push(...['Search']);
+      const uniqueOptionItem = toolbarOptions.filter((elem, index, self) => {
+        return index === self.indexOf(elem);
+      });
+      this.toolbarOptions = uniqueOptionItem;
+    }
+  }
+  makeAction(input: string): any[] {
+    switch (input) {
+      case ActionConstant.EXCEL_EXPORT:
+        return [
+                { text: 'Report', tooltipText: 'Report', prefixIcon: 'e-excelexport', id: 'report' },
+                { text: 'Report(new)', tooltipText: 'Report(new)', prefixIcon: 'e-excelexport', id: 'newReport' },
+              ];
+      default:
+        return [undefined];
+    }
   }
   public onFilteringBuilding: EmitType<FilteringEventArgs> = (
     e: FilteringEventArgs
@@ -331,10 +359,10 @@ export class ConsumptionComponent implements OnInit {
   }
 
   toolbarClick(args: any): void {
-    if (args.item.id.indexOf('excelexport') !== -1) {
-      this.getReport({ startDate: this.startDate, endDate: this.endDate });
-    }
     switch (args.item.id) {
+      case 'grid_excelexport':
+        this.getReport({ startDate: this.startDate, endDate: this.endDate });
+        break;
       case 'Clone':
         this.openModal(this.cloneModal);
         break;

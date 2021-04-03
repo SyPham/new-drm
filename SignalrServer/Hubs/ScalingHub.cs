@@ -12,8 +12,9 @@ namespace SignalrServer.Hubs
         {
             await Clients.All.SendAsync("Welcom", scalingMachineID, message, unit);
         }
-        public async Task JoinHub(string machineID)
+        public Task JoinHub(string machineID)
         {
+           return Task.CompletedTask;
         }
     }
 }

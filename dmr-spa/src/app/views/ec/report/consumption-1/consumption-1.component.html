@@ -21,7 +21,7 @@
                   </div>
                   <div class="col-md-2">
                     <ejs-dropdownlist #modelNameDropdownlist [dataSource]='buildings' [fields]='fieldsBuildings' [allowFiltering]='true'
-                      [value]='buildingID' (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)' 
+                      [value]='buildingID' (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)'
                       placeholder="Select a building">
                     </ejs-dropdownlist>
                   </div>
@@ -36,18 +36,18 @@
                 </div>
             </div>
           </div>
-        <ejs-grid #grid [dataSource]='data' 
-          [searchSettings]="searchSettings" 
+        <ejs-grid #grid [dataSource]='data' id='grid'
+          [searchSettings]="searchSettings"
           [showColumnMenu]='true'
-          [allowPaging]='true' 
-          [allowSorting]='true' 
-          [allowResizing]='true' 
+          [allowPaging]='true'
+          [allowSorting]='true'
+          [allowResizing]='true'
           gridLines='Both'
           (dataBound)='dataBound()'
           (queryCellInfo)='queryCellInfoEvent($event)'
           (headerCellInfo)='headerCellInfo($event)'
-          [toolbar]='toolbarOptions' 
-          (toolbarClick)='toolbarClick($event)' 
+          [toolbar]='toolbarOptions'
+          (toolbarClick)='toolbarClick($event)'
           [sortSettings]='sortSettings'
           [pageSettings]='pageSettings'>
           <e-columns>

@@ -36,7 +36,7 @@ export class RoleService {
     return this.http.put(`${this.baseUrl}UserRole/IsLock`, userRole);
   }
   getRoleByUserID(userid: number) {
-    return this.http.get<IUserRole>(`${this.baseUrl}UserRole/GetRoleByUserID/${userid}`);
+    return this.http.get<any>(`${this.baseUrl}UserRole/GetRoleByUserID/${userid}`);
   }
   create(model) {
     return this.http.post(this.baseUrl + 'Role/Create', model);
@@ -46,5 +46,29 @@ export class RoleService {
   }
   delete(id: number) {
     return this.http.delete(this.baseUrl + 'Role/Delete/' + id);
+  }
+  getScreenFunctionAndAction(roleIDs: any) {
+    return this.http.post(`${this.baseUrl}Permission/GetScreenFunctionAndAction`, {
+      roleIDs
+    }).pipe(map((data: any[]) => {
+      const data2 = data;
+      for (const item of data2) {
+        const checkedNodes = [];
+        for (const subItem of item.fields.dataSource) {
+          for (const child of subItem.childrens) {
+            child.isChecked = child.status;
+            if (child.status) {
+              checkedNodes.push(child.id);
+            }
+          }
+          const flag = subItem.childrens.every(v => v.status === true);
+          if (flag) {
+            checkedNodes.push(subItem.id);
+            subItem.isChecked = flag;
+          }
+        }
+      }
+      return data2;
+    }));
   }
 }

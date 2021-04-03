@@ -28,7 +28,7 @@ export class GlueModalComponent implements OnInit {
     glueNameID: 0,
     consumption: '',
     expiredTime: 0,
-    createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+    createdBy: JSON.parse(localStorage.getItem('user')).user.id,
     BPFCEstablishID: 0,
     glueIngredients: []
   };

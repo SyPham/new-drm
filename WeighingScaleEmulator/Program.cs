@@ -52,6 +52,14 @@ namespace WeighingScaleEmulator
                      //double kg = Math.Round(RandomNumber(100, 134), 2);
                      await _connection.InvokeAsync("Welcom", "3", 495 + "", "g");
                  },
+
+                   async () =>
+                   {
+                       Thread.Sleep(1000);
+
+                       //double kg = Math.Round(RandomNumber(100, 134), 2);
+                       await _connection.InvokeAsync("Welcom", "3", 245 + "", "g");
+                   },
                 async () =>
                 {
                     Thread.Sleep(1000);

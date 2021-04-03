@@ -1,16 +1,18 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { ISupplier } from '../../../../_core/_model/Supplier';
 import { IngredientService } from '../../../../_core/_service/ingredient.service';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ActivatedRoute } from '@angular/router';
 @Component({
   selector: 'app-suppiler',
   templateUrl: './suppiler.component.html',
   styleUrls: ['./suppiler.component.css']
 })
 
-export class SuppilerComponent implements OnInit {
+export class SuppilerComponent extends BaseComponent implements OnInit {
   public pageSettings = { pageCount: 20, pageSizes: true, currentPage: 1, pageSize: 10 };
   public toolbarOptions = ['ExcelExport', 'Add', 'Edit', 'Delete', 'Cancel', 'Search'];
   public editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
@@ -27,10 +29,12 @@ export class SuppilerComponent implements OnInit {
   constructor(
     private alertify: AlertifyService,
     public modalService: NgbModal,
-    private ingredientService: IngredientService
-  ) { }
+    private ingredientService: IngredientService,
+    private route: ActivatedRoute,
+  ) { super(); }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    this.Permission(this.route);
     this.getAllSupplier();
   }
 

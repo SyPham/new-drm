@@ -12,6 +12,9 @@ import { IGlueType } from 'src/app/_core/_model/glue-type';
 export class GlueTypeModalComponent implements OnInit {
   @Input() title: string;
   @Input() glueType: IGlueType;
+  fields: object = { text: 'text', value: 'value' };
+  methods = [{ text: 'Stir', value: 'Stir' }, { text: 'Shaking', value: 'Shaking' } ];
+  method: any;
   constructor(
     public activeModal: NgbActiveModal,
     private glueTypeService: GlueTypeService,
@@ -28,9 +31,13 @@ export class GlueTypeModalComponent implements OnInit {
       return true;
     }
   }
+  onChangeMethod(args) {
+    this.method = args.itemData.value;
+  }
   createGlueType() {
     if (this.validation()) {
       if (this.glueType.parentID > 0) {
+        this.glueType.method = this.method;
         this.glueTypeService.createChild(this.glueType).subscribe(res => {
           this.alertify.success('The glue type has been created!!');
           this.activeModal.dismiss();

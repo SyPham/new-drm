@@ -1,12 +1,14 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { AuthGuard } from 'src/app/_core/_guards/auth.guard';
 import {
   AccountComponent, BuildingComponent, BuildingLunchTimeComponent,
   BuildingSettingComponent, CostingComponent, DecentralizationComponent,
   GlueTypeComponent,
   IngredientComponent, KindComponent, LunchTimeComponent, MailingComponent,
   MaterialComponent, PartComponent, PrintQRCodeComponent, ScalingSettingComponent,
-  SubpackageCapacityComponent, SuppilerComponent
+  SubpackageCapacityComponent, SuppilerComponent,
+  RoleComponent, PrivilegeComponent
 } from '.';
 const routes: Routes = [
   {
@@ -17,31 +19,39 @@ const routes: Routes = [
         component: AccountComponent,
         data: {
           title: 'Account',
-          breadcrumb: 'Account'
-        }
+          breadcrumb: 'Account',
+          functionCode: 'Account'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'building',
         component: BuildingComponent,
         data: {
           title: 'Building',
-          breadcrumb: 'Building'
-        }
+          breadcrumb: 'Building',
+          functionCode: 'Building'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'supplier',
         component: SuppilerComponent,
         data: {
           title: 'Supplier',
-          breadcrumb: 'Supplier'
-        }
+          breadcrumb: 'Supplier',
+          functionCode: 'Supllier Menu'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'chemical',
         data: {
           title: 'Chemical',
-          breadcrumb: 'Chemical'
+          breadcrumb: 'Chemical',
+          functionCode: 'Chemical'
         },
+        canActivate: [AuthGuard],
         children: [
           {
             path: '',
@@ -62,48 +72,60 @@ const routes: Routes = [
         component: KindComponent,
         data: {
           title: 'Kind',
-          breadcrumb: 'Kind'
-        }
+          breadcrumb: 'Kind',
+          functionCode: 'Kind'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'part',
         component: PartComponent,
         data: {
           title: 'Part',
-          breadcrumb: 'Part'
-        }
+          breadcrumb: 'Part',
+          functionCode: 'Part'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'material',
         component: MaterialComponent,
         data: {
           title: 'Material',
-          breadcrumb: 'Material'
-        }
+          breadcrumb: 'Material',
+          functionCode: 'Material'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'glue-type',
         component: GlueTypeComponent,
         data: {
           title: 'Glue Type',
-          breadcrumb: 'Glue Type'
-        }
+          breadcrumb: 'Glue Type',
+          functionCode: 'Glue Type'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'building-setting',
         component: BuildingSettingComponent,
         data: {
-          title: 'Building Setting',
-          breadcrumb: 'Building Setting'
-        }
+          title: 'RPM IoT',
+          breadcrumb: 'RPM IoT',
+          functionCode: 'RPM IoT'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'building-lunch-time',
         component: BuildingLunchTimeComponent,
         data: {
-          title: 'Building Lunch Time',
-          breadcrumb: 'Building Lunch Time'
-        }
+          title: 'Period',
+          breadcrumb: 'Period',
+          functionCode: 'Period'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'decentralization',
@@ -111,7 +133,8 @@ const routes: Routes = [
         data: {
           title: 'Decentralization',
           breadcrumb: 'Decentralization'
-        }
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'scaling-setting',
@@ -119,7 +142,8 @@ const routes: Routes = [
         data: {
           title: 'Scaling Setting',
           breadcrumb: 'Scaling Setting'
-        }
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'mailing',
@@ -127,7 +151,8 @@ const routes: Routes = [
         data: {
           title: 'Mailing',
           breadcrumb: 'Mailing'
-        }
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'lunch-time',
@@ -135,7 +160,8 @@ const routes: Routes = [
         data: {
           title: 'Lunch Time',
           breadcrumb: 'Lunch Time'
-        }
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'subpackage-capacity',
@@ -143,7 +169,8 @@ const routes: Routes = [
         data: {
           title: 'Subpackage Capacity',
           breadcrumb: 'Subpackage Capacity'
-        }
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'costing',
@@ -151,8 +178,30 @@ const routes: Routes = [
         data: {
           title: 'costing',
           breadcrumb: 'Costing'
-        }
+        },
+        canActivate: [AuthGuard]
       },
+      {
+        path: 'role',
+        data: {
+          title: 'Role',
+          functionCode: 'Role'
+        },
+        canActivate: [AuthGuard],
+        children: [
+          {
+            path: '',
+            component: RoleComponent
+          },
+          {
+            path: 'privilege/:id',
+            component: PrivilegeComponent,
+            data: {
+              title: 'Privilege'
+            }
+          }
+        ]
+      }
     ]
   }
 ];

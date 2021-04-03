@@ -1056,6 +1056,10 @@ namespace DMR_API.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
+
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
@@ -1067,7 +1071,7 @@ namespace DMR_API.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Module");
+                    b.ToTable("Modules");
                 });
 
             modelBuilder.Entity("DMR_API.Models.Part", b =>
@@ -1355,6 +1359,10 @@ namespace DMR_API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Code")
+                        .HasColumnType("nvarchar(50)")
+                        .HasMaxLength(50);
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -1936,6 +1944,9 @@ namespace DMR_API.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("int");
 
+                    b.Property<string>("Method")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double>("Minutes")
                         .HasColumnType("float");
 
@@ -2087,7 +2098,7 @@ namespace DMR_API.Migrations
                         .IsRequired();
 
                     b.HasOne("DMR_API.Models.Plan", "Plan")
-                        .WithMany()
+                        .WithMany("DispatchList")
                         .HasForeignKey("PlanID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

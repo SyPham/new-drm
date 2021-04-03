@@ -60,6 +60,9 @@ export class PermissionService {
   deleteFunction(id: number) {
     return this.http.delete(this.baseUrl + 'Permission/DeleteFunction/' + id);
   }
+  getActionInFunctionByRoleID(id: number) {
+    return this.http.get(this.baseUrl + 'Permission/GetActionInFunctionByRoleID/' + id);
+  }
 // #endregion
 
 
@@ -86,7 +89,7 @@ export class PermissionService {
   }
 
   putPermissionByRoleId(roleID, request) {
-    return this.http.put(this.baseUrl + 'Permission/GetMenuByUserPermission/' + roleID, request);
+    return this.http.put(this.baseUrl + 'Permission/putPermissionByRoleId/' + roleID, request);
   }
   postActionToFunction(functionID, request) {
     return this.http.post(this.baseUrl + 'Permission/PostActionToFunction/' + functionID, request);
@@ -96,5 +99,8 @@ export class PermissionService {
   }
   getScreenAction(functionID) {
     return this.http.get<[]>(this.baseUrl + 'Permission/GetScreenAction/' + functionID, {});
+  }
+  getScreenFunctionAndAction(roleID) {
+    return this.http.get<[]>(this.baseUrl + 'Permission/GetScreenFunctionAndAction/' + roleID, { });
   }
 }

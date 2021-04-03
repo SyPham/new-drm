@@ -56,6 +56,7 @@ import {HttpClient} from '@angular/common/http';
 import {TranslateModule, TranslateLoader} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import { GridAllModule } from '@syncfusion/ej2-angular-grids';
+import { CoreModule } from './_core/core.module';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -92,6 +93,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MentionModule,
     ImageCropperModule,
     UploaderModule,
+    CoreModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,
@@ -109,6 +111,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     })
   ],
   providers: [
+    AuthGuard,
     AlertifyService,
     AuthGuard,
     NgxSpinnerService,

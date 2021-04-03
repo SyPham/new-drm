@@ -9,16 +9,16 @@
     <div class="card-body table-responsive p-0">
       <ejs-treegrid #treegrid [dataSource]="data"
                     (contextMenuClick)='contextMenuClick($event)'
-                    (contextMenuOpen)='contextMenuOpen($event)' 
+                    (contextMenuOpen)='contextMenuOpen($event)'
                     (toolbarClick)='toolbarClick($event)'
                     [treeColumnIndex]='1'
                     allowSorting='true'
                     gridLines='Both'
                     (created)='created()'
-                    [editSettings]="editing"
+                    [editSettings]="editSettingsTree"
                     [contextMenuItems]='contextMenuItems'
                     (actionBegin)="actionBegin($event)"
-                    [toolbar]='toolbarOptions'
+                    [toolbar]='toolbarOptionsTree'
                     childMapping="childNodes"
                     allowExcelExport='true'
                     allowPdfExport='true'
@@ -30,12 +30,19 @@
           <e-column field="entity.level" textAlign='Center' width="80" [allowEditing]= 'false' isPrimaryKey="true" headerText="Level">
           </e-column>
           <e-column field="entity.title" textAlign='Left' headerText="Glue Type"> </e-column>
-          <e-column field="entity.minutes" textAlign='Center' headerText="Minutes"> 
+          <e-column field="entity.method" textAlign='Center' headerText="Method">
+            <ng-template #editTemplate let-data>
+              <ejs-dropdownlist [dataSource]='methods' [fields]='fields' [value]="data.method" [allowFiltering]='true'
+                (change)='onChangeMethod($event)'>
+              </ejs-dropdownlist>
+            </ng-template>
+          </e-column>
+          <e-column field="entity.minutes" textAlign='Center' headerText="Minutes">
             <ng-template #template let-data>
               {{data.entity.minutes}} minutes
-            </ng-template> 
+            </ng-template>
           </e-column>
-          <e-column field="entity.rpm" textAlign='Center' headerText="RPM"> </e-column>
+          <e-column field="entity.rpm" textAlign='Center' headerText="RPM/Cycle"> </e-column>
         </e-columns>
       </ejs-treegrid>
     </div>

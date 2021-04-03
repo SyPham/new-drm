@@ -88,12 +88,20 @@
 
     <div *ngIf="!show">
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12 d-flex justify-content-end align-items-center">
+            <div class="mr-2">
+              <ul class="list-unstyled">
+                <li class="text-danger">Complete: {{info.complete}}</li>
+                <li class="text-danger">Total: {{info.total}}</li>
+                <li class="text-danger">Complete Rate: {{info.completeRate}}%</li>
+              </ul>
+            </div>
           <span class="float-right text-green font-weight-bold mb-2">{{dataIsDone}}</span>
         </div>
       </div>
 
       <ejs-grid #ingredientGrid
+        id='grid'
         rowHeight='38'
         [dataSource]='data'
         [allowSelection]='true'
@@ -110,6 +118,7 @@
         gridLines='Both'
         (dataBound)='dataBound()'
         (rowDataBound)='rowDB($event)'
+        [editSettings]='editSettings'
         (headerCellInfo)='headerCellInfo($event)'
         (toolbarClick)='toolbarClick($event)'>
         <e-columns>
@@ -136,14 +145,12 @@
           <e-column field='glueType' headerText='Glue Type' textAlign='Center' width='130'>
             <ng-template #template let-data>{{data.glueType === '' ? "N/A": data.glueType}}</ng-template>
           </e-column>
-          <e-column field='replacementFrequency' headerText='RF (hr.)' textAlign='Center'  width='180'>
+          <!-- <e-column field='replacementFrequency' headerText='RF (hr.)' textAlign='Center'  width='180'>
             <ng-template #template let-data>{{data.replacementFrequency > 1 ? data.replacementFrequency + " hours" : data.replacementFrequency + " hour" }}</ng-template>
-          </e-column>
-          <e-column field='standardCycle' headerText='Standard Cycle' textAlign='Center' width='180'>
-          </e-column>
-          <e-column field='prepareTime' headerText='PT (hr.)' textAlign='Center' width='180'>
+          </e-column> -->
+          <!-- <e-column field='prepareTime' headerText='PT (hr.)' textAlign='Center' width='180'>
             <ng-template #template let-data>{{data.prepareTime > 1 ? data.prepareTime + " hours" : data.prepareTime + " hour"}}</ng-template>
-          </e-column>
+          </e-column> -->
           <e-column field='createdDate' type='date' format='MM-dd-yyyy' headerText='Created Date' width='160' textAlign='Center'>
           </e-column>
           <e-column field='Option' headerText='Option' textAlign='Center' width='150'>
@@ -152,14 +159,12 @@
                 <a routerLink="/ec/setting/chemical/print-qrcode/{{data.id}}/{{data.code}}/{{data.name}}"
                   class="btn btn-xs btn-success mr-2"><i class="fa fa-qrcode" aria-hidden="true"></i></a>
               </div>
-              <div class="btn-group" *ngIf="role.id === ADMIN || role.id === SUPERVISOR">
+              <div class="btn-group mr-2" appPermission appFunction="Chemical" appAction="EDIT">
                 <button type="button" (click)='openIngredientEditModalComponent(data)' class="btn btn-xs btn-primary"><i
                     class="fa fa-edit"></i></button>
               </div>
-              <div class="btn-group" *ngIf="role.id === ADMIN || role.id === SUPERVISOR">
-                <span style="color: transparent">|</span>
-              </div>
-              <div class="btn-group" *ngIf="role.id === ADMIN || role.id === SUPERVISOR">
+
+              <div class="btn-group" appPermission appFunction="Chemical" appAction="DELETE">
                 <button type="button" (click)='delete(data)' class="btn btn-xs btn-danger"><i class="fa fa-trash"></i></button>
               </div>
           </ng-template>

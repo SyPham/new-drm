@@ -32,7 +32,7 @@ export class GlueComponent implements OnInit {
     consumption: '',
     expiredTime: 0,
     glueNameID: 0,
-    createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+    createdBy: JSON.parse(localStorage.getItem('user')).user.id,
     glueIngredients: []
   };
   show: boolean;

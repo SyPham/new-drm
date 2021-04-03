@@ -1,3 +1,4 @@
+import { ResponseDetail } from './../_model/responseDetail';
 import { ISupplier } from './../_model/Supplier';
 import { Injectable } from '@angular/core';
 import { HttpHeaders, HttpClient, HttpParams } from '@angular/common/http';
@@ -69,6 +70,9 @@ export class IngredientService {
   }
   getAllIngredient() {
     return this.http.get<IIngredient[]>(this.baseUrl + 'ingredient/GetAll', {});
+  }
+  rate() {
+    return this.http.get<ResponseDetail<any>>(this.baseUrl + 'ingredient/Rate', {});
   }
   getAllGlueType() {
     return this.http.get<IGlueType[]>(this.baseUrl + 'ingredient/GetAllGlueType', {});

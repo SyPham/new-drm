@@ -601,10 +601,10 @@ namespace DMR_API._Services.Services
             var userID = _jwtService.GetUserID();
             var subpackageList = new List<Subpackage>();
             var capacity = _repoSubpackageCapacity.FindAll().FirstOrDefault();
-            var mixingInfo = _mixingInfoRepository.FindAll(x => x.ID == obj.MixingInfoID).Include(x=> x.MixingInfoDetails).FirstOrDefault();
+            var mixingInfo = _mixingInfoRepository.FindAll(x => x.ID == obj.MixingInfoID).Include(x => x.MixingInfoDetails).FirstOrDefault();
             var detail = mixingInfo.MixingInfoDetails.FirstOrDefault();
             var batch = detail.Batch;
-            var subpackages = _subpackageRepository.FindAll(x => x.Code.Contains(batch)).OrderByDescending(x=> x.Position).FirstOrDefault();
+            var subpackages = _subpackageRepository.FindAll(x => x.Code.Contains(batch)).OrderByDescending(x => x.Position).FirstOrDefault();
             var position = subpackages == null ? 0 : subpackages.Position;
             for (int i = 0; i <= obj.Can - 1; i++)
             {
@@ -721,19 +721,19 @@ namespace DMR_API._Services.Services
             .Include(x => x.GlueIngredients)
                 .ThenInclude(x => x.Ingredient)
             .FirstOrDefaultAsync(x => x.ID == scanQRCodeParams.GlueID);
-            
+
             var materialNO = glue.GlueIngredients.FirstOrDefault().Ingredient.MaterialNO;
             if (!materialNO.Equals(scanQRCodeParams.PartNO))
-             return new ResponseDetail<BottomFactoryForReturnDto>(
-                 new BottomFactoryForReturnDto(ingredient, null, 0), 
-                 false, 
-                 $"Vui lòng quét đúng mã QR của hóa chất {glue.Name}! Vui lòng thử lại!"
-                );
+                return new ResponseDetail<BottomFactoryForReturnDto>(
+                    new BottomFactoryForReturnDto(ingredient, null, 0),
+                    false,
+                    $"Vui lòng quét đúng mã QR của hóa chất {glue.Name}! Vui lòng thử lại!"
+                   );
             var code = await GenatateCodeForMixingInfo("");
-           var result = new BottomFactoryForReturnDto(ingredient, null, 0);
+            var result = new BottomFactoryForReturnDto(ingredient, null, 0);
             result.Code = code;
             result.Batch = scanQRCodeParams.BatchNO;
-           return new ResponseDetail<BottomFactoryForReturnDto>(result, true, "Không tìm thấy hóa chất này! Vui lòng thử lại!");
+            return new ResponseDetail<BottomFactoryForReturnDto>(result, true, "Không tìm thấy hóa chất này! Vui lòng thử lại!");
 
         }
 
@@ -1173,7 +1173,7 @@ namespace DMR_API._Services.Services
             }
             catch (Exception ex)
             {
-
+                Console.WriteLine(ex.Message);
                 throw;
             }
 
@@ -1614,10 +1614,14 @@ namespace DMR_API._Services.Services
 
             var dispatchlist = new List<DispatchListDto>();
 
-            var glues = plansModel.Where(x => x.KindTypeCode == KindTypeOption.SPE)
+            var specialglues = plansModel.Where(x => x.KindTypeCode == KindTypeOption.SPE)
                 .GroupBy(x => new { x.GlueName, x.GlueKindID, x.BuildingKindID })
                 .Where(x => x.Key.GlueKindID == x.Key.BuildingKindID).ToList();
-            foreach (var glue in glues)
+
+            var normalGlues = plansModel.Where(x => x.KindTypeCode == KindTypeOption.NOR)
+               .GroupBy(x => new { x.GlueName, x.GlueKindID, x.BuildingKindID })
+               .Where(x => x.Key.GlueKindID == x.Key.BuildingKindID).ToList();
+            foreach (var glue in normalGlues)
             {
                 foreach (var item in glue)
                 {
@@ -1711,6 +1715,42 @@ namespace DMR_API._Services.Services
                             }
                         }
                     }
+                }
+            }
+
+            foreach (var glue in specialglues)
+            {
+                foreach (var item in glue)
+                {
+                    var colorCode = 0;
+                    var startTime = DateTime.Now.TimeOfDay;
+                    var endTime = DateTime.Now.TimeOfDay;
+                    var startTimeOfPeriod = item.DueDate.Date.Add(startTime);
+                    var finishTimeOfPeriod = item.DueDate.Date.Add(endTime);
+
+                    var estimatedStartTime = item.DueDate.Date.Add(startTime);
+                    var estimatedFinishTime = item.DueDate.Date.Add(endTime);
+
+                    var todo = new DispatchListDto();
+                    todo.GlueName = item.GlueName;
+                    todo.GlueID = item.GlueID;
+                    todo.PlanID = item.PlanID;
+                    todo.LineID = item.Building.ID;
+                    todo.LineName = item.Building.Name;
+                    todo.PlanID = item.PlanID;
+                    todo.BPFCID = item.BPFCID;
+                    todo.ColorCode = (ColorCode)colorCode++;
+                    todo.Supplier = item.ChemicalA.Supplier.Name;
+                    todo.PlanID = item.PlanID;
+                    todo.GlueNameID = item.GlueNameID.Value;
+                    todo.BuildingID = item.Building.ParentID.Value;
+                    todo.EstimatedStartTime = estimatedStartTime;
+                    todo.EstimatedFinishTime = estimatedFinishTime;
+                    todo.CreatedTime = currentTime;
+                    todo.CreatedBy = userID;
+                    todo.StartTimeOfPeriod = startTimeOfPeriod;
+                    todo.FinishTimeOfPeriod = finishTimeOfPeriod;
+                    dispatchlist.Add(todo);
                 }
             }
             try
@@ -2053,7 +2093,7 @@ namespace DMR_API._Services.Services
                 throw;
             }
         }
-        private async Task<MixingInfo> CreateMixingInfo(SubpackageParam obj) 
+        private async Task<MixingInfo> CreateMixingInfo(SubpackageParam obj)
         {
             var mixBy = _jwtService.GetUserID();
             var todolist = _repoToDoList.FindAll(x =>
@@ -2103,14 +2143,16 @@ namespace DMR_API._Services.Services
             }
             catch (Exception ex)
             {
-               throw;
+                Console.WriteLine(ex.Message);
+                throw;
             }
         }
 
         private async Task CreateSubpackage(SubpackageParam obj, MixingInfo mixingInfo)
         {
             var subpackages = obj.Subpackages;
-            subpackages.ForEach( x=> {
+            subpackages.ForEach(x =>
+            {
                 x.MixingInfoID = mixingInfo.ID;
                 x.PrintTime = DateTime.Now;
                 x.CreatedTime = DateTime.Now;
@@ -2131,15 +2173,15 @@ namespace DMR_API._Services.Services
                 }
                 catch (System.Exception ex)
                 {
-                     // TODO
+                    // TODO
                     transaction.Dispose();
                     var message = ex.Message;
                     return false;
                     throw;
                 }
-                
+
             }
-            
+
         }
 
         public async Task<MixingInfo> GetMixingInfo(int mixingInfoID)
@@ -2150,8 +2192,8 @@ namespace DMR_API._Services.Services
         public async Task<Subpackage> GetSubpackageLatestSequence(string batch, int glueNameID, int buildingID)
         {
             var subpackages = await _subpackageRepository.FindAll()
-            .Include(x=> x.MixingInfo)
-            .Where(x =>  x.Code.Contains(batch) 
+            .Include(x => x.MixingInfo)
+            .Where(x => x.Code.Contains(batch)
                     && x.GlueNameID == glueNameID
                     && x.MixingInfo.BuildingID == buildingID
                     && x.CreatedTime.Date == DateTime.Now.Date)

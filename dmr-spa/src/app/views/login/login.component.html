@@ -13,7 +13,7 @@
             <input
               type="text"
               class="form-control"
-              [(ngModel)]="user.username"
+              [(ngModel)]="username"
               required
               name="username"
               placeholder="Username"
@@ -27,7 +27,7 @@
           <div class="input-group mb-3">
             <input
               type="password"
-              [(ngModel)]="user.password"
+              [(ngModel)]="password"
               class="form-control"
               name="password"
               required
@@ -61,16 +61,19 @@
             <!-- /.col -->
           </div>
         </form>
+          <div class="checkbox mb-3 text-danger" *ngIf="loginError">
+            Login failed. Please try again.
+          </div>
         <!-- /.login-card-body -->
       </div>
     </div>
   </div>
 </div>
 
-<div class="tet-2019">
+<!-- <div class="tet-2019">
   <img class="left-2019" id="left-2020"
     src="../../../assets/img/caudoitrai.png" />
     <img
     class="right-2019" id="right-2020"
     src="../../../assets/img/caudoiphai.png" />
-</div>
+</div> -->

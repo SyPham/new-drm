@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { AuthGuard } from 'src/app/_core/_guards/auth.guard';
 const routes: Routes = [
   {
     path: '',
@@ -11,23 +12,27 @@ const routes: Routes = [
       {
         path: 'setting',
         loadChildren: () =>
-          import('./setting/setting.module').then(m => m.SettingModule)
+          import('./setting/setting.module').then(m => m.SettingModule),
+          canActivate: [AuthGuard]
       },
       {
         path: 'establish',
         loadChildren: () =>
-          import('./establish/establish.module').then(m => m.EstablishModule)
+          import('./establish/establish.module').then(m => m.EstablishModule),
+          canActivate: [AuthGuard]
       },
       {
         path: 'troubleshooting',
         loadChildren: () =>
-          import('./troubleshooting/troubleshooting.module').then(m => m.TroubleshootingModule)
+          import('./troubleshooting/troubleshooting.module').then(m => m.TroubleshootingModule),
+        canActivate: [AuthGuard]
       },
       // execution
       {
         path: 'execution',
         loadChildren: () =>
-          import('./execution/execution.module').then(m => m.ExecutionModule)
+          import('./execution/execution.module').then(m => m.ExecutionModule),
+        canActivate: [AuthGuard]
       },
       // end execution
 
@@ -35,13 +40,15 @@ const routes: Routes = [
       {
         path: 'report',
         loadChildren: () =>
-          import('./report/report.module').then(m => m.ReportModule)
+          import('./report/report.module').then(m => m.ReportModule),
+        canActivate: [AuthGuard]
       },
       // end report
       {
         path: 'system',
         loadChildren: () =>
-          import('./system/system.module').then(m => m.SystemModule)
+          import('./system/system.module').then(m => m.SystemModule),
+          canActivate: [AuthGuard]
       },
     ]
   }

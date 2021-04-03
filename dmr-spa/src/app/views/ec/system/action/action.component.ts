@@ -1,7 +1,9 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { PermissionService } from 'src/app/_core/_service/permission.service';
+import { ActivatedRoute } from '@angular/router';
 
 
 @Component({
@@ -9,11 +11,9 @@ import { PermissionService } from 'src/app/_core/_service/permission.service';
   templateUrl: './action.component.html',
   styleUrls: ['./action.component.css']
 })
-export class ActionComponent implements OnInit {
+export class ActionComponent extends BaseComponent implements OnInit {
   action: any;
   data: any;
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-  toolbarOptions = ['Add', 'Edit', 'Delete', 'Cancel', 'Search'];
   @ViewChild('grid') grid: GridComponent;
   pageSettings = { pageCount: 20, pageSizes: true, pageSize: 10 };
   fieldsPermissionType: object = { text: 'name', value: 'name' };
@@ -23,9 +23,11 @@ export class ActionComponent implements OnInit {
   constructor(
     private permissionService: PermissionService,
     private alertify: AlertifyService,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
+    this.Permission(this.route);
     this.action = {
     };
     this.getAllAction();

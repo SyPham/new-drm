@@ -16,6 +16,7 @@ namespace DMR_API.DTO
         public int SystemID { get; set; }
         public int UserRoleID { get; set; }
         public string Role { get; set; }
+        public string RoleCode { get; set; }
         public int RoleID { get; set; }
         public string Building { get; set; }
         public string Line { get; set; }

@@ -47,9 +47,8 @@ namespace DMR_API._Services.Services
 
         public async Task<bool> Add(Version model)
         {
-            var Version = _mapper.Map<Version>(model);
-
-            _repoVersion.Add(Version);
+            model.CreatedTime  = DateTime.Now;
+            _repoVersion.Add(model);
             return await _repoVersion.SaveAll();
         }
 
@@ -74,8 +73,8 @@ namespace DMR_API._Services.Services
 
         public async Task<bool> Update(Version model)
         {
-            var Version = _mapper.Map<Version>(model);
-            _repoVersion.Update(Version);
+            model.UpatedTime = DateTime.Now;
+            _repoVersion.Update(model);
             return await _repoVersion.SaveAll();
         }
 

@@ -144,5 +144,9 @@ export class PlanService {
   exportExcel(obj: { plans: number[], buildingID: number }) {
     return this.http.post(`${this.baseUrl}Plan/ExportExcel`, obj, { responseType: 'blob' });
   }
+
+  exportExcelWorkPlanWholeBuilding(buildingID: number ) {
+    return this.http.get(`${this.baseUrl}Plan/ExportExcelWorkPlanWholeBuilding/${buildingID}`, { responseType: 'blob' });
+  }
 }
 

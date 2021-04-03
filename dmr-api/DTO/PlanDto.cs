@@ -59,6 +59,20 @@ namespace DMR_API.DTO
         public DateTime StartWorkingTime { get; set; }
         public DateTime FinishWorkingTime { get; set; }
     }
+    public class ExportExcelPlanDto
+    {
+        public string Building { get; set; }
+        public string Line { get; set; }
+        public string ModelName { get; set; }
+        public string ModelNo { get; set; }
+        public string BPFCName { get; set; }
+        public string ArticleNO { get; set; }
+
+        public string ArticleName { get; set; }
+        public string ProcessName { get; set; }
+        public DateTime DueDate { get; set; }
+        public DateTime CreatedDate { get; set; }
+    }
     public class TimeDto
     {
         public TimeDto(DateTime dt)

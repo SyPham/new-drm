@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
@@ -16,6 +17,7 @@ import { Tooltip } from '@syncfusion/ej2-angular-popups';
 import { IBuilding } from 'src/app/_core/_model/building';
 import { IRole } from 'src/app/_core/_model/role';
 import { environment } from 'src/environments/environment';
+import { ActionConstant } from 'src/app/_core/_constants';
 declare let $: any;
 const CURRENT_DATE = new Date();
 @Component({
@@ -24,9 +26,8 @@ const CURRENT_DATE = new Date();
   styleUrls: ['./ingredient.component.scss'],
   providers: [DatePipe, RowDDService]
 })
-export class IngredientComponent implements OnInit, AfterViewInit {
+export class IngredientComponent extends BaseComponent implements OnInit {
 
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, mode: 'Normal' };
   pageSettings = { pageCount: 20, pageSizes: true, currentPage: 1, pageSize: 20 };
   data: any;
   @ViewChild('importModal') importModal: NgbModalRef;
@@ -113,24 +114,27 @@ export class IngredientComponent implements OnInit, AfterViewInit {
   building: IBuilding;
   SUPERVISOR = 2;
   ADMIN = 1;
+  info: { total: any, completeRate: any, complete: any } = { total: 0, completeRate: 0, complete: 0 } ;
   constructor(
     private modalNameService: ModalNameService,
     public modalService: NgbModal,
     private ingredientService: IngredientService,
     private alertify: AlertifyService,
     private datePipe: DatePipe,
-    private route: ActivatedRoute
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
+
   ngOnInit() {
+    this.Permission(this.route);
     const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
     this.building = BUIDLING;
-    if (this.role.id === this.ADMIN || this.role.id === this.SUPERVISOR) {
-      this.toolbarOptions = ['Search', 'Add ', 'Print QR Code', 'Excel Export'];
-    } else {
-      this.toolbarOptions = ['Search', 'Print QR Code', 'Excel Export'];
-    }
+    // if (this.role.id === this.ADMIN || this.role.id === this.SUPERVISOR) {
+    //   this.toolbarOptions = ['Search', 'Add ', 'Print QR Code', 'Excel Export'];
+    // } else {
+    //   this.toolbarOptions = ['Search', 'Print QR Code', 'Excel Export'];
+    // }
     this.filterSettings = { type: 'Excel' };
     this.excelDownloadUrl = `${environment.apiUrlEC}Ingredient/ExcelExport`;
     this.ingredientService.currentIngredient.subscribe(res => {
@@ -161,14 +165,48 @@ export class IngredientComponent implements OnInit, AfterViewInit {
     });
     this.getIngredients();
     this.getAllIngredients();
-
+    this.rate();
   }
-  ngAfterViewInit() {
-    $('[data-toggle="tooltip"]').tooltip();
+  Permission(route: ActivatedRoute) {
+    this.functions = JSON.parse(localStorage.getItem('functions'));
+    for (const item of this.functions) {
+      if (route.snapshot.data.functionCode.includes(item.functionCode)) {
+        const toolbarOptions = [];
+        for (const action of item.childrens) {
+          const optionItem = this.makeAction(action.code);
+          toolbarOptions.push(...optionItem.filter(Boolean));
+        }
+        toolbarOptions.push('Search');
+        const uniqueOptionItem = toolbarOptions.filter((elem, index, self) => {
+          return index === self.indexOf(elem);
+        });
+        this.toolbarOptions = uniqueOptionItem;
+        break;
+      }
+    }
+  }
+  makeAction(input: string): string[] {
+    switch (input) {
+      case ActionConstant.CREATE:
+        this.editSettings.allowAdding = true;
+        return ['Add'];
+      case ActionConstant.EXCEL_EXPORT:
+        return ['Excel Export'];
+      case ActionConstant.PRINT:
+        return ['Print QR Code'];
+      default:
+        return [undefined];
+    }
+  }
+  rate() {
+    this.ingredientService.rate()
+      .subscribe( res => {
+        this.info = res.data;
+      });
   }
   rowDB(args: RowDataBoundEventArgs) {
     const data = args.data as any;
-    if (data.expiredTime === 0 || data.unit === 0 || data.replacementFrequency === 0 ||  data.daysToExpiration === 0 || data.materialNO === '') {
+    if (data.expiredTime === 0 || data.unit === 0 || data.voc === 0 ||  data.daysToExpiration === 0 || data.materialNO === '') {
       args.row.classList.add('bgcolor');
     }
   }
@@ -231,8 +269,8 @@ export class IngredientComponent implements OnInit, AfterViewInit {
     }
   }
   toolbarClick(args): void {
-    switch (args.item.text) {
-      case 'Excel Export':
+    switch (args.item.id) {
+      case 'grid_Excel Export':
         let pdfdata;
         const query = this.ingredientGrid.renderModule.data.generateQuery(); // get grid corresponding query
         for (let i = 0; i < query.queries.length; i++) {
@@ -307,9 +345,12 @@ export class IngredientComponent implements OnInit, AfterViewInit {
           this.ingredientGrid.excelExport(excelExportProperties);
         }).catch((e) => true);
         break;
-      case 'Add ': this.openIngredientModalComponent(); break;
-      case 'Import Excel': this.showModal(); break;
-      case 'Print QR Code': this.printBarcode(); break;
+      case 'grid_add':
+        this.openIngredientModalComponent();
+        this.ingredientGrid.refresh();
+        break;
+      case 'grid_Import Excel': this.showModal(); break;
+      case 'grid_Print QR Code': this.printBarcode(); break;
       default:
         break;
     }
@@ -437,20 +478,20 @@ export class IngredientComponent implements OnInit, AfterViewInit {
     }
   }
   headerCellInfo(args) {
-    if ('replacementFrequency' === args.cell.column.field) {
-      const toolcontent = 'Replacement Frequency (hours)';
-      const tooltip: Tooltip = new Tooltip({
-        content: toolcontent
-      });
-      tooltip.appendTo(args.node);
-    }
-    if ('prepareTime' === args.cell.column.field) {
-      const toolcontent = 'Prepare Time (hour)';
-      const tooltip: Tooltip = new Tooltip({
-        content: toolcontent
-      });
-      tooltip.appendTo(args.node);
-    }
+    // if ('replacementFrequency' === args.cell.column.field) {
+    //   const toolcontent = 'Replacement Frequency (hours)';
+    //   const tooltip: Tooltip = new Tooltip({
+    //     content: toolcontent
+    //   });
+    //   tooltip.appendTo(args.node);
+    // }
+    // if ('prepareTime' === args.cell.column.field) {
+    //   const toolcontent = 'Prepare Time (hour)';
+    //   const tooltip: Tooltip = new Tooltip({
+    //     content: toolcontent
+    //   });
+    //   tooltip.appendTo(args.node);
+    // }
   }
   updateProductionDate(id, productionDate) {
     for (const key in this.dataPrint) {
@@ -630,7 +671,7 @@ export class IngredientComponent implements OnInit, AfterViewInit {
     this.file = event.target.files[0];
   }
   uploadFile() {
-    const createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+    const createdBy = JSON.parse(localStorage.getItem('user')).user.id;
     this.ingredientService.import(this.file, createdBy)
       .subscribe((res: any) => {
         this.getAll();

@@ -1,6 +1,5 @@
 import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
 import { ActionFunctionComponent } from './action-function/action-function.component';
-import { RoleComponent } from './role/role.component';
 import { ActionComponent } from './action/action.component';
 import { ModuleComponent } from './module/module.component';
 import { FunctionComponent } from './function/function.component';
@@ -43,7 +42,7 @@ import { GridAllModule } from '@syncfusion/ej2-angular-grids';
 
 import { L10n, loadCldr, setCulture } from '@syncfusion/ej2-base';
 
-import { ToolbarModule } from '@syncfusion/ej2-angular-navigations';
+import { ToolbarModule, TreeViewAllModule } from '@syncfusion/ej2-angular-navigations';
 import { TreeGridAllModule } from '@syncfusion/ej2-angular-treegrid/';
 
 import { CountdownModule } from 'ngx-countdown';
@@ -52,7 +51,6 @@ import { QRCodeModule } from 'angularx-qrcode';
 import { VersionComponent } from './version/version.component';
 import { VersionAddComponent } from './version/version-add/version-add.component';
 // Imported Syncfusion checkbox module from buttons package.
-
 declare var require: any;
 let defaultLang: string;
 const lang = localStorage.getItem('lang');
@@ -76,19 +74,7 @@ if (lang === 'vi') {
 }
 @NgModule({
   providers: [
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: appInitializer,
-    //   multi: true,
-    //   deps: [AuthService],
-    // },
-    DatePipe,
-    // { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: UnauthorizedInterceptor,
-    //   multi: true,
-    // },
+    DatePipe
   ],
   imports: [
     QRCodeModule,
@@ -122,6 +108,7 @@ if (lang === 'vi') {
     CheckBoxAllModule,
     MultiSelectModule,
     CKEditorModule,
+    TreeViewAllModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -137,8 +124,7 @@ if (lang === 'vi') {
     ModuleComponent,
     ActionFunctionComponent,
     VersionComponent,
-    VersionAddComponent,
-    RoleComponent
+    VersionAddComponent
   ]
 })
 export class SystemModule {

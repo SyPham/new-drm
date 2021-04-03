@@ -1,3 +1,4 @@
+import { CoreDirectivesModule } from './../../../_core/_directive/core.directives.module';
 // Angular
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -44,12 +45,11 @@ import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
 import { ReportRoutingModule } from './report.routing.module';
 
-import { DeliveredHistoryComponent } from "../execution/delivered-history/delivered-history.component";
-import { InventoryComponent } from "../inventory/inventory.component";
+import { DeliveredHistoryComponent } from "./delivered-history/delivered-history.component";
 import { Consumption1Component } from "./consumption-1/consumption-1.component";
 import { Consumption2Component } from "./consumption-2/consumption-2.component";
 import { ConsumptionComponent } from "./consumption/consumption.component";
-
+import { InventoryComponent } from './inventory/inventory.component';
 
 declare var require: any;
 let defaultLang: string;
@@ -74,19 +74,7 @@ if (lang === 'vi') {
 }
 @NgModule({
   providers: [
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: appInitializer,
-    //   multi: true,
-    //   deps: [AuthService],
-    // },
-    DatePipe,
-    // { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: UnauthorizedInterceptor,
-    //   multi: true,
-    // },
+    DatePipe
   ],
   imports: [
     QRCodeModule,
@@ -119,6 +107,7 @@ if (lang === 'vi') {
     ToolbarModule,
     CheckBoxModule,
     MultiSelectModule,
+    CoreDirectivesModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,

@@ -10,7 +10,9 @@
        "request": "launch",
        "preLaunchTask": "build",
        "program": "${workspaceFolder}/dmr-api/bin/Debug/netcoreapp3.1/DMR_API.dll",
-       "args": [],
+       "args": [
+           "watch"
+       ],
        "cwd": "${workspaceFolder}",
        "stopAtEntry": false,
        "console": "internalConsole"

@@ -21,13 +21,13 @@ namespace TodolistScheduleService.Services
             _logger = logger;
         }
       
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             //_scheduler = new SchedulerDispatch();
             //// Thuc thi luc 8:50
             //await _scheduler.Start(1, 6, 23);
             Console.WriteLine($"Client ID: Start ReloadDispatch#############################################################");
-
+            return Task.CompletedTask;
         }
     }
 }

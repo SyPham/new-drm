@@ -372,7 +372,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
     this.getBuilding();
   }
   getBuilding() {
-    const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = JSON.parse(localStorage.getItem('user')).user.id;
     // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
     //   res = res || {};
     //   if (res !== {}) {
@@ -483,7 +483,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
       this.glue.BPFCEstablishID = this.BPFCID;
       this.glue.name = this.chemicalNameEdit;
       this.glue.expiredTime = this.expiredTime;
-      this.glue.createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+      this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
       this.saveGlue();
     }
     if (args.requestType === 'delete') {
@@ -1261,7 +1261,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
               consumption: '',
               expiredTime: 0,
               glueNameID: 0,
-              createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+              createdBy: JSON.parse(localStorage.getItem('user')).user.id,
               glueIngredients: []
             };
             this.glue = glue;
@@ -1285,7 +1285,7 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
             consumption: '',
             expiredTime: 0,
             glueNameID: 0,
-            createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+            createdBy: JSON.parse(localStorage.getItem('user')).user.id,
             glueIngredients: []
           };
           this.glue = glue;
@@ -1339,14 +1339,14 @@ export class GlueIngredientComponent implements OnInit, AfterViewInit {
     );
   }
   approval() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.approval(this.BPFCID, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been approved!');
       this.getAllBPFC();
     });
   }
   done() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.done(this.BPFCID, userid).subscribe((res: any) => {
       if (res.status === true) {
         this.alertify.success(res.message);

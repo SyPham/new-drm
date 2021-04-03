@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { LogLevel } from '@microsoft/signalr';
 import { EmitType } from '@syncfusion/ej2-base';
 import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
@@ -11,6 +12,7 @@ import { HierarchyNode, IBuilding } from 'src/app/_core/_model/building';
 import { KindService } from 'src/app/_core/_service/kind.service';
 import { QueryCellInfoEventArgs } from '@syncfusion/ej2-angular-grids';
 import { SystemConstant } from 'src/app/_core/_constants';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-building',
@@ -19,7 +21,7 @@ import { SystemConstant } from 'src/app/_core/_constants';
   providers: [FilterService, SortService, ReorderService],
   encapsulation: ViewEncapsulation.None
 })
-export class BuildingComponent implements OnInit {
+export class BuildingComponent extends BaseComponent implements OnInit {
   toolbar: object;
   data: Array<HierarchyNode<IBuilding>>;
   editing: any;
@@ -67,9 +69,11 @@ export class BuildingComponent implements OnInit {
     private kindService: KindService,
 
     private alertify: AlertifyService,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
+    this.PermissionForTreeGrid(this.route);
     this.editing = { allowDeleting: true, allowEditing: true, mode: 'Row' };
     this.toolbar = ['Add', 'Delete', 'Search', 'Update', 'Cancel'];
     this.optionTreeGrid();
@@ -79,29 +83,6 @@ export class BuildingComponent implements OnInit {
     this.getBuildingsAsTreeView();
   }
   optionTreeGrid() {
-    this.contextMenuItems = [
-      {
-        text: 'Add-Sub Item',
-        iconCss: ' e-icons e-add',
-        target: '.e-content',
-        id: 'Add-Sub-Item'
-      },
-      {
-        text: 'Delete',
-        iconCss: ' e-icons e-delete',
-        target: '.e-content',
-        id: 'DeleteOC'
-      }
-    ];
-    this.toolbar = [
-      'Add',
-      'Search',
-      'ExpandAll',
-      'CollapseAll',
-      'ExcelExport',
-      'PdfExport'
-    ];
-    this.editing = { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row' };
     this.pageSettings = { pageSize: 20 };
     this.editparams = { params: { format: 'n' } };
   }

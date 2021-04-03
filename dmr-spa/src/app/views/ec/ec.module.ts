@@ -48,6 +48,7 @@ import { CountdownModule } from 'ngx-countdown';
 import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
 import { SelectTextDirective } from './select.text.directive';
+import { AuthGuard } from 'src/app/_core/_guards/auth.guard';
 
 declare var require: any;
 let defaultLang: string;
@@ -71,21 +72,6 @@ if (lang === 'vi') {
   defaultLang = 'en';
 }
 @NgModule({
-  providers: [
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: appInitializer,
-    //   multi: true,
-    //   deps: [AuthService],
-    // },
-    DatePipe,
-    // { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: UnauthorizedInterceptor,
-    //   multi: true,
-    // },
-  ],
   imports: [
     QRCodeModule,
     ButtonModule,

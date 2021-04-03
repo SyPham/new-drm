@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
   Component,
@@ -23,7 +24,7 @@ import { environment } from '../../../../../environments/environment';
 import { BPFCEstablishService } from 'src/app/_core/_service/bpfc-establish.service';
 import { DatePipe } from '@angular/common';
 import { UserService } from 'src/app/_core/_service/user.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { EmitType } from '@syncfusion/ej2-base/';
 import { FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -34,6 +35,7 @@ import { Subscription, SubscriptionLike } from 'rxjs';
 import { Button } from '@syncfusion/ej2-angular-buttons';
 import { IRole } from 'src/app/_core/_model/role';
 import { DatePicker } from '@syncfusion/ej2-angular-calendars';
+import { ActionConstant } from 'src/app/_core/_constants';
 const HttpUploadOptions = {
   headers: new HttpHeaders({ Accept: 'application/json' }),
 };
@@ -45,7 +47,7 @@ const ROLE_ADMIN = 1;
   styleUrls: ['./BPFCSchedule.component.css'],
   providers: [DatePipe],
 })
-export class BPFCScheduleComponent implements OnInit, OnDestroy {
+export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDestroy {
   @ViewChildren('tooltip') tooltip: QueryList<any>;
 
   pageSettings = {
@@ -54,8 +56,6 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
     pageSize: 50,
   };
   data: any[];
-  editSettings: object;
-  toolbar: object;
   file: any;
 
   @ViewChild('grid')
@@ -109,6 +109,33 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
   };
   role: IRole;
   dueDate: Date;
+  toolbar = [
+    'Search',
+    {
+      text: 'Undone',
+      tooltipText: 'Undone',
+      prefixIcon: 'fa fa-remove',
+      id: 'Undone',
+    },
+    {
+      text: 'Done',
+      tooltipText: 'Done',
+      prefixIcon: 'fa fa-check',
+      id: 'Done',
+    },
+    {
+      text: 'All',
+      tooltipText: 'All',
+      prefixIcon: 'fa fa-list',
+      id: 'All',
+    },
+    {
+      text: '% of done',
+      tooltipText: '% of done',
+      prefixIcon: '',
+      id: 'percentageOfDone',
+    },
+  ];
   constructor(
     private modalNameService: ModalNameService,
     private alertify: AlertifyService,
@@ -120,51 +147,16 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
     private spinner: NgxSpinnerService,
     private articleNoService: ArticleNoService,
     private dataService: DataService,
-    private http: HttpClient
-  ) {
-
-  }
+    private http: HttpClient,
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
+    this.Permission(this.route);
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
     this.excelDownloadUrl = `${environment.apiUrlEC}ModelName/ExcelExport`;
-    this.toolbar = [
-      'Excel Import',
-      'ExcelExport',
-      'Search',
-      {
-        text: 'Undone',
-        tooltipText: 'Undone',
-        prefixIcon: 'fa fa-remove',
-        id: 'Undone',
-      },
-      {
-        text: 'Done',
-        tooltipText: 'Done',
-        prefixIcon: 'fa fa-check',
-        id: 'Done',
-      },
-      {
-        text: 'All',
-        tooltipText: 'All',
-        prefixIcon: 'fa fa-list',
-        id: 'All',
-      },
-      {
-        text: '% of done',
-        tooltipText: '% of done',
-        prefixIcon: '',
-        id: 'percentageOfDone',
-      },
-    ];
     this.filterSettings = { type: 'Excel' };
-    this.editSettings = {
-      allowEditing: true,
-      allowAdding: true,
-      allowDeleting: true,
-      newRowPosition: 'Normal',
-    };
     this.dataText = this.dataService.currentMessages.subscribe((res: any) => {
       this.textSearch = res;
       if (res !== 0) {
@@ -187,6 +179,32 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
   }
   ngOnDestroy() {
     this.dataText.unsubscribe();
+  }
+  Permission(route: ActivatedRoute) {
+    const functionCode = route.snapshot.data.functionCode;
+    this.functions = JSON.parse(localStorage.getItem('functions')).filter(x => x.functionCode === functionCode) || [];
+    for (const item of this.functions) {
+      const toolbarOptions = [];
+      for (const action of item.childrens) {
+        const optionItem = this.makeAction(action.code);
+        toolbarOptions.push(...optionItem.filter(Boolean));
+      }
+      toolbarOptions.push(...this.toolbar);
+      const uniqueOptionItem = toolbarOptions.filter((elem, index, self) => {
+        return index === self.indexOf(elem);
+      });
+      this.toolbarOptions = uniqueOptionItem;
+    }
+  }
+  makeAction(input: string): string[] {
+    switch (input) {
+      case ActionConstant.EXCEL_EXPORT:
+        return ['ExcelExport'];
+      case ActionConstant.EXCEL_IMPORT:
+        return ['Excel Import'];
+      default:
+        return [undefined];
+    }
   }
   detail(data) {
     this.dataService.changeMessage(this.textSearch);
@@ -301,7 +319,7 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
       artProcessID: Number(this.artProcessID),
       bpfcID: this.BPFCID,
       name: this.articleNoNew,
-      cloneBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      cloneBy: JSON.parse(localStorage.getItem('user')).user.id,
     };
     this.cloneNewVersion(clone);
   }
@@ -350,7 +368,7 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
       articleNOID: this.articleNoID,
       artProcessID: Number(this.artProcessID),
       bpfcID: this.BPFCID,
-      cloneBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      cloneBy: JSON.parse(localStorage.getItem('user')).user.id,
     };
     this.clone(clone);
   }
@@ -446,8 +464,8 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
   }
 
   toolbarClick(args) {
-    switch (args.item.text) {
-      case 'Excel Import':
+    switch (args.item.id) {
+      case 'grid_Excel Import':
         this.showModal(this.importModal);
         break;
       case 'Done':
@@ -462,7 +480,7 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
         this.gridObj.searchSettings.key = '';
         this.getAll();
         break;
-      case 'Excel Export':
+      case 'grid_Excel Export':
         const data = this.data.map((item) => {
           return {
             approvedBy: item.approvedBy,
@@ -493,28 +511,7 @@ export class BPFCScheduleComponent implements OnInit, OnDestroy {
   }
 
   uploadFile() {
-    // const obj =  [
-    //   {
-    //     Audit_Item_ZW: "1",
-    //     File: this.file,
-    //   },
-    //   {
-    //     Audit_Item_ZW: "2",
-    //     File: this.file,
-    //   },
-    //   {
-    //     Audit_Item_ZW: "3",
-    //     File: this.file,
-    //   },
-    // ]
-    // const formData = new FormData()
-    // for(let item of obj) {
-    //   formData.append('UploadedFile', item.File);
-    //   formData.append('Audit_Item_ZW', item.Audit_Item_ZW);
-    // }
-    // this.bPFCEstablishService.Test(formData).subscribe((res: any) => {})
-
-    const createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+    const createdBy = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService
       .import(this.file, createdBy)
       .subscribe((res: any) => {

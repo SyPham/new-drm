@@ -39,7 +39,7 @@
         </div>
         <div class="row mt-3">
           <div class="col-md-12 text-center">
-           <button class="btn btn-info" (click)="lock()"><i class="fa fa-lock"></i> Lock</button>
+           <button appPermission appFunction="Black List" appAction="LOCK" class="btn btn-info" (click)="lock()"><i class="fa fa-lock"></i> Lock</button>
           </div>
         </div>
       </div>
@@ -72,7 +72,7 @@
                 <e-column field='createdDate' isPrimaryKey='true' textAlign='Center' type='dateTime' format='d MMM, yyyy HH:mm' headerText='Lock Date' width='190'></e-column>
                 <e-column field='' headerText='Option' textAlign='Center' width='80'>
                   <ng-template let-data #template>
-                      <button type="button" (click)='unlock(data)' class="btn btn-xs btn-danger"><i class="fa fa-unlock"></i></button>
+                      <button  appPermission appFunction="Black List" appAction="UNLOCK" type="button" (click)='unlock(data)' class="btn btn-xs btn-danger"><i class="fa fa-unlock"></i></button>
                   </ng-template>
                 </e-column>
               </e-columns>

@@ -50,6 +50,7 @@ namespace DMR_API._Services.Services
         }
         public async Task<List<RoleDto>> GetAllAsync()
         {
+            // x => x.Code != "SUPPER_ADMIN"
             return await _repoRole.FindAll().ProjectTo<RoleDto>(_configMapper).OrderBy(x => x.ID).ToListAsync();
         }
 

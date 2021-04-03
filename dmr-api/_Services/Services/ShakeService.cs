@@ -80,7 +80,6 @@ namespace DMR_API._Services.Services
             if (mixingInfoID == 0)
                 return new ResponseDetail<object>(null, false, "Vui lòng trộn keo trước!");
 
-
             var item = await _repoMixingInfo.FindAll(x => x.ID == mixingInfoID)
                                              .Include(x => x.MixingInfoDetails)
                                              .ThenInclude(x => x.Ingredient)
@@ -110,12 +109,15 @@ namespace DMR_API._Services.Services
                 if (chemicalType == null)
                     return new ResponseDetail<object>(null, false, $"Hóa chất {chemicalA.Ingredient.Name} chưa được gán loại keo (glue type)!");
 
+                if (chemicalType.Method != "Shaking")
+                    return new ResponseDetail<object>(null, false, $"Hóa chất {chemicalA.Ingredient.Name} chưa được gán phương thức khuấy! Vui lòng cài đặt lại!");
+
                 shakeList.Add(new Shake
                 {
                    
                     MixingInfoID = mixingInfoID,
                     ChemicalType = chemicalType.Title,
-                    StandardCycle = chemicalA.Ingredient.StandardCycle,
+                    StandardCycle = chemicalType.RPM,
                 });
             }
             _repoShake.AddRange(shakeList);

@@ -167,7 +167,11 @@ namespace DMR_API.Controllers
 
             return BadRequest($"Updating brand {ingredientIngredientDto.ID} failed on save");
         }
-
+        [HttpGet]
+        public async Task<IActionResult> Rate()
+        {
+            return Ok(await _ingredientService.Rate());
+        }
         [HttpGet("{qrCode}")]
         public async Task<IActionResult> ScanQRCode(string qrCode)
         {

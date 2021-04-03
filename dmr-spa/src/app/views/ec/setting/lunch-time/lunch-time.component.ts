@@ -1,15 +1,17 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { LunchTimeService } from 'src/app/_core/_service/lunch.time.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { LunchTime } from 'src/app/_core/_model/lunch.time';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-lunch-time',
   templateUrl: './lunch-time.component.html',
   styleUrls: ['./lunch-time.component.css']
 })
-export class LunchTimeComponent implements OnInit {
+export class LunchTimeComponent extends BaseComponent implements OnInit {
 
   lunchTime: LunchTime;
   data: any;
@@ -23,9 +25,11 @@ export class LunchTimeComponent implements OnInit {
   constructor(
     private lunchTimeService: LunchTimeService,
     private alertify: AlertifyService,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
+    this.Permission(this.route);
     this.lunchTime = {} as LunchTime;
     this.getAllLunchTime();
   }

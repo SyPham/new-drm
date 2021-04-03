@@ -10,17 +10,28 @@
   <div class="row">
     <div class="col-md-12">
       <div class="form-group">
+        <label>Glue Type Name: </label>
         <input name="glueType"  type="text" [(ngModel)]="glueType.title" placeholder="Title" class="form-control Name" />
       </div>
     </div>
     <div class="col-md-12">
       <div class="form-group">
+        <label>Minutes: </label>
         <input name="glueType" type="text" [(ngModel)]="glueType.minutes" placeholder="Minutes" class="form-control Name" />
       </div>
     </div>
     <div class="col-md-12">
       <div class="form-group">
+        <label>RPM/Cycle: </label>
         <input name="glueType" type="text" [(ngModel)]="glueType.rpm" placeholder="RPM" class="form-control Name" />
+      </div>
+    </div>
+    <div class="col-md-12" *ngIf="glueType.parentID !== 0">
+      <label>Method: </label>
+      <div class="form-group">
+        <ejs-dropdownlist [dataSource]='methods' [fields]='fields'  placeholder="Select method" [value]="glueType.method" [allowFiltering]='true'
+          (change)='onChangeMethod($event)'>
+        </ejs-dropdownlist>
       </div>
     </div>
   </div>

@@ -204,6 +204,19 @@ namespace DMR_API.Controllers
             var result = await _permissionService.GetScreenAction(functionID);
             return Ok(result);
         }
+        [HttpPost("GetScreenFunctionAndAction")]
+        public async Task<IActionResult> GetScreenFunctionAndAction(ScreenFunctionAndActionRequest request)
+        {
+            //create new permission list from user changed
+
+            var result = await _permissionService.GetScreenFunctionAndAction(request);
+            return Ok(result);
+        }
+        [HttpGet("GetActionInFunctionByRoleID/{roleID}")]
+        public async Task<IActionResult> GetActionInFunctionByRoleID(int roleID) {
+            var result = await _permissionService.GetActionInFunctionByRoleID(roleID);
+            return Ok(result);
+        }
     }
 }
 

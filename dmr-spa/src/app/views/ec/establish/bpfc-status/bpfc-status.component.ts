@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { ModalName } from '../../../../_core/_model/modal-name';
 import { ModalNameService } from '../../../../_core/_service/modal-name.service';
@@ -17,15 +18,14 @@ import { BPFCEstablishService } from 'src/app/_core/_service/bpfc-establish.serv
 import { count } from 'console';
 import { UserService } from 'src/app/_core/_service/user.service';
 import { IRole } from 'src/app/_core/_model/role';
+import { ActionConstant } from 'src/app/_core/_constants';
 @Component({
   selector: 'app-bpfc-status',
   templateUrl: './bpfc-status.component.html',
   styleUrls: ['./bpfc-status.component.css']
 })
-export class BpfcStatusComponent implements OnInit, AfterViewInit {
+export class BpfcStatusComponent extends BaseComponent implements OnInit, AfterViewInit {
   public pageSettings: PageSettingsModel;
-  public editSettings: object;
-  public toolbar: object;
   users: any[] = [];
   BPFCEstablishID: number;
   public editparams: object;
@@ -47,18 +47,22 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
     id: 0,
     name: '',
     modelNo: '',
-    createdBy: JSON.parse(localStorage.getItem('user')).User.ID
+    createdBy: JSON.parse(localStorage.getItem('user')).user.id
   };
   comment: ICommentModelName;
   comments: [];
   setFocus: any;
   level: any;
   newglueID: any;
+  toolbar = ['Default',
+    { text: 'Rejected', tooltipText: 'Rejected', prefixIcon: 'fa fa-times', id: 'Rejected' },
+    { text: 'Approved', tooltipText: 'Approved', prefixIcon: 'fa fa-check', id: 'Approved' },
+    'All', 'Search'
+  ];
   constructor(
     private modalNameService: ModalNameService,
     private bPFCEstablishService: BPFCEstablishService,
     public modalService: NgbModal,
-    private route: ActivatedRoute,
     private alertify: AlertifyService,
     private ingredientService: IngredientService,
     private glueService: GlueService,
@@ -66,20 +70,39 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
     private calendarsService: CalendarsService,
     private userService: UserService,
     private authService: AuthService,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
-  ngOnInit(): void {
+  ngOnInit() {
+    this.Permission(this.route);
     this.pageSettings = { pageSizes: true, currentPage: 1, pageSize: 10, pageCount: 20 };
     this.editparams = { params: { popupHeight: '300px' } };
-    this.editSettings = { showDeleteConfirmDialog: true, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-    this.toolbar = ['Default',
-      { text: 'Rejected', tooltipText: 'Rejected', prefixIcon: 'fa fa-times', id: 'Rejected' },
-      { text: 'Approved', tooltipText: 'Approved', prefixIcon: 'fa fa-check', id: 'Approved' },
-      'All', 'ExcelExport', 'Search'
-    ];
     this.getAllUsers();
   }
-
+  Permission(route: ActivatedRoute) {
+    const functionCode = route.snapshot.data.functionCode;
+    this.functions = JSON.parse(localStorage.getItem('functions')).filter(x => x.functionCode === functionCode) || [];
+    for (const item of this.functions) {
+      const toolbarOptions = [];
+      for (const action of item.childrens) {
+        const optionItem = this.makeAction(action.code);
+        toolbarOptions.push(...optionItem.filter(Boolean));
+      }
+      toolbarOptions.push(...this.toolbar);
+      const uniqueOptionItem = toolbarOptions.filter((elem, index, self) => {
+        return index === self.indexOf(elem);
+      });
+      this.toolbarOptions = uniqueOptionItem;
+    }
+  }
+  makeAction(input: string): string[] {
+    switch (input) {
+      case ActionConstant.EXCEL_EXPORT:
+        return ['ExcelExport'];
+      default:
+        return [undefined];
+    }
+  }
   ngAfterViewInit() {
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.level = ROLE.id;
@@ -87,7 +110,7 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
   }
 
   getBuilding() {
-    const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = JSON.parse(localStorage.getItem('user')).user.id;
     // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
     //   res = res || {};
     //   if (res !== {}) {
@@ -319,7 +342,7 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
   }
 
   approval(BPFCEstablishID) {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.approval(BPFCEstablishID, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been approved!');
       this.getAllBPFCStatus();
@@ -327,7 +350,7 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
   }
 
   done(BPFCEstablishID) {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.done(BPFCEstablishID, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been finished!');
       this.getAllBPFCStatus();
@@ -335,7 +358,7 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
   }
 
   release() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.release(this.BPFCEstablishID, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been released!');
       this.filterByApprovedStatus();
@@ -344,7 +367,7 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
   }
 
   reject() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.reject(this.BPFCEstablishID, userid).subscribe((res: any) => {
       if (res.status === true) {
         this.alertify.success(res.message);
@@ -445,7 +468,7 @@ export class BpfcStatusComponent implements OnInit, AfterViewInit {
     this.comment = {
       id: 0,
       content: this.content,
-      createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      createdBy: JSON.parse(localStorage.getItem('user')).user.id,
       createdByName: '',
       BPFCEstablishID: this.BPFCEstablishID,
       createdDate: new Date()

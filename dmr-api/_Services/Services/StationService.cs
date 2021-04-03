@@ -74,7 +74,7 @@ namespace DMR_API._Services.Services
         }
 
         // khong su dung
-        public async Task<bool> Update(StationDto model)
+        public Task<bool> Update(StationDto model)
         {
             //string token = _accessor.HttpContext.Request.Headers["Authorization"];
             //var userID = JWTExtensions.GetDecodeTokenByProperty(token, "nameid").ToInt();

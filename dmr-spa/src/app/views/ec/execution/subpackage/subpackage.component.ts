@@ -91,7 +91,7 @@ export class SubpackageComponent implements OnInit, OnDestroy {
         position,
         mixingInfoID: 0,
         expiredTime: new Date(new Date().setHours(this.chemical.expiredTime)),
-        createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+        createdBy: JSON.parse(localStorage.getItem('user')).user.id,
         createdTime: new Date(),
         amount: this.subpackageCapacity.capacity
       };

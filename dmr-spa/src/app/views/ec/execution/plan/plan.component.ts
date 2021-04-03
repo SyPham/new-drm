@@ -1,10 +1,13 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { PlanService } from './../../../../_core/_service/plan.service';
 import { BPFC, IPlan, ITime, Plan } from './../../../../_core/_model/plan';
 import { Component, OnInit, ViewChild, TemplateRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
-import { PageSettingsModel, GridComponent,
+import {
+  PageSettingsModel, GridComponent,
   SelectionService, QueryCellInfoEventArgs,
-  EditService, IEditCell, Column, ForeignKeyService } from '@syncfusion/ej2-angular-grids';
+  EditService, IEditCell, Column, ForeignKeyService
+} from '@syncfusion/ej2-angular-grids';
 import { NgbModal, NgbModalRef, NgbTimepicker } from '@ng-bootstrap/ng-bootstrap';
 import { DatePipe } from '@angular/common';
 import { FormGroup } from '@angular/forms';
@@ -18,13 +21,13 @@ import { Subscription } from 'rxjs';
 import { DataService } from 'src/app/_core/_service/data.service';
 import { TodolistService } from 'src/app/_core/_service/todolist.service';
 import { Tooltip } from '@syncfusion/ej2-angular-popups';
-import { StationComponent } from './station/station.component';
 import { StationService } from 'src/app/_core/_service/station.service';
 import * as introJs from 'intro.js/intro.js';
 import { AuthService } from 'src/app/_core/_service/auth.service';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Query } from '@syncfusion/ej2-data';
-import { RoleConstant } from 'src/app/_core/_constants';
+import { ActionConstant, RoleConstant } from 'src/app/_core/_constants';
+import { ActivatedRoute } from '@angular/router';
 declare var $;
 @Component({
   selector: 'app-plan',
@@ -37,7 +40,7 @@ declare var $;
     ForeignKeyService
   ]
 })
-export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
+export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
   introJS = introJs();
   @ViewChild('bpfcDropdownlist') public bpfcDropdownlist: DropDownListComponent;
   @ViewChild('cloneModal') public cloneModal: TemplateRef<any>;
@@ -48,8 +51,6 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   startTime: ITime = { hour: 7, minute: 0 };
   endTime: ITime = { hour: 16, minute: 30 };
   pageSettings: PageSettingsModel;
-  toolbarOptions: object;
-  editSettings: object;
   sortSettings = { columns: [{ field: 'buildingName', direction: 'Ascending' }] };
   startDate: Date;
   endDate: Date;
@@ -99,7 +100,8 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   public fieldsBPFC: object = {
     text: 'name', value: 'name', tooltip: 'name', itemCreated: (e: any) => {
       highlightSearch(e.item, this.queryString, true, 'Contains');
-    } };
+    }
+  };
   fieldsBuildings: object = { text: 'name', value: 'id' };
   startWorkingTimeParams = { params: { value: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 7, 30, 0) } };
   // tslint:disable-next-line:max-line-length
@@ -123,7 +125,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       return this.elem;
     },
     read: () => {
-      return this.elem.value ;
+      return this.elem.value;
     },
     write: (args: { rowData: object, column: Column }) => { // to create input element
       // console.log(args.rowData);
@@ -142,6 +144,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   bpfcKindData: number[] = [];
   bpfcDataSource: Array<BPFC> = new Array<BPFC>();
   updateOnTimePercentage = '';
+  planInfo: { text: string, total: any, updateOnTime: any, rate: any } = { text: "", total: 0, updateOnTime: 0, rate: 0 };
   constructor(
     private alertify: AlertifyService,
     public modalService: NgbModal,
@@ -153,13 +156,15 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     private dataService: DataService,
     private spinner: NgxSpinnerService,
     private bPFCEstablishService: BPFCEstablishService,
-    public datePipe: DatePipe
+    public datePipe: DatePipe,
+    private route: ActivatedRoute
   ) {
+    super();
     this.gridConfig();
-   }
-  ngAfterViewInit() {
   }
-  ngOnInit(): void {
+
+  ngOnInit() {
+    this.Permission(this.route);
     this.buildingID = 0;
     this.date = new Date();
     this.endDate = new Date();
@@ -201,6 +206,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     switch (this.role.id) {
       case RoleConstant.ADMIN:
       case RoleConstant.SUPERVISOR:
+      case RoleConstant.SUPER_ADMIN:
       case RoleConstant.STAFF:
       case RoleConstant.WORKER: // Chỉ hiện todolist
         this.IsAdmin = true;
@@ -256,45 +262,58 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     this.buildingID = this.buildingID === undefined ? 0 : this.buildingID;
     this.getAllLine(this.buildingID);
   }
+  Permission(route: ActivatedRoute) {
+    const functionCode = route.snapshot.data.functionCode;
+    this.functions = JSON.parse(localStorage.getItem('functions')).filter(x => x.functionCode === functionCode) || [];
+    for (const item of this.functions) {
+      const toolbarOptions = [];
+      for (const action of item.childrens) {
+        const optionItem = this.makeAction(action.code);
+        toolbarOptions.push(...optionItem.filter(Boolean));
+      }
+      toolbarOptions.push(...['Search', 'ColumnChooser']);
+      const uniqueOptionItem = toolbarOptions.filter((elem, index, self) => {
+        return index === self.indexOf(elem);
+      });
+      this.toolbarOptions = uniqueOptionItem;
+    }
+  }
+  makeAction(input: string): any[] {
+    const lang = localStorage.getItem('lang');
+    switch (input) {
+      case ActionConstant.EXCEL_EXPORT:
+        if (lang === 'vi') {
+          return [
+            { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }
+          ];
+        }
+        return [
+          { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }
+        ];
+      case ActionConstant.CREATE:
+        this.editSettings.allowAdding = true;
+        return ['Add'];
+      case ActionConstant.EDIT:
+        this.editSettings.allowEditing = true;
+        if (lang === 'vi') {
+          return [
+            {
+              text: 'Cập Nhật', tooltipText: 'Cập Nhật',
+              prefixIcon: 'fa fa-tasks', id: 'Update'
+            }
+          ];
+        }
+        return [
+          { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }
+        ];
+      default:
+        return [undefined];
+    }
+  }
   gridConfig(): void {
-    this.editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
     this.selectOptions = { checkboxOnly: true };
     this.pageSettings = { pageCount: 20, pageSizes: true, pageSize: 12 };
     this.editparams = { params: { popupHeight: '300px' } };
-    this.toolbarOptions = ['Add',
-      { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search',
-      { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }, 'ColumnChooser'
-    ];
-    this.subscription.push(this.dataService.getValueLocale().subscribe(lang => {
-      if (lang === 'vi') {
-        this.toolbarOptions = ['Add',
-          { text: 'Cập Nhật', tooltipText: 'Cập Nhật', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search',
-          { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }, 'ColumnChooser'
-        ];
-        return;
-      } else if (lang === 'en') {
-        this.toolbarOptions = ['Add',
-          { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search',
-          { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }, 'ColumnChooser'
-        ];
-        return;
-      } else {
-        const langLocal = localStorage.getItem('lang');
-        if (langLocal === 'vi') {
-          this.toolbarOptions = ['Add',
-            { text: 'Cập Nhật', tooltipText: 'Cập Nhật', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search',
-            { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }, 'ColumnChooser'
-          ];
-          return;
-        } else if (langLocal === 'en') {
-          this.toolbarOptions = ['Add',
-            { text: 'Update', tooltipText: 'Update', prefixIcon: 'fa fa-tasks', id: 'Update' }, 'Search',
-            { text: 'Export Excel', tooltipText: 'Export Excel', prefixIcon: 'e-btn-icon fa fa-file-excel-o e-icons e-icon-left', id: 'exportExcel' }, 'ColumnChooser'
-          ];
-          return;
-        }
-      }
-    }));
   }
   count(index) {
     return Number(index) + 1;
@@ -304,14 +323,14 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   getBuildingWorker(callback) {
-    const userID = +JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = +JSON.parse(localStorage.getItem('user')).user.id;
     this.authService.getBuildingUserByUserID(userID).subscribe((res) => {
       this.buildings = res.data;
       callback();
     });
   }
   getBuilding(callback): void {
-    const userID = +JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = +JSON.parse(localStorage.getItem('user')).user.id;
     this.authService.getBuildingUserByUserID(userID).subscribe((res) => {
       this.buildings = res.data;
       callback();
@@ -323,7 +342,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   achievementRate() {
     this.planService.achievementRate(this.buildingID).subscribe((res: any) => {
-      this.updateOnTimePercentage = res.data;
+      this.planInfo = res.data;
     });
   }
   getAllLine(buildingID) {
@@ -731,19 +750,20 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       case 'exportExcel':
         this.spinner.show();
         const plans = this.data.map((item: any) => item.id);
-        this.planService.exportExcel({ plans, buildingID: this.buildingID}).subscribe((data: any) => {
+        this.planService.exportExcelWorkPlanWholeBuilding(this.buildingID).subscribe((data: any) => {
           const blob = new Blob([data],
             { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
           const downloadURL = window.URL.createObjectURL(data);
           const link = document.createElement('a');
           link.href = downloadURL;
-          link.download = 'report.xlsx';
+          const ct = new Date();
+          link.download = `${ct.getFullYear()}${ct.getMonth()}${ct.getDay()}_WorkPlan.xlsx`;
           link.click();
           this.spinner.hide();
         }, err => {
-            this.spinner.hide();
-            this.alertify.error('Server error!');
+          this.spinner.hide();
+          this.alertify.error('Server error!');
         });
         break;
       default:
@@ -940,11 +960,11 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
 
   // modal
   openStationComponent(data) {
-    const modalRef = this.modalService.open(StationComponent, { size: 'lg', backdrop: 'static', keyboard: false });
-    modalRef.componentInstance.plan = data as IPlan;
-    modalRef.result.then((result) => {
-    }, (reason) => {
-    });
+    // const modalRef = this.modalService.open(StationComponent, { size: 'lg', backdrop: 'static', keyboard: false });
+    // modalRef.componentInstance.plan = data as IPlan;
+    // modalRef.result.then((result) => {
+    // }, (reason) => {
+    // });
   }
   openChangeBPFCModalComponent(name, data) {
     this.planID = data.id;
@@ -1028,7 +1048,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
         this.alertify.error('Lỗi máy chủ!');
       });
     }, () => {
-        cancelCallback();
+      cancelCallback();
     });
   }
   removeOvertime(plans, cancelCallback) {
@@ -1054,7 +1074,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       this.bpfcID = 0;
       this.bpfcDropdownlist.clear();
     }
-    if (this.bpfcKindData.includes(this.kindOfLine) === false ) {
+    if (this.bpfcKindData.includes(this.kindOfLine) === false) {
       this.alertify.warning('Những hóa chất trong BPFC hiện tại không có chứa kind nào của chuyền hiện tại! Vui lòng chọn lại!', true);
       this.bpfcID = 0;
       this.bpfcDropdownlist.clear();

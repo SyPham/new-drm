@@ -44,7 +44,7 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     id: 0,
     name: '',
     modelNo: '',
-    createdBy: JSON.parse(localStorage.getItem('user')).User.ID
+    createdBy: JSON.parse(localStorage.getItem('user')).user.id
   };
   comment: ICommentModelName;
   comments: [];
@@ -80,7 +80,7 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     this.getBuilding();
   }
   getBuilding() {
-    const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = JSON.parse(localStorage.getItem('user')).user.id;
     // this.authService.getBuildingByUserID(userID).subscribe((res: any) => {
     //   res = res || {};
     //   if (res !== {}) {
@@ -220,21 +220,21 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     });
   }
   approval(modelNameid) {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.modalNameService.approval(modelNameid, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been approved!');
       this.getAllModelName();
     });
   }
   done(modelNameid) {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.modalNameService.done(modelNameid, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been finished!');
       this.getAllModelName();
     });
   }
   release() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.modalNameService.release(this.modelNameid, userid).subscribe(() => {
       this.alertify.success('The model name - model no has been released!');
       this.filterByApprovedStatus();
@@ -242,7 +242,7 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     });
   }
   reject() {
-    const userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.modalNameService.reject(this.modelNameid, userid).subscribe((res: any) => {
       if (res.status === true) {
         this.alertify.success(res.message);
@@ -325,7 +325,7 @@ export class ModalNameComponent implements OnInit, AfterViewInit {
     this.comment = {
       id: 0,
       content: this.content,
-      createdBy: JSON.parse(localStorage.getItem('user')).User.ID,
+      createdBy: JSON.parse(localStorage.getItem('user')).user.id,
       createdByName: '',
       BPFCEstablishID: this.modelNameid,
       createdDate: new Date()

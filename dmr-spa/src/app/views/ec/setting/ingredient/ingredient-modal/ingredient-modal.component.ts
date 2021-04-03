@@ -66,8 +66,9 @@ export class IngredientModalComponent implements OnInit {
         minutes: 0,
         parentID: null,
         rpm: 0,
-        title: 'N/A'
-      };
+        title: 'N/A',
+        method: ''
+      } as IGlueType;
       this.glueTypeData.unshift(NA);
     });
   }

@@ -49,7 +49,7 @@
 
                     </div>
                 </div>
-                <ejs-grid #grid [dataSource]='data' [searchSettings]="searchSettings" showColumnMenu='true'
+                <ejs-grid #grid [dataSource]='data' id='grid' [searchSettings]="searchSettings" showColumnMenu='true'
                     [allowExcelExport]='true' allowPaging='true' allowSorting='true' allowResizing='true'
                     gridLines='Both' (actionBegin)="actionBegin($event)" (actionComplete)="actionComplete($event)"
                     (recordDoubleClick)='onDoubleClick($event)' [sortSettings]="sortSettings" (rowSelected)="rowSelected($event)"

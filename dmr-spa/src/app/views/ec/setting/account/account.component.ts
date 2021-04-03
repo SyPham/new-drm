@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { AccountService } from 'src/app/_core/_service/account.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
@@ -10,6 +11,7 @@ import { environment } from 'src/environments/environment';
 import { Tooltip } from '@syncfusion/ej2-angular-popups';
 import { IBuilding } from 'src/app/_core/_model/building';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-account',
@@ -17,13 +19,12 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
   styleUrls: ['./account.component.css'],
   providers: [ToolbarService, EditService, PageService]
 })
-export class AccountComponent implements OnInit {
+export class AccountComponent extends BaseComponent implements OnInit {
   userData: any;
   buildings: IBuilding[];
   buildingDatas: IBuilding[];
   fieldsBuilding: object = { text: 'name', value: 'name' };
   fieldsRole: object = { text: 'name', value: 'name' };
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
   buildingUsers: [];
   user: any;
   password = '';
@@ -31,7 +32,6 @@ export class AccountComponent implements OnInit {
   buildingID: number;
   modalReference: NgbModalRef;
   toolbarOptions = ['Search'];
-  toolbar = ['Add', 'Edit', 'Delete', 'Update', 'Cancel', 'ExcelExport', 'Search'];
   passwordFake = `aRlG8BBHDYjrood3UqjzRl3FubHFI99nEPCahGtZl9jvkexwlJ`;
   pageSettings = { pageCount: 20, pageSizes: true, pageSize: 10 };
   @ViewChild('grid') public grid: GridComponent;
@@ -48,9 +48,11 @@ export class AccountComponent implements OnInit {
     public modalService: NgbModal,
     private userService: UserService,
     private alertify: AlertifyService,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
+    this.Permission(this.route);
     this.roleID = 0;
     this.buildingID = 0;
     this.getRoles();

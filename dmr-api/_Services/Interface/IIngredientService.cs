@@ -1,5 +1,6 @@
 ﻿using dmr_api.Models;
 using DMR_API.DTO;
+using DMR_API.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,7 @@ namespace DMR_API._Services.Interface
         Task<bool> UpdateConsumptionOfBuildingIngredientReport(UpdateConsumpDto entity );
 
         Task<bool> CheckExistsName(string name);
+        Task<ResponseDetail<object>> Rate();
         Task<bool> CheckIncoming(string ingredientName, string batch, string building);
 
     }

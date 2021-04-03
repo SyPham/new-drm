@@ -12,7 +12,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 // Import ngx-barcode module
 import { BarcodeGeneratorAllModule, DataMatrixGeneratorAllModule } from '@syncfusion/ej2-angular-barcode-generator';
 import { ChartAllModule, AccumulationChartAllModule, RangeNavigatorAllModule } from '@syncfusion/ej2-angular-charts';
-import { SwitchModule, RadioButtonModule, CheckBoxModule } from '@syncfusion/ej2-angular-buttons';
+import { SwitchModule, RadioButtonModule, CheckBoxModule, CheckBoxAllModule } from '@syncfusion/ej2-angular-buttons';
 
 import { ButtonModule } from '@syncfusion/ej2-angular-buttons';
 
@@ -37,7 +37,7 @@ import { GridAllModule } from '@syncfusion/ej2-angular-grids';
 
 import { L10n, loadCldr, setCulture } from '@syncfusion/ej2-base';
 
-import { ToolbarModule } from '@syncfusion/ej2-angular-navigations';
+import { ToolbarModule, TreeViewAllModule } from '@syncfusion/ej2-angular-navigations';
 import { TreeGridAllModule } from '@syncfusion/ej2-angular-treegrid/';
 
 import { CountdownModule } from 'ngx-countdown';
@@ -45,10 +45,11 @@ import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
 import { AccountComponent, BuildingComponent, BuildingLunchTimeComponent,
   BuildingModalComponent, BuildingSettingComponent, CostingComponent, DecentralizationComponent,
-  GlueTypeComponent,
+  GlueTypeComponent, PrivilegeComponent, RoleComponent,
   GlueTypeModalComponent, IngredientComponent, IngredientModalComponent, KindComponent, LunchTimeComponent, MailingComponent,
   MaterialComponent, PartComponent, PrintQRCodeComponent, ScalingSettingComponent,
   SubpackageCapacityComponent, SuppilerComponent } from '.';
+import { CoreDirectivesModule } from 'src/app/_core/_directive/core.directives.module';
 
 declare var require: any;
 let defaultLang: string;
@@ -73,19 +74,7 @@ if (lang === 'vi') {
 }
 @NgModule({
   providers: [
-    // {
-    //   provide: APP_INITIALIZER,
-    //   useFactory: appInitializer,
-    //   multi: true,
-    //   deps: [AuthService],
-    // },
-    DatePipe,
-    // { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-    // {
-    //   provide: HTTP_INTERCEPTORS,
-    //   useClass: UnauthorizedInterceptor,
-    //   multi: true,
-    // },
+    DatePipe
   ],
   imports: [
     FormsModule,
@@ -118,6 +107,9 @@ if (lang === 'vi') {
     ToolbarModule,
     CheckBoxModule,
     MultiSelectModule,
+    CoreDirectivesModule,
+    TreeViewAllModule,
+    CheckBoxAllModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -147,7 +139,9 @@ if (lang === 'vi') {
     AccountComponent,
     BuildingComponent,
     BuildingModalComponent,
-    CostingComponent
+    CostingComponent,
+    RoleComponent,
+    PrivilegeComponent
   ]
 })
 export class SettingModule {

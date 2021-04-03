@@ -251,6 +251,22 @@
     "Select a line": "Chọn chuyền",
     "Subpackage Capacity": "Khối lượng chai nhỏ",
     "Building Type": "Loại tòa nhà",
-    "Role": "Quyền"
+    "Role": "Quyền",
+    "Module": "Mô-đun",
+    "Action": "Thao tác",
+    "Function": "Chức năng",
+    "Action In Function": "Thao tác chức năng",
+    "Version": "Version",
+    "Stock": "Nhập hàng",
+    "Output Quantity": "Sản lượng đầu ra",
+    "Consumption 1": "Tiêu thụ 1",
+    "Consumption 2": "Tiêu thụ 2",
+    "Period": "Thời gian tạo to-do-list",
+    "RPM IoT": "RPM IoT",
+    "Privilege": "Phân quyền",
+    "Black List": "Danh sách đen",
+    "Delivery History": "Lịch sử giao",
+    "System": "Hệ thống",
+    "Supplier Menu": "Nhà cung cấp"
 
 }

@@ -24,6 +24,7 @@ export class AuthService {
   buildingValue = new BehaviorSubject<IBuilding[]>([
     {} as IBuilding ]);
   decodedToken: any;
+  profile: any;
   levelSource = new BehaviorSubject<any>({});
   currentLevel = this.levelSource.asObservable();
   constructor(

@@ -57,6 +57,7 @@ namespace DMR_API.Models
         public BPFCEstablish BPFCEstablish { get; set; }
         public ICollection<PlanDetail> PlanDetails { get; set; }
         public ICollection<ToDoList> ToDoList { get; set; }
+        public ICollection<DispatchList> DispatchList { get; set; }
         public ICollection<Station> Stations { get; set; }
 
     }

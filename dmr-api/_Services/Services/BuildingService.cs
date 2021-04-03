@@ -92,6 +92,7 @@ namespace DMR_API._Services.Services
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return false;
             }
         }
@@ -124,7 +125,7 @@ namespace DMR_API._Services.Services
         public async Task<List<BuildingDto>> GetBuildings()
         {
             var userid = _jwtService.GetUserID();
-            var role = await _userRoleRepository.FindAll(x => x.UserID == userid).FirstOrDefaultAsync();
+            var role = await _userRoleRepository.FindAll(x => x.UserID == userid).AsNoTracking().FirstOrDefaultAsync();
             switch (role.RoleID)
             {
                 case (int)Enums.Role.Admin:
@@ -162,6 +163,7 @@ namespace DMR_API._Services.Services
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     return new { status = false };
                 }
 

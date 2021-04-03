@@ -1,27 +1,29 @@
+import { ActivatedRoute } from '@angular/router';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { PartService } from 'src/app/_core/_service/part.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 
 @Component({
   selector: 'app-part',
   templateUrl: './part.component.html',
   styleUrls: ['./part.component.css']
 })
-export class PartComponent implements OnInit {
+export class PartComponent extends BaseComponent implements OnInit {
   part: any;
   data: any;
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-  toolbarOptions = ['ExcelExport', 'Add', 'Edit', 'Delete', 'Cancel', 'Search' ];
   @ViewChild('grid') grid: GridComponent;
   pageSettings = { pageCount: 20, pageSizes: true, pageSize: 10 };
   filterSettings = { type: 'Excel' };
   constructor(
     private partService: PartService,
     private alertify: AlertifyService,
-    ) { }
+    private route: ActivatedRoute,
+    ) { super(); }
 
   ngOnInit() {
+    this.Permission(this.route);
     this.part = {
       id: 0,
       name: ''

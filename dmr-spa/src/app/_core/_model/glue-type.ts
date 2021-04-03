@@ -15,6 +15,7 @@ export interface IGlueType {
     id: number;
     level: number;
     title: string;
+    method: string;
     parentID: number;
     rpm: number;
     minutes: number;

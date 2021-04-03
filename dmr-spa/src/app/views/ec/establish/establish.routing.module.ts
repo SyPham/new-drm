@@ -1,5 +1,6 @@
 import { NgModule } from "@angular/core";
 import { RouterModule, Routes } from "@angular/router";
+import { AuthGuard } from "src/app/_core/_guards/auth.guard";
 import { BPFCScheduleComponent, BpfcDetailComponent,
   BpfcStatusComponent, Bpfc1Component } from ".";
 const routes: Routes = [
@@ -10,8 +11,10 @@ const routes: Routes = [
         path: 'bpfc-schedule',
         data: {
           title: 'bpfc-schedule',
-          breadcrumb: 'BPFC Schedule'
+          breadcrumb: 'BPFC Schedule',
+          functionCode: 'BPFC Schedule'
         },
+        canActivate: [AuthGuard],
         children: [
           {
             path: '',
@@ -42,16 +45,20 @@ const routes: Routes = [
         component: BpfcStatusComponent,
         data: {
           title: 'BPFC Status',
-          breadcrumb: 'BPFC Status'
-        }
+          breadcrumb: 'BPFC Status',
+          functionCode: 'BPFC Status'
+        },
+        canActivate: [AuthGuard]
       },
       {
         path: 'bpfc-1',
         component: Bpfc1Component,
         data: {
           title: 'BPFC ',
-          breadcrumb: 'BPFC '
-        }
+          breadcrumb: 'BPFC',
+          functionCode: 'BPFC'
+        },
+        canActivate: [AuthGuard]
       }
     ]
   }

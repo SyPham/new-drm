@@ -62,7 +62,7 @@ namespace TodolistScheduleService.Services
            {
                _logger.LogInformation($"ReceiveTodolist building: {building}");
            });
-            _connection.On("ReceiveCreatePlan", async () =>
+            _connection.On("ReceiveCreatePlan", () =>
             {
                 _logger.LogInformation($"ReceiveCreatePlan");
                 _flag = true;
@@ -85,6 +85,7 @@ namespace TodolistScheduleService.Services
            {
                _flag = true;
                _logger.LogInformation($"{connectionId} reconnected at: { DateTimeOffset.Now} ---- Flag: {_flag}");
+               await Task.CompletedTask;
            };
           
             while (true)

@@ -98,7 +98,7 @@ export class BpfcComponent implements OnInit {
   }
 
   uploadFile() {
-    const createdBy = JSON.parse(localStorage.getItem('user')).User.ID;
+    const createdBy = JSON.parse(localStorage.getItem('user')).user.id;
     this.bPFCEstablishService.import(this.file, createdBy)
       .subscribe((res: any) => {
         this.getAll();

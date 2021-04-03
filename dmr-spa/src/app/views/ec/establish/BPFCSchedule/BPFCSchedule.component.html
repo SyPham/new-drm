@@ -10,10 +10,10 @@
   <div class="card-body p-0">
     <div class="row">
       <div class="col-md-12">
-        <ejs-grid #grid [dataSource]='data' allowSorting='true' allowResizing='true' allowPaging="true"
+        <ejs-grid #grid id='grid' [dataSource]='data' allowSorting='true' allowResizing='true' allowPaging="true"
           (rowDataBound)='rowDB($event)' [pageSettings]='pageSettings' allowFiltering='true'
           [filterSettings]='filterSettings' [sortSettings]="sortSettings" [editSettings]='editSettings'
-          [toolbar]='toolbar' [allowExcelExport]='true' allowResizing='true' (created)="createdSearch($event)"
+          [toolbar]='toolbarOptions' [allowExcelExport]='true' allowResizing='true' (created)="createdSearch($event)"
           gridLines='Both' showColumnMenu='true' (dataBound)='dataBound($event)' (toolbarClick)='toolbarClick($event)'
           (actionBegin)='actionBegin($event)' [searchSettings]='searchOptions'>
           <e-columns>
@@ -60,20 +60,18 @@
               width=170>
               <ng-template #template let-data>
                 <!-- detail btn -->
-                <button ejs-button (click)="detail(data)" cssClass="e-info"><i class="far fa-edit"></i></button>
-                <span style="color: transparent;" *ngIf="data.finishedStatus === true"> | </span>
+                <button ejs-button (click)="detail(data)" cssClass="e-info mr-2" appPermission appFunction="BPFC Schedule" appAction="EDIT"><i class="far fa-edit"></i></button>
+
                 <!--  new version -->
-                <button ejs-button *ngIf="data.finishedStatus === true" (click)='openModal(newVersionModal,data)'
-                  cssClass="e-primary"><i class="fa fa-plus"></i></button>
+                <button ejs-button *ngIf="data.finishedStatus === true" appPermission appFunction="BPFC Schedule" appAction="CREATE" (click)='openModal(newVersionModal,data)'
+                  cssClass="e-primary mr-2"><i class="fa fa-plus"></i></button>
 
-                <span style="color: transparent;" *ngIf="data.finishedStatus === false"> | </span>
                 <!-- clone -->
-                <button ejs-button *ngIf="data.finishedStatus === false" (click)='openModalClone(cloneModal,data)'
-                  cssClass="e-success"><i class="fa fa-clone"></i></button>
+                <button ejs-button *ngIf="data.finishedStatus === false" (click)='openModalClone(cloneModal,data)' appPermission appFunction="BPFC Schedule" appAction="CLONE"
+                  cssClass="e-success mr-2"><i class="fa fa-clone"></i></button>
 
-                <span style="color: transparent;" *ngIf="1 === this.role.id"> | </span>
                 <!-- remove -->
-                <button ejs-button cssClass="e-danger" (click)='delete(data.id)' *ngIf="1 === this.role.id"><i
+                <button ejs-button cssClass="e-danger" (click)='delete(data.id)' appPermission appFunction="BPFC Schedule" appAction="DELETE"><i
                     class="fa fa-trash"></i></button>
               </ng-template>
             </e-column>

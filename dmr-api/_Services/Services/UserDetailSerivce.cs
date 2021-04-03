@@ -156,16 +156,17 @@ namespace DMR_API._Services.Services
                     IsLock = userRoleItem != null ? userRoleItem.IsLock : false,
                     SystemID = DMRSystemCode,
                     UserRoleID = userRoleItem != null ? userRoleItem.RoleID : 0,
+                    RoleCode = userRoleItem != null ? userRoleItem.Role.Code : "#N/A",
                     BuildingUserID = buildingUserItem != null ? buildingUserItem.BuildingID : 0,
                     Role = userRoleItem != null ? userRoleItem.Role.Name : "#N/A",
                     Building = buildingTemp,
                     Line = lineTemp,
-                      Buildings = building.Select(a => a.ID).ToList(),
+                    Buildings = building.Select(a => a.ID).ToList(),
                     Lines = line.Select(a => a.ID).ToList()
                 });
             }
 
-            return result;
+            return result.Where(x => x.RoleCode != "SUPPER_ADMIN").ToList();
         }
 
         public async Task<object> GetAllUserInfoRoles()
@@ -254,14 +255,14 @@ namespace DMR_API._Services.Services
                     Role = userRoleItem != null ? userRoleItem.Role.Name : "#N/A",
                     Building = buildingTemp,
                     Line = lineTemp,
+                    RoleCode = userRoleItem != null ? userRoleItem.Role.Code : "#N/A",
                     BuildingsData = buildingsModel.Prepend(item).OrderBy(x=>x.Level).ToList(),
                     LinesData = linesModel.Prepend(item).OrderBy(x => x.Level).ToList(),
                     Buildings = buildingIDList.Count == 0 ? emptyItem : buildingIDList,
                     Lines = lineIDList.Count == 0 ? emptyItem : lineIDList
                 });
             }
-
-            return result.ToList();
+            return result.Where(x => x.RoleCode != "SUPPER_ADMIN").ToList();
         }
     }
 }

@@ -1,4 +1,5 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
 import { AuthService } from '../../../_core/_service/auth.service';
 import { AlertifyService } from '../../../_core/_service/alertify.service';
 import { Router } from '@angular/router';
@@ -17,6 +18,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { L10n, loadCldr, setCulture, Ajax } from '@syncfusion/ej2-base';
 import { DataService } from 'src/app/_core/_service/data.service';
 import { PermissionService } from 'src/app/_core/_service/permission.service';
+import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
 declare var require: any;
 
 @Component({
@@ -56,6 +58,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   menus: any;
   constructor(
     private authService: AuthService,
+    private authenticationService: AuthenticationService,
     private roleService: RoleService,
     private alertify: AlertifyService,
     private permissionService: PermissionService,
@@ -82,6 +85,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
       translate.use('vi');
     }
   }
+
   ngOnInit(): void {
     this.vi = require('../../../../assets/ej2-lang/vi.json');
     this.en = require('../../../../assets/ej2-lang/en-US.json');
@@ -91,13 +95,12 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.navEc = new Nav().getNavEc();
     // this.checkTask();
     this.getAvatar();
-    this.currentUser = JSON.parse(localStorage.getItem('user')).User.Username;
+    this.currentUser = JSON.parse(localStorage.getItem('user')).user.username;
     this.page = 1;
     this.pageSize = 10;
     // this.signalrService.startConnection();
-    this.userid = JSON.parse(localStorage.getItem('user')).User.ID;
+    this.userid = JSON.parse(localStorage.getItem('user')).user.id;
     this.getMenu();
-    this.getNotifications();
     this.onService();
     this.currentTime = moment().format('LTS');
     setInterval(() => this.updateCurrentTime(), 1 * 1000);
@@ -115,8 +118,8 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   getMenu() {
     this.permissionService.getMenuByUserPermission(this.userid).subscribe((menus: []) => {
       this.menus = menus;
-      console.log(menus);
-    } );
+      localStorage.setItem('menus', JSON.stringify(menus));
+    });
   }
   areOtherRoles() {
     const roles = [this.ADMIN, this.SUPERVISOR, this.STAFF];
@@ -182,7 +185,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     }
   }
   getBuilding() {
-    const userID = JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = JSON.parse(localStorage.getItem('user')).user.id;
     this.roleService.getRoleByUserID(userID).subscribe((res: any) => {
       res = res || {};
       if (res !== {}) {
@@ -213,10 +216,8 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   onScrollDown() {
     if (this.pageSize >= 200) {
       this.pageSize -= 10;
-      this.getNotifications();
     } else {
       this.pageSize += 10;
-      this.getNotifications();
 
     }
   }
@@ -224,11 +225,9 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   onScrollUp() {
     if (this.pageSize >= 200) {
       this.pageSize -= 10;
-      this.getNotifications();
 
     } else {
       this.pageSize += 10;
-      this.getNotifications();
 
     }
   }
@@ -240,9 +239,10 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     localStorage.clear();
     this.authService.decodedToken = null;
     this.authService.currentUser = null;
-    this.alertify.message('Logged out');
+    this.authenticationService.logOut();
     const uri = this.router.url;
-    this.router.navigate(['login'], { queryParams: { uri } });
+    this.router.navigate(['login'], { queryParams: { uri }, replaceUrl: true  });
+    this.alertify.message('Logged out');
 
   }
   openAvatarModal() {
@@ -255,7 +255,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   }
 
   pushToMainPage() {
-    const role = JSON.parse(localStorage.getItem('user')).User.Role;
+    const role = JSON.parse(localStorage.getItem('user')).user.role;
     if (role === 1) {
       this.router.navigate(['/admin/dash']);
     } else if (role === 2) {
@@ -263,13 +263,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     }
   }
 
-  getNotifications() {
-    this.headerService.getAllNotificationCurrentUser(this.page, this.pageSize, this.userid).subscribe((res: any) => {
-      this.data = res.model;
-      this.total = res.total;
-      this.totalCount = res.TotalCount;
-    });
-  }
   defaultImage() {
     return this.sanitizer.bypassSecurityTrustResourceUrl(`data:image/png;base64, iVBORw0KGgoAAAANSUhEUgAAAJYAA
       ACWBAMAAADOL2zRAAAAG1BMVEVsdX3////Hy86jqK1+ho2Ql521ur7a3N7s7e5Yhi
@@ -306,7 +299,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.headerService.seen(item).subscribe(res => {
       this.page = 1;
       this.data = [];
-      this.getNotifications();
     });
     const obj: IHeader = {
       router: item.URL.split('/')[1],

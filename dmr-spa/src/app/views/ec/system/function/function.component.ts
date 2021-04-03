@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { Query } from '@syncfusion/ej2-data/';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { Component, OnInit, ViewChild } from '@angular/core';
@@ -6,18 +7,17 @@ import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { PermissionService } from 'src/app/_core/_service/permission.service';
 import { environment } from 'src/environments/environment';
 import { TreeGridComponent } from '@syncfusion/ej2-angular-treegrid';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-function',
   templateUrl: './function.component.html',
   styleUrls: ['./function.component.css']
 })
-export class FunctionComponent implements OnInit {
+export class FunctionComponent extends BaseComponent implements OnInit {
   function: any;
   data: any;
   data2: object;
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-  toolbarOptions = ['Add', 'Edit', 'Delete', 'Cancel', 'Search'];
   @ViewChild('grid') grid: GridComponent;
   @ViewChild('treeGrid') treeGrid: TreeGridComponent;
   pageSettings = { pageCount: 20, pageSizes: true, pageSize: 20 };
@@ -27,16 +27,17 @@ export class FunctionComponent implements OnInit {
   permissionTypeID: any;
   moduleID: any;
   moduleData: object;
-  editSettingsTree = { allowEditing: true, allowAdding: true, allowDeleting: true, newRowPosition: 'Child', mode: 'Row' };
   parentID: number;
   level: number;
   parentItem: any;
   constructor(
     private permissionService: PermissionService,
     private alertify: AlertifyService,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
+    this.PermissionForTreeGrid(this.route);
     this.function = {
     };
   }
@@ -126,9 +127,10 @@ export class FunctionComponent implements OnInit {
   }
   actionBegin(args) {
     if (args.requestType === 'beginEdit') {
-      this.moduleID = args.rowData?.moduleID;
-      this.parentID = args.rowData?.parentID;
-      this.level = args.rowData?.level;
+      const item = args.rowData.entity;
+      this.moduleID = item?.moduleID;
+      this.parentID = item?.parentID;
+      this.level = item?.level;
     }
     if (args.requestType === 'add' && args.type === "actionBegin") {
       // this.moduleID = args.rowData?.moduleID;
@@ -140,6 +142,7 @@ export class FunctionComponent implements OnInit {
       const item = args.data.entity;
       this.function.id = 0;
       this.function.name = item.name;
+      this.function.code = item.code;
       this.function.url = item.url;
       this.function.level = this.level || 1;
       this.function.sequence = item.sequence || 0;
@@ -152,6 +155,7 @@ export class FunctionComponent implements OnInit {
       const item = args.data.entity;
       this.function.id = item.id;
       this.function.name = item.name;
+      this.function.code = item.code;
       this.function.url = item.url;
       this.function.level = this.level;
       this.function.parentID = this.parentID;

@@ -1,8 +1,13 @@
+using dmr_api.Data.Interface;
 using dmr_api.Models;
 using DMR_API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace DMR_API.Data
 {
@@ -64,6 +69,7 @@ namespace DMR_API.Data
 
         public DbSet<Models.Action> Actions { get; set; }
         public DbSet<Models.Version> Versions { get; set; }
+        public DbSet<Models.Module> Modules { get; set; }
 
         public DbSet<ActionInFunctionSystem> ActionInFunctionSystem { get; set; }
 
@@ -123,6 +129,26 @@ namespace DMR_API.Data
             //    }}
             //};
             //modelBuilder.Entity<Period>().HasData(periodList);
+        }
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            IEnumerable<EntityEntry> modified = ChangeTracker.Entries()
+                .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added);
+            foreach (EntityEntry item in modified)
+            {
+                if (item.Entity is IDateTracking changedOrAddedItem)
+                {
+                    if (item.State == EntityState.Added)
+                    {
+                        changedOrAddedItem.CreatedTime= DateTime.Now;
+                    }
+                    else
+                    {
+                        changedOrAddedItem.UpdatedTime = DateTime.Now;
+                    }
+                }
+            }
+            return base.SaveChangesAsync(cancellationToken);
         }
     }
 }

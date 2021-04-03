@@ -330,6 +330,12 @@ namespace DMR_API.Controllers
             var res = await _planService.ExportExcel(dto);
             return File(res.Data, "application/octet-stream", $"report{DateTime.Now.ToString("MMddyyyy")}.xlsx");
         }
+        [HttpGet("{buildingID}")]
+        public async Task<IActionResult> ExportExcelWorkPlanWholeBuilding(int buildingID)
+        {
+            var res = await _planService.ExportExcelWorkPlanWholeBuilding(buildingID);
+            return File(res.Data, "application/octet-stream", $"{DateTime.Now.ToString("MMddyyyy")}_WorkPlan.xlsx");
+        }
         [HttpPost]
         public async Task<IActionResult> ReportConsumptionCase2(ReportParams reportParams)
         {

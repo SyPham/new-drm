@@ -29,6 +29,7 @@ import { PrintGlueComponent } from '../print-glue/print-glue.component.js';
 import { DispatchDoneListComponent } from '../dispatch-done-list/dispatch-done-list.component.js';
 import { PrintGlueDispatchListComponent } from '../print-glue-dispatch-list/print-glue-dispatch-list.component.js';
 import { DispatchComponent } from '../dispatch/dispatch.component';
+import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
 
 declare var $: any;
 const ADMIN = 1;
@@ -159,6 +160,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     private router: Router,
     private datePipe: DatePipe,
     private authService: AuthService,
+    private authenticationService: AuthenticationService,
     private spinner: NgxSpinnerService,
     public todolistService: TodolistService
   ) {
@@ -259,7 +261,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
       this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
       callback();
     });
-    const userID = +JSON.parse(localStorage.getItem('user')).User.ID;
+    const userID = +JSON.parse(localStorage.getItem('user')).user.id;
     this.authService.getBuildingUserByUserID(userID).subscribe((res) => {
       this.buildings = res.data;
       callback();

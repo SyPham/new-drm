@@ -28,10 +28,6 @@ namespace DMR_API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(RoleDto create)
         {
-
-            if (_roleService.GetById(create.ID) != null)
-                return BadRequest("Role ID already exists!");
-            //create.CreatedDate = DateTime.Now;
             if (await _roleService.Add(create))
             {
                 return NoContent();

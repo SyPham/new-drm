@@ -14,11 +14,11 @@
                     allowSorting='true'
                     gridLines='Both'
                     (created)='created()'
-                    [editSettings]="editing"
+                    [editSettings]="editSettingsTree"
                     [contextMenuItems]='contextMenuItems'
                     (actionComplete)="actionComplete($event)"
                     (actionBegin)="actionBegin($event)"
-                    [toolbar]='toolbar'
+                    [toolbar]='toolbarOptionsTree'
                     childMapping="childNodes"
                     allowExcelExport='true'
                     allowPdfExport='true'

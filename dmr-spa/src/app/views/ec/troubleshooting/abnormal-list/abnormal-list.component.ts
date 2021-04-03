@@ -44,7 +44,7 @@ export class AbnormalListComponent implements OnInit, AfterViewInit {
   buildingSelected: any[];
   abnormals: any;
   abnormal = {
-    userID: JSON.parse(localStorage.getItem('user')).User.ID,
+    userID: JSON.parse(localStorage.getItem('user')).user.id,
     ingredient: '',
     building: '',
     batch: ''

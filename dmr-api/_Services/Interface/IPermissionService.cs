@@ -34,6 +34,8 @@ namespace DMR_API._Services.Interface
         Task<ResponseDetail<object>> DeleteActionToFunction(int functionID, ActionAssignRequest request);
         Task<object> GetMenuByUserPermission(int userId);
         Task<object> GetScreenAction(int functionID);
+        Task<object> GetActionInFunctionByRoleID(int roleID);
+        Task<object> GetScreenFunctionAndAction(ScreenFunctionAndActionRequest request);
 
     }
 }

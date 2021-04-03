@@ -1,18 +1,21 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
+import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { KindService } from 'src/app/_core/_service/kind.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ActionConstant } from 'src/app/_core/_constants';
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 
 @Component({
   selector: 'app-kind',
   templateUrl: './kind.component.html',
   styleUrls: ['./kind.component.css']
 })
-export class KindComponent implements OnInit {
+export class KindComponent extends BaseComponent implements OnInit {
   kind: any;
   data: any;
-  editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-  toolbarOptions = ['Add', 'Edit', 'Delete', 'Cancel', 'Search'];
   @ViewChild('grid') grid: GridComponent;
   pageSettings = { pageCount: 20, pageSizes: true, pageSize: 10 };
   fieldsKindType: object = { text: 'name', value: 'name' };
@@ -22,9 +25,13 @@ export class KindComponent implements OnInit {
   constructor(
     private kindService: KindService,
     private alertify: AlertifyService,
-    ) { }
+    private route: ActivatedRoute
+  ) {
+    super();
+  }
 
   ngOnInit() {
+    this.Permission(this.route);
     this.kind = {
       id: 0,
       name: '',
@@ -36,7 +43,7 @@ export class KindComponent implements OnInit {
   // api
   getAllKind() {
     this.kindService.getAllKind().subscribe(res => {
-      this.data = res ;
+      this.data = res;
     });
   }
   getAllKindType() {
@@ -95,6 +102,7 @@ export class KindComponent implements OnInit {
     }
   }
   actionBegin(args) {
+    this.grid.toolbarModule.getToolbar();
     if (args.requestType === 'beginEdit') {
       const item = args.rowData;
       this.kindTypeID = item.kindTypeID;

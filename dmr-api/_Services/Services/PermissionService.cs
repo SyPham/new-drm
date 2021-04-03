@@ -79,8 +79,8 @@ namespace DMR_API._Services.Services
 
         public async Task<List<FunctionSystem>> GetAllFunction()
         {
-            var functions = await _repoFunctionSystem.FindAll().Include(x=>x.Module).ToListAsync();
-            return  functions;
+            var functions = await _repoFunctionSystem.FindAll().Include(x => x.Module).ToListAsync();
+            return functions;
         }
 
         public async Task<List<Module>> GetAllModule()
@@ -120,7 +120,7 @@ namespace DMR_API._Services.Services
 
         public async Task<ResponseDetail<object>> DeleteModule(int moduleID)
         {
-            var module = await _repoModule.FindAll(x=> x.ID == moduleID).FirstOrDefaultAsync();
+            var module = await _repoModule.FindAll(x => x.ID == moduleID).FirstOrDefaultAsync();
             _repoModule.Remove(module);
             try
             {
@@ -235,49 +235,52 @@ namespace DMR_API._Services.Services
             }
         }
 
-        public async  Task<List<Models.Action>> GetAllAction() => await _repoAction.FindAll().ToListAsync();
+        public async Task<List<Models.Action>> GetAllAction() => await _repoAction.FindAll().ToListAsync();
 
         public async Task<IEnumerable<HierarchyNode<FunctionSystem>>> GetFunctionsAsTreeView()
         {
-            var model = (await _repoFunctionSystem.FindAll().Include(x=> x.Module).Include(x=>x.Function).OrderBy(x => x.ID).OrderBy(x=> x.ModuleID).ThenBy(x=> x.Sequence).ToListAsync()).AsHierarchy(x => x.ID, y => y.ParentID);
+            var model = (await _repoFunctionSystem.FindAll().Include(x => x.Module).Include(x => x.Function).OrderBy(x => x.ID).OrderBy(x => x.ModuleID).ThenBy(x => x.Sequence).ToListAsync()).AsHierarchy(x => x.ID, y => y.ParentID);
             return model;
         }
 
         public async Task<object> GetMenuByUserPermission(int userId)
         {
-            var roles = await _repoUserRole.FindAll(x=> x.UserID == userId).Select(x=> x.RoleID).ToArrayAsync();
-            var query = from f in _repoFunctionSystem.FindAll().Include(x=> x.Module)
+            var roles = await _repoUserRole.FindAll(x => x.UserID == userId).Select(x => x.RoleID).ToArrayAsync();
+            var query = from f in _repoFunctionSystem.FindAll().Include(x => x.Module)
                         join p in _repoPermission.FindAll()
                             on f.ID equals p.FunctionSystemID
                         join r in _repoRole.FindAll() on p.RoleID equals r.ID
                         join a in _repoAction.FindAll()
                             on p.ActionID equals a.ID
                         where roles.Contains(r.ID) && a.Code == "VIEW"
-                        select new 
+                        select new
                         {
                             Id = f.ID,
                             Name = f.Name,
+                            Code = f.Code,
                             Url = f.Url,
                             ParentId = f.ParentID,
                             SortOrder = f.Sequence,
-                            Module= f.Module,
+                            Module = f.Module,
                             ModuleId = f.ModuleID
                         };
             var data = await query.Distinct()
                 .OrderBy(x => x.ParentId)
                 .ThenBy(x => x.SortOrder)
                 .ToListAsync();
-            return data.GroupBy(x=> x.Module).Select( x=> new {
+            return data.GroupBy(x => x.Module).Select(x => new
+            {
                 Module = x.Key.Name,
+                Sequence = x.Key.Sequence,
                 Children = x,
                 HasChildren = x.Any()
-            });
+            }).OrderBy(x => x.Sequence).ToList();
         }
         public async Task<ResponseDetail<object>> PostActionToFunction(int functionID, ActionAssignRequest request)
         {
             foreach (var actionId in request.ActionIds)
             {
-                if (await _repoActionInFunctionSystem.FindAll( x=> x.FunctionSystemID == functionID && x.ActionID == actionId).AnyAsync() != false)
+                if (await _repoActionInFunctionSystem.FindAll(x => x.FunctionSystemID == functionID && x.ActionID == actionId).AnyAsync() != false)
                     return new ResponseDetail<object> { Status = false, Message = "This action has been existed in function" };
                 var entity = new ActionInFunctionSystem
                 {
@@ -303,27 +306,31 @@ namespace DMR_API._Services.Services
         }
         public async Task<ResponseDetail<object>> PutPermissionByRoleId(int roleID, UpdatePermissionRequest request)
         {
-            //create new permission list from user changed
-            var newPermissions = new List<Permission>();
-            foreach (var p in request.Permissions)
-            {
-                newPermissions.Add(new Permission(p.FunctionID, roleID, p.ActionID));
-            }
-            var existingPermissions = await _repoPermission.FindAll(x => x.RoleID == roleID).ToListAsync();
 
-            _repoPermission.RemoveMultiple(existingPermissions);
-            _repoPermission.AddRange(newPermissions.DistinctBy(x => new { x.RoleID, x.ActionID, x.FunctionSystemID }).ToList());
             try
             {
-                var result = await _repoPermission.SaveAll();
-                return new ResponseDetail<object>{Status = true};
+                //create new permission list from user changed
+                var newPermissions = new List<Permission>();
+                foreach (var p in request.Permissions)
+                {
+                    newPermissions.Add(new Permission(roleID, p.ActionID, p.FunctionID));
+                }
+                var existingPermissions = await _repoPermission.FindAll(x => x.RoleID == roleID).ToListAsync();
+
+                _repoPermission.RemoveMultiple(existingPermissions);
+                await _repoPermission.SaveAll();
+
+                _repoPermission.AddRange(newPermissions.DistinctBy(x => new { x.RoleID, x.ActionID, x.FunctionSystemID }).ToList());
+
+                await _repoPermission.SaveAll();
+                return new ResponseDetail<object> { Status = true };
             }
             catch (System.Exception ex)
             {
                 // TODO
                 return new ResponseDetail<object> { Status = false, Message = ex.Message };
             }
-          
+
             // tao role moi
         }
         public async Task<ResponseDetail<object>> DeleteActionToFunction(int functionID, ActionAssignRequest request)
@@ -331,13 +338,13 @@ namespace DMR_API._Services.Services
             try
             {
                 foreach (var actionId in request.ActionIds)
-            {
-                var entity = await _repoActionInFunctionSystem.FindAll(x => x.FunctionSystemID == functionID && x.ActionID == actionId).FirstOrDefaultAsync();
-                if (entity == null)
-                    return new ResponseDetail<object> { Status = false, Message = "This action is not existed in function" };
+                {
+                    var entity = await _repoActionInFunctionSystem.FindAll(x => x.FunctionSystemID == functionID && x.ActionID == actionId).FirstOrDefaultAsync();
+                    if (entity == null)
+                        return new ResponseDetail<object> { Status = false, Message = "This action is not existed in function" };
 
-                _repoActionInFunctionSystem.Remove(entity);
-            }
+                    _repoActionInFunctionSystem.Remove(entity);
+                }
                 var result = await _repoPermission.SaveAll();
                 return new ResponseDetail<object> { Status = true };
             }
@@ -353,10 +360,10 @@ namespace DMR_API._Services.Services
         public async Task<object> GetScreenAction(int functionID)
         {
             var query = from a in _repoAction.FindAll()
-                        join f in _repoActionInFunctionSystem.FindAll(x=> x.FunctionSystemID == functionID)
-                                    .Include(x=>x.FunctionSystem)
+                        join f in _repoActionInFunctionSystem.FindAll(x => x.FunctionSystemID == functionID)
+                                    .Include(x => x.FunctionSystem)
                             on a.ID equals f.ActionID
-                        into af 
+                        into af
                         from c in af.DefaultIfEmpty()
                         select new
                         {
@@ -366,7 +373,95 @@ namespace DMR_API._Services.Services
                             Status = c != null ? true : false,
                         };
             var data = await query.ToListAsync();
-           return data;
+            return data;
+        }
+        public async Task<object> GetActionInFunctionByRoleID(int roleID) {
+            var query = _repoPermission.FindAll(x => x.RoleID == roleID)
+                .Include(x=> x.Functions)
+                .Include(x=> x.Action)
+                .Select(x => new {
+                    x.Functions.Name,
+                    FunctionCode = x.Functions.Code,
+                    x.Functions.Url,
+                    x.Action.Code,
+                    x.ActionID
+                });
+                var data = (await query.ToListAsync()).GroupBy(x => new {x.Name, x.FunctionCode, x.Url})
+                        .Select(x => new {
+                            x.Key.Name,
+                            x.Key.FunctionCode,
+                            x.Key.Url,
+                            Childrens = x
+                        });
+                return data;
+        }
+        public async Task<object> GetScreenFunctionAndAction(ScreenFunctionAndActionRequest request)
+        {
+
+            var roleID = request.RoleIDs;
+            var permission = _repoPermission.FindAll();
+            var query = _repoActionInFunctionSystem.FindAll()
+                .Include(x => x.Action)
+                .Include(x => x.FunctionSystem)
+                .ThenInclude(x => x.Module)
+                .Select(x => new
+                {
+                    Id = x.FunctionSystem.ID,
+                    Name = x.FunctionSystem.Name,
+                    ActionName = x.Action.Name,
+                    ActionID = x.Action.ID,
+                    ModuleName = x.FunctionSystem.Module.Name,
+                    ModuleCode = x.FunctionSystem.Module.Code,
+                    ModuleNameID = x.FunctionSystem.Module.ID,
+                    Code = x.Action.Code,
+                });
+                // .Where(x => x.ModuleCode != "SYSTEM")
+          var model =  from t1 in query
+                        from t2 in permission.Where(x => roleID.Contains(x.RoleID) && t1.Id == x.FunctionSystemID && x.ActionID== t1.ActionID)
+                            .DefaultIfEmpty()
+                        select new {
+                            t1.Id,
+                            t1.Name ,
+                            t1.ActionName,
+                            t1.ActionID,
+                            t1.ModuleName,
+                            t1.ModuleNameID,
+                            t1.Code,
+                            Permission= t2
+                        };
+            var data = (await model.ToListAsync())
+                        .GroupBy(x => new { x.ModuleName })
+                        .Select(x => new
+                        {
+                            ModuleName = x.Key.ModuleName,
+                            Fields = new
+                            {
+                                DataSource = x.GroupBy(s => new { s.Id, s.Name })
+                                .Select(g => new
+                                {
+                                    Id = g.Key.Id,
+                                    Name = g.Key.Name,
+                                    Childrens = g
+                                    .Select(a => new
+                                    {
+                                        ParentID = g.Key.Id,
+                                        ID = $"{a.ActionID}_{g.Key.Id}_{roleID.FirstOrDefault()}",
+                                        Name = a.ActionName,
+                                        a.ActionID,
+                                        FunctionID = g.Key.Id,
+                                        a.ActionName,
+                                        Status = a.Permission != null,
+                                        // Status = permission.Any(p => roleID.Contains(p.RoleID) && a.ActionID == p.ActionID && p.FunctionSystemID == g.Key.Id) 
+                                        // IsChecked = permission.Any(p => roleID.Contains(p.RoleID) && a.ActionID == p.ActionID && p.FunctionSystemID == g.Key.Id)
+
+                                    }).ToList()
+                                }),
+                                Id = "id",
+                                Text = "name",
+                                Child = "childrens"
+                            }
+                        });
+            return data;
         }
     }
 }

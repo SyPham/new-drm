@@ -65,6 +65,8 @@ namespace DMR_API._Services.Interface
         Task<ResponseDetail<object>> ChangeBPFC(int planID, int bpfcID);// v102
         Task<ResponseDetail<object>> Online(int planID);// v102
         Task<ResponseDetail<object>> Offline(int planID);// v102
+
+        Task<ResponseDetail<Byte[]>> ExportExcelWorkPlanWholeBuilding(int buildingID);
         /// <summary>
         /// Excel Export
         /// </summary>
@@ -76,5 +78,6 @@ namespace DMR_API._Services.Interface
         /// (Update on time)/12(Total)=100% Achievement Rate  => what is the standard time of "update on time" ? 
         /// </summary>
         Task<ResponseDetail<object>> AchievementRate(int building);
+
     }
 }

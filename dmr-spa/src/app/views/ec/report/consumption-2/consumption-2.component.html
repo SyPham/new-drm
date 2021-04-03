@@ -33,16 +33,16 @@
             </div>
           </div>
         </div>
-        <ejs-grid #grid [dataSource]='data' 
-        [searchSettings]="searchSettings" 
+        <ejs-grid #grid [dataSource]='data' id='grid'
+        [searchSettings]="searchSettings"
         showColumnMenu='true'
-          allowPaging='true' 
-          allowResizing='true' 
-          gridLines='Both' 
+          allowPaging='true'
+          allowResizing='true'
+          gridLines='Both'
           (dataBound)='dataBound()'
-          [toolbar]='toolbarOptions' 
+          [toolbar]='toolbarOptions'
           (queryCellInfo)='queryCellInfoEvent($event)'
-          (toolbarClick)='toolbarClick($event)' 
+          (toolbarClick)='toolbarClick($event)'
           [pageSettings]='pageSettings'>
           <e-columns>
             <e-column field='line' headerText='Line' width='80' textAlign='Center'></e-column>

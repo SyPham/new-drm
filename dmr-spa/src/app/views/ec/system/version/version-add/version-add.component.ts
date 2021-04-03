@@ -4,7 +4,6 @@ import { ChangeEvent } from '@ckeditor/ckeditor5-angular';
 import ClassicEditor from '@haifahrul/ckeditor5-build-rich';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { VersionService } from 'src/app/_core/_service/version.service';
-import HtmlEmbed from '@ckeditor/ckeditor5-html-embed/src/htmlembed';
 @Component({
   selector: 'app-version-add',
   templateUrl: './version-add.component.html',
@@ -14,7 +13,6 @@ export class VersionAddComponent implements OnInit {
   editor = ClassicEditor;
   config = {
     toolbar: [
-
       'undo',
       'redo',
       '|',
@@ -30,7 +28,6 @@ export class VersionAddComponent implements OnInit {
       'highlight',
       '|',
       'link',
-      'CKFinder',
       'imageUpload',
       'mediaEmbed',
       '|',
@@ -44,10 +41,9 @@ export class VersionAddComponent implements OnInit {
       'insertTable',
       'blockQuote',
       'specialCharacters',
-      '|',
-      'htmlEmbed',
+      '|'
     ],
-    language: 'id',
+    language: 'en',
     image: {
       toolbar: [
         'imageTextAlternative',
@@ -59,9 +55,11 @@ export class VersionAddComponent implements OnInit {
   version: {
     id: number,
     description: string,
-    name: string
+    name: string,
+    uploadBy: string
   };
   name: string;
+  uploadBy: string;
   description: string;
   Id: any;
   isEdit: boolean;
@@ -79,16 +77,18 @@ export class VersionAddComponent implements OnInit {
       this.isEdit = false;
       this.description = '';
       this.title = 'Add version';
+      this.version = {
+        id: this.Id,
+        description: '',
+        name: '',
+        uploadBy: ''
+      };
     } else {
       this.isEdit = true;
       this.title = 'Edit version';
       this.getByID();
     }
-    this.version = {
-      id: this.Id,
-      description: '',
-      name: ''
-    };
+
   }
   public onChange({ editor }: ChangeEvent) {
     const data = editor.getData();
@@ -99,7 +99,8 @@ export class VersionAddComponent implements OnInit {
     this.version = {
       id: 0,
       description: this.description,
-      name: this.name
+      name: this.name,
+      uploadBy: this.uploadBy
     };
     this.versionService.create(this.version).subscribe(() => {
       this.alertify.success('Add Version Successfully');
@@ -109,17 +110,20 @@ export class VersionAddComponent implements OnInit {
   reset() {
     this.description = '';
     this.name = '';
+    this.uploadBy = '';
     this.version = {
       id: 0,
       description: this.description,
-      name: this.name
+      name: this.name,
+      uploadBy: this.uploadBy
     };
   }
   edit() {
     this.version = {
       id: this.Id,
       description: this.description,
-      name: this.name
+      name: this.name,
+      uploadBy: this.uploadBy
     };
     this.versionService.update(this.version).subscribe(() => {
       this.alertify.success('Update Version Successfully');
@@ -130,6 +134,8 @@ export class VersionAddComponent implements OnInit {
     this.versionService.getById(this.Id).subscribe((item: any) => {
       this.version = item;
       this.description = this.version.description;
+      this.name = this.version.name;
+      this.uploadBy = this.version.uploadBy;
     });
   }
   save() {

@@ -819,6 +819,7 @@ namespace DMR_API._Services.Services
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     transaction.Dispose();
                     return false;
                     throw;
@@ -1383,6 +1384,7 @@ namespace DMR_API._Services.Services
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(ex.Message);
                     transaction.Dispose();
                     return new ResponseDetail<object>(null, false, "Không tạo được kế hoạch làm việc!");
                 }
@@ -1698,7 +1700,6 @@ namespace DMR_API._Services.Services
             }
 
             return ExportExcel(headers, bodyList, ingredients.ToList());
-            throw new NotImplementedException();
         }
 
         public async Task<List<ConsumtionDto>> ConsumptionByLineCase1(ReportParams reportParams)
@@ -1729,7 +1730,7 @@ namespace DMR_API._Services.Services
                 lines = await _repoBuilding.FindAll(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
             }
             //var buildingGlueModel = await _repoBuildingGlue.FindAll(x => x.CreatedDate.Date >= startDate && x.CreatedDate.Date <= endDate && lines.Contains(x.BuildingID)).Include(x => x.MixingInfo).ToListAsync();
-            var dispatchModel = await _repoDispatch.FindAll(x => x.CreatedTime.Date >= startDate && x.CreatedTime.Date <= endDate && lines.Contains(x.LineID)).Include(x => x.MixingInfo).ToListAsync();
+            var dispatchModel = await _repoDispatch.FindAll(x => x.EstimatedFinishTime.Date >= startDate && x.EstimatedFinishTime.Date <= endDate && lines.Contains(x.LineID)).Include(x => x.MixingInfo).ToListAsync();
             var model = await _repoPlan.FindAll()
                  .Include(x => x.BPFCEstablish)
                  .ThenInclude(x => x.Glues)
@@ -1767,9 +1768,9 @@ namespace DMR_API._Services.Services
                 foreach (var glue in item.Glues.Where(x => x.isShow))
                 {
                     var std = glue.Consumption.ToFloat();
-                    var buildingGlue = dispatchModel.FirstOrDefault(x => x.MixingInfo.Glue.GlueNameID.Equals(glue.GlueNameID) && x.CreatedTime.Date == item.Date && item.BuildingID == x.LineID);
+                    var buildingGlue = dispatchModel.FirstOrDefault(x => x.MixingInfo.Glue.GlueNameID.Equals(glue.GlueNameID) && x.EstimatedFinishTime.Date == item.Date && item.BuildingID == x.LineID);
                     var totalConsumption = buildingGlue == null ? 0 : buildingGlue.Amount.ToFloat();
-                    var realConsumption = totalConsumption > 0 && item.Quantity > 0 ? Math.Round(totalConsumption * 1000 / item.Quantity, 2).ToFloat() : 0;
+                    var realConsumption = totalConsumption > 0 && item.Quantity > 0 ? Math.Round(totalConsumption / item.Quantity, 2).ToFloat() : 0;
                     var diff = std > 0 && realConsumption > 0 ? Math.Round(realConsumption - std, 2).ToFloat() : 0;
                     var percentage = std > 0 ? Math.Round((diff / std) * 100).ToFloat() : 0;
                     list.Add(new ConsumtionDto
@@ -1782,7 +1783,7 @@ namespace DMR_API._Services.Services
                         Glue = glue.Name,
                         Std = std,
                         Qty = item.Quantity,
-                        TotalConsumption = totalConsumption,
+                        TotalConsumption = totalConsumption > 0 ? (float)Math.Round(totalConsumption / 1000, 2) : 0,
                         RealConsumption = realConsumption,
                         Diff = diff,
                         ID = item.BPFCEstablishID,
@@ -1791,7 +1792,6 @@ namespace DMR_API._Services.Services
                         MixingDate = buildingGlue == null || buildingGlue.MixingInfo == null ? DateTime.MinValue : buildingGlue.MixingInfo.CreatedTime
                     });
                 }
-
             }
             return list.ToList();
             throw new NotImplementedException();
@@ -2865,7 +2865,7 @@ namespace DMR_API._Services.Services
                 return new Byte[] { };
             }
         }
-
+   
         private double FindPercentageByPosition(List<GlueIngredient> glueIngredients, string position)
         {
             var glueIngredient = glueIngredients.FirstOrDefault(x => x.Position == position);
@@ -2873,6 +2873,123 @@ namespace DMR_API._Services.Services
             return glueIngredient == null ? 0 : glueIngredient.Percentage;
         }
 
+        public async Task<ResponseDetail<Byte[]>> ExportExcelWorkPlanWholeBuilding(int buildingID)
+        {
+            var buildingModel = await _repoBuilding.FindAll().FirstOrDefaultAsync(x => x.ID == buildingID);
+            var _buildings = await _repoBuilding.FindAll().Where(x => x.BuildingTypeID == buildingModel.BuildingTypeID).OrderBy(x => x.Name).ToListAsync();
+           var data = new List<ExportExcelPlanDto>();
+           foreach (var building in _buildings)
+           {
+
+                var lines = _repoBuilding.FindAll(x => building.ID == x.ParentID.Value).Select(a => a.ID).ToList();
+                var plans = await _repoPlan.FindAll()
+                 .Where(x => lines.Contains(x.BuildingID) && x.DueDate == DateTime.Now.Date)
+                 .Include(x => x.BPFCEstablish)
+                     .ThenInclude(x => x.ModelName)
+                 .Include(x => x.BPFCEstablish)
+                     .ThenInclude(x => x.ModelNo)
+                 .Include(x => x.BPFCEstablish)
+                     .ThenInclude(x => x.ArticleNo)
+                 .Select(x => new ExportExcelPlanDto
+                 {
+                     ModelName = x.BPFCEstablish.ModelName.Name,
+                     ModelNo = x.BPFCEstablish.ModelNo.Name,
+                     ArticleNO = x.BPFCEstablish.ArticleNo.Name,
+                     Line = x.Building.Name,
+                     DueDate = x.DueDate,
+                     CreatedDate = x.CreatedDate
+                 }).OrderBy(x => x.Line)
+                 .ThenBy(x => x.CreatedDate)
+                 .ToListAsync();
+                 foreach (var item in plans)
+                 {
+                    item.Building = building.Name;
+                 }
+                 data.AddRange(plans);
+           }
+            
+            var groupBy = data.GroupBy(g => g.Building).ToList();
+            try
+            {
+                var currentDateTime = DateTime.Now;
+                ExcelPackage.LicenseContext = LicenseContext.Commercial;
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+                var memoryStream = new MemoryStream();
+                using (ExcelPackage p = new ExcelPackage(memoryStream))
+                {
+                    // đặt tên người tạo file
+                    p.Workbook.Properties.Author = "Henry Pham";
+
+                    // đặt tiêu đề cho file
+                    p.Workbook.Properties.Title = $"{currentDateTime.ToString("YYYYMMdd")}_Workplan";
+
+                    if (groupBy.Count == 0) return null;
+                    foreach (var groupbyItem in groupBy)
+                    {
+                        var sheet = groupbyItem.Key;
+                        //Tạo một sheet để làm việc trên đó
+                        p.Workbook.Worksheets.Add(sheet);
+                        // lấy sheet vừa add ra để thao tác
+                        ExcelWorksheet ws = p.Workbook.Worksheets[sheet];
+
+                        // đặt tên cho sheet
+                        ws.Name = sheet;
+                        // fontsize mặc định cho cả sheet
+                        ws.Cells.Style.Font.Size = 11;
+                        // font family mặc định cho cả sheet
+                        ws.Cells.Style.Font.Name = "Calibri";
+                        string[] headers = new string[] { "Model Name", "Model NO", "Article NO", "Line", "Due Date" };
+                        int headerRowIndex = 1;
+                        int headerColIndex = 1;
+                        int patternTypeColIndex = 1;
+                        // int backgroundColorColIndex = 1;
+                        foreach (var item in headers.Select((value, index) => new { value, index }))
+                        {
+                            ws.Cells[headerRowIndex, headerColIndex++].Value = headers[item.index];
+
+                            // Style Header
+                            var pattern = ws.Cells[headerRowIndex, patternTypeColIndex++];
+                            pattern.Style.Fill.PatternType = ExcelFillStyle.Solid;
+                            pattern.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#FFFF00"));
+                        }
+
+
+                        // end Style
+
+                        int colIndex = 1;
+                        int rowIndex = 1;
+                        // với mỗi item trong danh sách sẽ ghi trên 1 dòng
+                        foreach (var body in groupbyItem)
+                        {
+                            // bắt đầu ghi từ cột 1. Excel bắt đầu từ 1 không phải từ 0 #c0514d
+                            colIndex = 1;
+
+                            // rowIndex tương ứng từng dòng dữ liệu
+                            rowIndex++;
+
+
+                            //gán giá trị cho từng cell                      
+                            ws.Cells[rowIndex, colIndex++].Value = body.ModelName;
+                            ws.Cells[rowIndex, colIndex++].Value = body.ModelNo;
+                            ws.Cells[rowIndex, colIndex++].Value = body.ArticleNO;
+                            ws.Cells[rowIndex, colIndex++].Value = body.Line;
+                            ws.Cells[rowIndex, colIndex++].Value = body.DueDate != null ? body.DueDate.ToString("MM/dd/yyyy") : "N/A";
+                        }
+
+                    }
+
+                    //Lưu file lại
+                    Byte[] bin = p.GetAsByteArray();
+                    return new ResponseDetail<Byte[]>(bin, true, string.Empty);
+                }
+            }
+            catch (Exception ex)
+            {
+                var mes = ex.Message;
+                Console.Write(mes);
+                return new ResponseDetail<Byte[]>(new Byte[] { }, false, string.Empty);
+            }
+        }
         public async Task<ResponseDetail<Byte[]>> ExportExcel(ExcelExportDto dto)
         {
             var plans = await _repoPlan.FindAll()
@@ -2925,7 +3042,7 @@ namespace DMR_API._Services.Services
                     int headerRowIndex = 1;
                     int headerColIndex = 1;
                     int patternTypeColIndex = 1;
-                    int backgroundColorColIndex = 1;
+                    // int backgroundColorColIndex = 1;
                     foreach (var item in headers.Select((value, index) => new { value, index }))
                     {
                         ws.Cells[headerRowIndex, headerColIndex++].Value = headers[item.index];
@@ -3090,10 +3207,37 @@ namespace DMR_API._Services.Services
             var planTotal = model.Count();
             var rateTemp = (planTotal / (double)lineTotal) * 100;
             var rate = Math.Round(rateTemp);
-            return new ResponseDetail<object> { Data = $"{planTotal}/{lineTotal}    {rate}%", Status = true };
+            var data = new {
+                Text = $"{planTotal}/{lineTotal}    {rate}%",
+                UpdateOnTime = planTotal,
+                Total = lineTotal,
+                Rate = rate
+            };
+            return new ResponseDetail<object> { Data = data, Status = true };
         }
 
-
+        private async Task<List<PlanDto>> GetAllPlanToDay(int buildingTypeID) {
+            var _buildings = await _repoBuilding.FindAll().Where(x => x.BuildingTypeID == buildingTypeID).ToListAsync();
+            var lines = _repoBuilding.FindAll(x => _buildings.Select(a => a.ID).Contains(x.ParentID.Value)).Select(a => a.ID).ToList();
+            var model = await _repoPlan.FindAll()
+              .Where(x => x.DueDate.Date == DateTime.Now.Date && lines.Contains(x.BuildingID))
+              .Include(x => x.Building)
+              .Include(x => x.ToDoList)
+              .Include(x => x.DispatchList)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelName)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ModelNo)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ArticleNo)
+              .Include(x => x.BPFCEstablish)
+                  .ThenInclude(x => x.ArtProcess)
+                  .ThenInclude(x => x.Process)
+              .ProjectTo<PlanDto>(_configMapper)
+              .OrderByDescending(x => x.BuildingName)
+              .ToListAsync();
+            return model;
+        }
         #endregion
 
     }

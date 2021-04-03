@@ -13,14 +13,19 @@
             </div>
             <div class="form-group">
               <label for="exampleInputFile">Description</label>
-              <ckeditor  [(ngModel)]='description' [editor]="editor" [config]="config" ></ckeditor>
+              <ckeditor id='editor' [(ngModel)]='description' [editor]="editor" [config]="config" ></ckeditor>
             </div>
+              <div class="form-group">
+                <label for="uploadBy">Upload by</label>
+                <input type="text" class="form-control" [(ngModel)]="uploadBy" id="uploadBy" placeholder="Enter upload by">
+              </div>
           </div>
           <!-- /.card-body -->
 
           <div class="card-footer">
-            <button class="btn btn-primary" (click)='save()'>Save</button>
-            <button class="btn btn-info" *ngIf="isEdit == false" (click)='reset()'>Reset</button>
+            <button class="btn btn-primary" [class.mr-2]='isEdit' (click)='save()'>Save</button>
+            <button class="btn btn-primary mx-2" *ngIf="isEdit == false" (click)='reset()'>Reset</button>
+            <button class="btn btn-primary"  (click)='back()'>Back</button>
           </div>
       </div>
   </div>

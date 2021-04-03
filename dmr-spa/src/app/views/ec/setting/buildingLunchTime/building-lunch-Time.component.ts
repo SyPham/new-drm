@@ -1,3 +1,4 @@
+import { BaseComponent } from 'src/app/_core/_component/base.component';
 import { DatePipe } from '@angular/common';
 import { DateTime } from '@syncfusion/ej2-angular-charts';
 import { Component, OnInit, ViewChild } from '@angular/core';
@@ -10,13 +11,14 @@ import { PeriodMixing } from 'src/app/_core/_model/period.mixing';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { PeriodDispatch } from 'src/app/_core/_model/period.dispatch';
 import { LunchTimeService } from 'src/app/_core/_service/lunch.time.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-building-lunch-time',
   templateUrl: './building-lunch-Time.component.html',
   styleUrls: ['./building-lunch-Time.component.scss']
 })
-export class BuildingLunchTimeComponent implements OnInit {
+export class BuildingLunchTimeComponent extends BaseComponent implements OnInit {
 
   @ViewChild('grid') grid: GridComponent;
 
@@ -30,12 +32,8 @@ export class BuildingLunchTimeComponent implements OnInit {
   buildings: any;
   steps = {hour: 1, minute: 30 };
   modalReference: NgbModalRef;
-  toolbarOptions = ['Add', 'Delete', 'Search'];
   fields: object = { text: 'content', value: 'content' };
   lunchTimeData = [];
-  editSettings: { showDeleteConfirmDialog: boolean; allowEditing: boolean; allowAdding: boolean; allowDeleting: boolean; mode: string; };
-  editSettingsPeriod: { showDeleteConfirmDialog: boolean;
-  allowEditing: boolean; allowAdding: boolean; allowDeleting: boolean; mode: string; };
   filterSettings = { type: 'Excel' };
   startTime: any;
   endTime: any;
@@ -53,12 +51,11 @@ export class BuildingLunchTimeComponent implements OnInit {
     private alertify: AlertifyService,
     private datePipe: DatePipe,
     public modalService: NgbModal,
-  ) { }
+    private route: ActivatedRoute,
+  ) { super(); }
 
   ngOnInit() {
-    this.editSettingsPeriod = { showDeleteConfirmDialog: false,
-      allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
-    this.editSettings = { showDeleteConfirmDialog: false, allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
+    this.Permission(this.route);
     this.toolbar = ['Search'];
     this.getAllLunchTime();
   }

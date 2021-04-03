@@ -248,7 +248,7 @@ namespace DMR_API._Services.Services
         public async Task<object> GetRPM(int stirID)
         {
             //TimeSpan minutes = new TimeSpan();
-            //var stir = await _repoStir.GetAll().Include(x => x.Setting).FirstOrDefaultAsync(x => x.ID == stirID);
+            var stir = await _repoStir.GetAll().Include(x => x.Setting).FirstOrDefaultAsync(x => x.ID == stirID);
             //if (stir == null) return new
             //{
             //   rpm = 0,
