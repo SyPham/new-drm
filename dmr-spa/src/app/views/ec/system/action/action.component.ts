@@ -31,6 +31,7 @@ export class ActionComponent implements OnInit {
     this.getAllAction();
   }
   // api
+
   getAllAction() {
     this.permissionService.getAllAction().subscribe(res => {
       this.data = res;

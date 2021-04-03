@@ -46,8 +46,6 @@ namespace DMR_API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdatePeriodMixing(PeriodMixing update)
         {
-            update.StartTime = update.StartTime.ToLocalTime();
-            update.EndTime = update.EndTime.ToLocalTime();
             var res = await _buildingLunchTimeService.UpdatePeriodMixing(update);
             if (res.Status) return NoContent();
             return BadRequest(res.Message);
@@ -55,8 +53,6 @@ namespace DMR_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPeriodMixing(PeriodMixing update)
         {
-            update.StartTime = update.StartTime.ToLocalTime();
-            update.EndTime = update.EndTime.ToLocalTime();
             var res = await _buildingLunchTimeService.AddPeriodMixing(update);
             if (res.Status) return NoContent();
             return BadRequest(res.Message);
@@ -81,8 +77,6 @@ namespace DMR_API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdatePeriodDispatch(PeriodDispatch update)
         {
-            update.StartTime = update.StartTime.ToLocalTime();
-            update.EndTime = update.EndTime.ToLocalTime();
             var res = await _buildingLunchTimeService.UpdatePeriodDispatch(update);
             if (res.Status) return NoContent();
             return BadRequest(res.Message);
@@ -90,8 +84,6 @@ namespace DMR_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPeriodDispatch(PeriodDispatch update)
         {
-            update.StartTime = update.StartTime.ToLocalTime();
-            update.EndTime = update.EndTime.ToLocalTime();
             var res = await _buildingLunchTimeService.AddPeriodDispatch(update);
             if (res.Status) return NoContent();
             return BadRequest(res.Message);

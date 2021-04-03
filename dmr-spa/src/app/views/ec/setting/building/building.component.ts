@@ -37,8 +37,8 @@ export class BuildingComponent implements OnInit {
   kinds: object;
   buildingTypeData: any;
   buildingTypeID: any;
-  fieldsKindEdit: object = { text: 'name', value: 'name' };
-  fieldsBuildingType: object = { text: 'name', value: 'name' };
+  fieldsKindEdit: object = { text: 'name', value: 'id' };
+  fieldsBuildingType: object = { text: 'name', value: 'id' };
   public queryCellInfoEvent: EmitType<QueryCellInfoEventArgs> = (args: QueryCellInfoEventArgs) => {
     const entity = 'entity';
     const data: IBuilding = args.data[entity];
@@ -165,13 +165,25 @@ export class BuildingComponent implements OnInit {
     );
    }
   actionComplete(args) {
-    if (args.requestType === 'save') {
-      this.edit = { ...args.data.entity } ;
+    // if (args.requestType === 'save') {
+    //   this.edit = { ...args.data.entity } ;
+    //   this.edit.kindID = this.kindID;
+    //   this.edit.buildingTypeID = this.buildingTypeID;
+    //   this.rename();
+    // }
+   }
+  actionBegin(args) {
+    if (args.requestType === 'beginEdit') {
+      const item = args.rowData;
+      this.buildingTypeID = item?.buildingType?.id;
+    }
+    if (args.requestType === 'save' && args.action === 'edit') {
+      this.edit = { ...args.data.entity };
       this.edit.kindID = this.kindID;
       this.edit.buildingTypeID = this.buildingTypeID;
       this.rename();
     }
-   }
+  }
   getBuildingsAsTreeView() {
     this.buildingService.getBuildingsAsTreeView().subscribe(res => {
       this.data = res;

@@ -33,7 +33,7 @@ export class BuildingModalComponent implements OnInit {
 
   ngOnInit() {
     this.isLine = this.building.level === SystemConstant.BUILDING_LEVEL ? true : false;
-    this.isBuilding = this.building.parentID === undefined ? true : false;
+    this.isBuilding = this.building.parentID === 1 ? true : false;
     this.getAllKind();
     this.getAllBuildingType();
   }
@@ -57,13 +57,14 @@ export class BuildingModalComponent implements OnInit {
     if (this.validation()) {
       if (this.building.parentID > 0) {
         this.building.kindID = this.kindID;
+        this.building.buildingTypeID = this.buildingTypeID;
         this.buildingService.createSubBuilding(this.building).subscribe(res => {
           this.alertify.success('The building has been created!!');
           this.activeModal.dismiss();
           this.buildingService.changeMessage(200);
         });
       } else {
-        this.building.buildingTypeID = this.buildingTypeID;
+        // this.building.buildingTypeID = this.buildingTypeID;
         this.buildingService.createMainBuilding(this.building).subscribe(res => {
           this.buildingService.changeMessage(200);
           this.alertify.success('The building has been created!!');

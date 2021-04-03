@@ -18,12 +18,13 @@
 
                                     <!-- Sử dụng [value] thay thế cho [(ngModel)] để bắt đc sự kiện change. -->
                                     <ejs-dropdownlist  class="pr-3" [dataSource]='buildings' [fields]='fieldsBuildings' [allowFiltering]='true' [value]="buildingID"
-                                        (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)' 
+                                        (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)'
                                         placeholder="Select a building">
                                     </ejs-dropdownlist>
                                     <button class="btn btn-sm btn-default" (click)='onClickDefault()'>
                                         <i class="fa fa-times"></i>
                                     </button>
+                                    <h4 class="font-weight-bold px-3 text-danger">{{updateOnTimePercentage}}</h4>
                                 </div>
                             </div>
                         </div>
@@ -95,7 +96,7 @@
                                 {{data.bpfcName || '#N/A'}}
                             </ng-template>
                         </e-column>
-                      
+
                         <e-column field='dueDate' type='date' format='MM-dd-yyyy' headerText="{{'DUE_DATE_LABEL' | translate}}" width='138' textAlign='Center'>
                             <ng-template #headerTemplate let-data>
                                 {{'DUE_DATE_LABEL' | translate}}
@@ -104,7 +105,7 @@
                                 <ejs-datepicker [value]='data.dueDate' [allowEdit]='false' [placeholder]="'Select a date' | translate"
                                     (change)='onChangeDueDateEdit($event, data)' format='MM-dd-yyyy'></ejs-datepicker>
                             </ng-template>
-                        
+
                         </e-column>
 
                         <e-column field='startTime' isPrimaryKey='true' type='date' headerText="{{'Start Time' | translate}}" width='95' textAlign='Center'>
@@ -118,7 +119,7 @@
                                 {{period.startTime | date: 'HH:mm'}}
                             </ng-template>
                         </e-column>
-                        
+
                         <e-column field='endTime' isPrimaryKey='true' type='date' headerText="{{'End Time' | translate}}" width='100' textAlign='Center'>
                             <ng-template #headerTemplate let-data>
                                 {{'End Time' | translate}}
@@ -158,7 +159,7 @@
                                 </span>
                             </ng-template>
                         </e-column>
-                      
+
 
                         <e-column field='createdDate' [visible]='false'  type='date' format='MM-dd-yyyy HH:mm' headerText="{{'Created Date' | translate}}" width='138'
                             textAlign='Center'>
@@ -207,7 +208,7 @@
                                 [checked]="data.isOffline" [disabled]="data.isOffline" style="width: 80px; "></ejs-switch>
                         </ng-template>
                         <ng-template #editTemplate let-data>
-                            
+
                         </ng-template>
                         </e-column>
                         <e-column field='Overtime/No Overtime' textAlign='Center' headerText="{{ 'Overtime/No Overtime' | translate }}" width='136'>

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Module = DMR_API.Models.Module;
 using DMR_API.Models;
 using Action = DMR_API.Models.Action;
+using DMR_API.DTO;
 
 namespace DMR_API.Controllers
 {
@@ -89,7 +90,7 @@ namespace DMR_API.Controllers
         public async Task<IActionResult> DeleteModule(int id)
         {
             var result = await _permissionService.DeleteModule(id);
-             if(result.Status)
+            if (result.Status)
                 return NoContent();
             throw new Exception("Error deleting the Module");
         }
@@ -156,7 +157,53 @@ namespace DMR_API.Controllers
                 return NoContent();
             throw new Exception("Error deleting the Action");
         }
+
+        [HttpPut("PutPermissionByRoleId/{roleId}")]
+        public async Task<IActionResult> PutPermissionByRoleId(int roleId, [FromBody] UpdatePermissionRequest request)
+        {
+            //create new permission list from user changed
+
+            var result = await _permissionService.PutPermissionByRoleId(roleId, request);
+            if (result.Status)
+            {
+                return NoContent();
+            }
+            return BadRequest("Save permission failed");
+        }
+
+
+        [HttpPost("PostActionToFunction/{functionID}")]
+        public async Task<IActionResult> PostActionToFunction(int functionID, ActionAssignRequest request)
+        {
+            //create new permission list from user changed
+
+            var result = await _permissionService.PostActionToFunction(functionID, request);
+            if (result.Status)
+            {
+                return NoContent();
+            }
+            return BadRequest("Save ActionInFunction failed");
+        }
+        [HttpDelete("DeleteActionToFunction/{functionID}")]
+        public async Task<IActionResult> DeleteActionToFunction(int functionID, [FromQuery]ActionAssignRequest request)
+        {
+            //create new permission list from user changed
+
+            var result = await _permissionService.DeleteActionToFunction(functionID, request);
+            if (result.Status)
+            {
+                return NoContent();
+            }
+            return BadRequest("Save ActionInFunction failed");
+        }
+        [HttpGet("GetScreenAction/{functionID}")]
+        public async Task<IActionResult> GetScreenAction(int functionID)
+        {
+            //create new permission list from user changed
+
+            var result = await _permissionService.GetScreenAction(functionID);
+            return Ok(result);
+        }
     }
 }
 
-   

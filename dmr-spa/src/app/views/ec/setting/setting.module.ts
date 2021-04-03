@@ -88,10 +88,10 @@ if (lang === 'vi') {
     // },
   ],
   imports: [
+    FormsModule,
+    CommonModule,
     QRCodeModule,
     ButtonModule,
-    CommonModule,
-    FormsModule,
     ReactiveFormsModule,
     NgxSpinnerModule,
     ECRoutingModule,
@@ -144,8 +144,8 @@ if (lang === 'vi') {
     PrintQRCodeComponent,
     IngredientComponent,
     SuppilerComponent,
-    BuildingComponent,
     AccountComponent,
+    BuildingComponent,
     BuildingModalComponent,
     CostingComponent
   ]

@@ -63,6 +63,7 @@ namespace DMR_API.Data
         public DbSet<Models.Permission> Permisions { get; set; }
 
         public DbSet<Models.Action> Actions { get; set; }
+        public DbSet<Models.Version> Versions { get; set; }
 
         public DbSet<ActionInFunctionSystem> ActionInFunctionSystem { get; set; }
 

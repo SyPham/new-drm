@@ -1,3 +1,5 @@
+import { DatePipe } from '@angular/common';
+import { DateTime } from '@syncfusion/ej2-angular-charts';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { BuildingUserService } from 'src/app/_core/_service/building.user.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
@@ -35,11 +37,11 @@ export class BuildingLunchTimeComponent implements OnInit {
   editSettingsPeriod: { showDeleteConfirmDialog: boolean;
   allowEditing: boolean; allowAdding: boolean; allowDeleting: boolean; mode: string; };
   filterSettings = { type: 'Excel' };
-  startTime: Date;
-  endTime: Date;
+  startTime: any;
+  endTime: any;
 
-  startTimePeriodDispatch: Date;
-  endTimePeriodDispatch: Date;
+  startTimePeriodDispatch: any;
+  endTimePeriodDispatch: any;
   lunchTimeID: number;
   periodMixing: PeriodMixing = {} as PeriodMixing;
   periodDispatch: PeriodDispatch = {} as PeriodDispatch;
@@ -49,6 +51,7 @@ export class BuildingLunchTimeComponent implements OnInit {
     private buildingLunchTimeService: BuildingLunchTimeService,
     private lunchTimeService: LunchTimeService,
     private alertify: AlertifyService,
+    private datePipe: DatePipe,
     public modalService: NgbModal,
   ) { }
 
@@ -67,11 +70,11 @@ export class BuildingLunchTimeComponent implements OnInit {
     this.buildingID = Number(data.id);
   }
   onChangeStartTime(value: Date): void {
-    this.startTime = value;
+    this.startTime = this.datePipe.transform(value, "YYYY-MM-dd HH:mm");
 
   }
   onChangeEndTime(value: Date): void {
-    this.endTime = value;
+    this.endTime = this.datePipe.transform(value, "YYYY-MM-dd HH:mm");
 
   }
   onSelectLunchTime(args, data) {
@@ -147,17 +150,22 @@ export class BuildingLunchTimeComponent implements OnInit {
     this.modalReference = this.modalService.open(name, { size: 'xl' });
   }
   actionBeginPeriodsGrid(args) {
+    if (args.requestType === 'beginEdit') {
+      const item = args.rowData;
+      this.startTime = this.datePipe.transform(item?.startTime, "YYYY-MM-dd HH:mm");
+      this.endTime = this.datePipe.transform(item?.endTime, "YYYY-MM-dd HH:mm");
+    }
     if (args.requestType === 'save') {
       if (args.action === 'add') {
-        this.periodMixing.startTime = this.startTime;
-        this.periodMixing.endTime = this.endTime;
+        this.periodMixing.startTime = this.datePipe.transform(this.startTime, "YYYY-MM-dd HH:mm");
+        this.periodMixing.endTime = this.datePipe.transform(this.endTime, "YYYY-MM-dd HH:mm");
         this.periodMixing.buildingID = this.buildingID;
         this.create();
       }
       if (args.action === 'edit') {
         this.periodMixing = args.data;
-        this.periodMixing.startTime = this.startTime;
-        this.periodMixing.endTime = this.endTime;
+        this.periodMixing.startTime = this.datePipe.transform(this.startTime, "YYYY-MM-dd HH:mm");
+        this.periodMixing.endTime = this.datePipe.transform(this.endTime, "YYYY-MM-dd HH:mm");
         this.periodMixing.buildingID = this.buildingID;
         this.update();
       }
@@ -200,6 +208,8 @@ export class BuildingLunchTimeComponent implements OnInit {
   }
   changeOvertime(args, data) {
     this.periodMixing = data;
+    this.periodMixing.startTime = this.datePipe.transform(data.startTime, "YYYY-MM-dd HH:mm");
+    this.periodMixing.endTime = this.datePipe.transform(data.endTime, "YYYY-MM-dd HH:mm");
     this.periodMixing.buildingID = this.buildingID;
     this.periodMixing.isOvertime = args.checked as boolean;
     this.update();
@@ -215,11 +225,11 @@ export class BuildingLunchTimeComponent implements OnInit {
   }
 
   onChangeStartTimePeriodDispatch(value: Date): void {
-    this.startTimePeriodDispatch = value;
+    this.startTimePeriodDispatch = this.datePipe.transform(value, "YYYY-MM-dd HH:mm");
 
   }
   onChangeEndTimePeriodDispatch(value: Date): void {
-    this.endTimePeriodDispatch = value;
+    this.endTimePeriodDispatch = this.datePipe.transform(value, "YYYY-MM-dd HH:mm");
 
   }
 
@@ -228,17 +238,22 @@ export class BuildingLunchTimeComponent implements OnInit {
     this.periodMixingID = Number(data.id);
   }
   actionBeginPeriodsDispatchGrid(args) {
+    if (args.requestType === 'beginEdit') {
+      const item = args.rowData;
+      this.startTimePeriodDispatch = this.datePipe.transform(item?.startTime, "YYYY-MM-dd HH:mm");
+      this.endTimePeriodDispatch = this.datePipe.transform(item?.endTime, "YYYY-MM-dd HH:mm");
+    }
     if (args.requestType === 'save') {
       if (args.action === 'add') {
-        this.periodDispatch.startTime = this.startTimePeriodDispatch;
-        this.periodDispatch.endTime = this.endTimePeriodDispatch;
+        this.periodDispatch.startTime = this.datePipe.transform(this.startTimePeriodDispatch, "YYYY-MM-dd HH:mm");
+        this.periodDispatch.endTime = this.datePipe.transform(this.endTimePeriodDispatch, "YYYY-MM-dd HH:mm");
         this.periodDispatch.periodMixingID = this.periodMixingID;
         this.createPeriodDispatch();
       }
       if (args.action === 'edit') {
         this.periodDispatch = args.data;
-        this.periodDispatch.startTime = this.startTimePeriodDispatch;
-        this.periodDispatch.endTime = this.endTimePeriodDispatch;
+        this.periodDispatch.startTime = this.datePipe.transform(this.startTimePeriodDispatch, "YYYY-MM-dd HH:mm");
+        this.periodDispatch.endTime = this.datePipe.transform(this.endTimePeriodDispatch, "YYYY-MM-dd HH:mm");
         this.periodDispatch.periodMixingID = this.periodMixingID;
         this.updatePeriodDispatch();
       }

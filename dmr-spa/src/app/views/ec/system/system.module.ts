@@ -1,3 +1,5 @@
+import { CKEditorModule } from '@ckeditor/ckeditor5-angular';
+import { ActionFunctionComponent } from './action-function/action-function.component';
 import { RoleComponent } from './role/role.component';
 import { ActionComponent } from './action/action.component';
 import { ModuleComponent } from './module/module.component';
@@ -16,7 +18,7 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 // Import ngx-barcode module
 import { BarcodeGeneratorAllModule, DataMatrixGeneratorAllModule } from '@syncfusion/ej2-angular-barcode-generator';
 import { ChartAllModule, AccumulationChartAllModule, RangeNavigatorAllModule } from '@syncfusion/ej2-angular-charts';
-import { SwitchModule, RadioButtonModule, CheckBoxModule } from '@syncfusion/ej2-angular-buttons';
+import { SwitchModule, RadioButtonModule, CheckBoxModule, CheckBoxAllModule } from '@syncfusion/ej2-angular-buttons';
 
 import { ButtonModule } from '@syncfusion/ej2-angular-buttons';
 
@@ -47,6 +49,9 @@ import { TreeGridAllModule } from '@syncfusion/ej2-angular-treegrid/';
 import { CountdownModule } from 'ngx-countdown';
 import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
+import { VersionComponent } from './version/version.component';
+import { VersionAddComponent } from './version/version-add/version-add.component';
+// Imported Syncfusion checkbox module from buttons package.
 
 declare var require: any;
 let defaultLang: string;
@@ -114,8 +119,9 @@ if (lang === 'vi') {
     DateTimePickerModule,
     CountdownModule,
     ToolbarModule,
-    CheckBoxModule,
+    CheckBoxAllModule,
     MultiSelectModule,
+    CKEditorModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -129,6 +135,9 @@ if (lang === 'vi') {
     ActionComponent,
     FunctionComponent,
     ModuleComponent,
+    ActionFunctionComponent,
+    VersionComponent,
+    VersionAddComponent,
     RoleComponent
   ]
 })

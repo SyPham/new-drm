@@ -29,8 +29,11 @@ namespace DMR_API._Services.Interface
         Task<ResponseDetail<object>> UpdateAction(Action module);
         Task<ResponseDetail<object>> DeleteAction(int actionID);
         Task<ResponseDetail<object>> AddAction(Action module);
-
+        Task<ResponseDetail<object>> PutPermissionByRoleId(int roleID, UpdatePermissionRequest request);
+        Task<ResponseDetail<object>> PostActionToFunction(int functionID, ActionAssignRequest request);
+        Task<ResponseDetail<object>> DeleteActionToFunction(int functionID, ActionAssignRequest request);
         Task<object> GetMenuByUserPermission(int userId);
+        Task<object> GetScreenAction(int functionID);
 
     }
 }

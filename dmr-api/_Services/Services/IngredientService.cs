@@ -65,7 +65,7 @@ namespace DMR_API._Services.Services
         }
         public async Task<bool> CheckExistsName(string name)
         {
-            return await _repoIngredient.FindAll().AnyAsync(x => x.Name.Trim().ToLower().Equals(name.Trim().ToLower()));
+            return await _repoIngredient.FindAll().AnyAsync(x => x.isShow && x.Name.Trim().ToLower().Equals(name.Trim().ToLower()));
         }
 
         //Thêm Ingredient mới vào bảng Ingredient

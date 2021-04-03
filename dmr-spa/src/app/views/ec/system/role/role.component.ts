@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
+import { PermissionService } from 'src/app/_core/_service/permission.service';
 import { RoleService } from 'src/app/_core/_service/role.service';
-
 
 @Component({
   selector: 'app-role',
@@ -20,9 +20,12 @@ export class RoleComponent implements OnInit {
   filterSettings = { type: 'Excel' };
   roleTypeData: object;
   roleTypeID: any;
+  roleItem: string;
+  roleID: any;
   constructor(
     private roleService: RoleService,
     private alertify: AlertifyService,
+    private permissionService: PermissionService
   ) { }
 
   ngOnInit() {
@@ -65,8 +68,23 @@ export class RoleComponent implements OnInit {
       });
     });
   }
+  changeRole(args, item) {
+    console.log(args, item);
+    this.roleID = item.id;
+  }
   // end api
-
+  putPermissionByRoleId() {
+    const request = {
+      permissions: {
+        // functionID: this.functionID,
+        //   roleID: this.roleID,
+        //   actionID: this.actionID,
+      }
+    };
+    this.permissionService.putPermissionByRoleId(this.roleID, request).subscribe(() => {
+      this.alertify.success('Successfully');
+    });
+  }
   // grid event
   toolbarClick(args): void {
     switch (args.item.text) {

@@ -120,7 +120,9 @@ namespace DMR_API._Services.Services
                 }
                 else
                 {
-                    var lastAmount = dispatch.First().Amount;
+                    var lastAmount = dispatch.First().RemainingAmount;
+                    if (lastAmount == null)
+                        return new ResponseDetail<object>("", false, "Vui lòng giao keo trước!");
                     if (lastAmount == 0)
                     {
                         var dispatchModel = new Dispatch
@@ -148,7 +150,7 @@ namespace DMR_API._Services.Services
                             GlueNameID = bfparams.GlueNameID,
                             LineID = line.ID,
 
-                            Amount = dispatch.First().RemainingAmount,
+                            Amount = dispatch.First().RemainingAmount.Value,
                             MixingInfoID = bfparams.MixingInfoID,
                             EstimatedStartTime = bfparams.EstimatedStartTime,
                             EstimatedFinishTime = bfparams.EstimatedFinishTime
@@ -2034,7 +2036,10 @@ namespace DMR_API._Services.Services
             var item = await _repoDispatch.FindAll(x => x.ID == update.ID).FirstOrDefaultAsync();
 
             var amount = item.Amount - update.RemaningAmount;
-
+            if (amount == 0)
+            {
+                return new ResponseDetail<object>(null, false, "Vui lòng nhập số lượng còn lại bằng 0!");
+            }
             item.RemainingAmount = update.RemaningAmount; // 2.5
             item.Amount = amount; // 1.5
             _repoDispatch.Update(item);

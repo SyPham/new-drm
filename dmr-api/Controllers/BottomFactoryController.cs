@@ -88,7 +88,9 @@ namespace DMR_API.Controllers
         public async Task<IActionResult> AddDispatch(AddDispatchParams obj)
         {
             var batchs = await _factoryService.AddDispatch(obj);
-            return Ok(batchs);
+            if (batchs.Status)
+                return NoContent();
+            return BadRequest(batchs.Message);
         }
 
         [HttpPut]
@@ -97,7 +99,7 @@ namespace DMR_API.Controllers
             var batchs = await _factoryService.UpdateDispatch(obj);
             if(batchs.Status)
                 return NoContent();
-            return BadRequest("Lỗi máy chủ!");
+            return BadRequest(batchs.Message);
         }
 
         [HttpPost]

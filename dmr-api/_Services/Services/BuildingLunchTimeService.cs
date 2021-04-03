@@ -60,49 +60,57 @@ namespace DMR_API._Services.Services
         {
             var userID = _jWTService.GetUserID();
             var period = model;
-            var periodMixing = await _repoPeriodMixing.FindAll(x => x.BuildingID == model.BuildingID && x.IsDelete == false)
+            var periodItem = await _repoPeriodMixing.FindAll(x => x.ID == model.ID 
+                                         && x.StartTime.TimeOfDay == model.StartTime.TimeOfDay
+                                         && x.EndTime.TimeOfDay == model.EndTime.TimeOfDay
+                                ).AsNoTracking()
+                .FirstOrDefaultAsync();
+            if (periodItem == null)
+            {
+                var periodMixing = await _repoPeriodMixing.FindAll(x => x.BuildingID == model.BuildingID && x.IsDelete == false)
                     .AsNoTracking()
                   .ToListAsync();
-            periodMixing = periodMixing.Where(x => x.ID != model.ID).ToList();
-            var building = await _repoBuilding.FindAll(x => x.ID == model.BuildingID)
-                .Include(x => x.LunchTime)
-                .FirstOrDefaultAsync();
+                periodMixing = periodMixing.Where(x => x.ID != model.ID).ToList();
+                var building = await _repoBuilding.FindAll(x => x.ID == model.BuildingID)
+                    .Include(x => x.LunchTime)
+                    .FirstOrDefaultAsync();
 
-            if (periodMixing.Count > 0)
-            {
-                foreach (var item in periodMixing)
+                if (periodMixing.Count > 0)
                 {
-                    //(StartA < EndB) && (EndA > StartB) 
-                    if (
-                             period.StartTime.TimeOfDay < item.EndTime.TimeOfDay
-                            && period.EndTime.TimeOfDay > item.StartTime.TimeOfDay
-                       )
+                    foreach (var item in periodMixing)
                     {
-                        return new ResponseDetail<object>()
+                        //(StartA < EndB) && (EndA > StartB) 
+                        if (
+                                 period.StartTime.TimeOfDay < item.EndTime.TimeOfDay
+                                && period.EndTime.TimeOfDay > item.StartTime.TimeOfDay
+                           )
                         {
-                            Status = false,
-                            Message = $"Khoảng thời gian này đã giao với 1 thời gian khác trong hệ thống!" +
-                            $"This time period overlaps another time period in the system!"
-                        };
+                            return new ResponseDetail<object>()
+                            {
+                                Status = false,
+                                Message = $"Khoảng thời gian này đã giao với 1 thời gian khác trong hệ thống!" +
+                                $"This time period overlaps another time period in the system!"
+                            };
+                        }
                     }
                 }
+                var startLunchTime = building.LunchTime.StartTime.TimeOfDay;
+                var endLunchTime = building.LunchTime.EndTime.TimeOfDay;
+                // lunchTime 12:30-13:30
+                if (period.StartTime.TimeOfDay >= startLunchTime && period.EndTime.TimeOfDay <= endLunchTime)
+                {
+                    return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu và thời gian kết thúc không được giao với giờ ăn trưa!" };
+                }
+                if (period.StartTime.TimeOfDay > period.EndTime.TimeOfDay)
+                {
+                    return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc!" };
+                }
+                if (period.StartTime.TimeOfDay == period.EndTime.TimeOfDay)
+                {
+                    return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu phải khác thời gian kết thúc!" };
+                }
             }
-
-            var startLunchTime = building.LunchTime.StartTime.TimeOfDay;
-            var endLunchTime = building.LunchTime.EndTime.TimeOfDay;
-            // lunchTime 12:30-13:30
-            if (period.StartTime.TimeOfDay >= startLunchTime && period.EndTime.TimeOfDay <= endLunchTime)
-            {
-                return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu và thời gian kết thúc không được giao với giờ ăn trưa!" };
-            }
-            if (period.StartTime.TimeOfDay > period.EndTime.TimeOfDay)
-            {
-                return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu phải nhỏ hơn thời gian kết thúc!" };
-            }
-            if (period.StartTime.TimeOfDay == period.EndTime.TimeOfDay)
-            {
-                return new ResponseDetail<object>() { Status = false, Message = "Thời gian bắt đầu phải khác thời gian kết thúc!" };
-            }
+        
             period.UpdatedBy = userID;
             period.UpdatedTime = DateTime.Now;
             try
@@ -198,7 +206,7 @@ namespace DMR_API._Services.Services
        => await _repoPeriodMixing.FindAll(x => x.BuildingID == buildingID && x.IsDelete == false).OrderBy(x=> x.StartTime).ToListAsync();
 
 
-        //Cập nhật Period
+        //Cập nhật Dispatch period
         public async Task<ResponseDetail<object>> UpdatePeriodDispatch(PeriodDispatch model)
         {
             var userID = _jWTService.GetUserID();

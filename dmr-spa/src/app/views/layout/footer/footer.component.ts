@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HubConnectionState } from '@microsoft/signalr';
 import * as signalr from '../../../../assets/js/ec-client.js';
-
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 @Component({
   selector: 'app-footer',
   templateUrl: './footer.component.html',
@@ -11,7 +11,8 @@ export class FooterComponent implements OnInit {
   online: number;
   userID: number;
   userName: any;
-  constructor() {
+  modalReference: any;
+  constructor(public modalService: NgbModal) {
     this.userName = JSON.parse(localStorage.getItem('user')).User.Username;
     this.userID = +JSON.parse(localStorage.getItem('user')).User.ID;
   }
@@ -32,5 +33,9 @@ export class FooterComponent implements OnInit {
         localStorage.setItem('userOnline', userNameList);
       });
     }
+  }
+  openModal(ref) {
+    this.modalReference = this.modalService.open(ref, { size: 'xl', backdrop: 'static', keyboard: false });
+
   }
 }

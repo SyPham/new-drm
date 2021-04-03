@@ -110,6 +110,7 @@ export class IngredientModalComponent implements OnInit {
       this.alertify.warning('Please select a supplier<br> Vui lòng chọn 1 nhà cung cấp', true);
       return false;
     }
+    return true;
   }
   create() {
     const check = this.validForm();

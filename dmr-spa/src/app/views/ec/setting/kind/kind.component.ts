@@ -95,6 +95,10 @@ export class KindComponent implements OnInit {
     }
   }
   actionBegin(args) {
+    if (args.requestType === 'beginEdit') {
+      const item = args.rowData;
+      this.kindTypeID = item.kindTypeID;
+    }
     if (args.requestType === 'save') {
       if (args.action === 'add') {
         this.kind.id = 0;

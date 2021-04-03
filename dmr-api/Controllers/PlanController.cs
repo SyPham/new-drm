@@ -267,7 +267,14 @@ namespace DMR_API.Controllers
             var lists = await _planService.DeleteDelivered(id);
             return Ok(lists);
         }
-
+        [HttpGet("{buildingID}")]
+        public async Task<IActionResult> AchievementRate(int buildingID)
+        {
+            var result = await _planService.AchievementRate(buildingID);
+            if (result.Status)
+                return Ok(new { data = result.Data });
+            return BadRequest(result.Message);
+        }
         [HttpPut("{id}")]
         public async Task<IActionResult> Finish(int id)
         {

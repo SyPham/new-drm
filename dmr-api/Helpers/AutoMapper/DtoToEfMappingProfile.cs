@@ -52,7 +52,7 @@ namespace DMR_API.Helpers.AutoMapper
             .ForMember(d => d.PeriodMixingList, o => o.Ignore())
             .ForMember(d => d.LunchTimeID, o => o.MapFrom(x => x.LunchTimeID == 0 || x.LunchTimeID == null ? null : x.LunchTimeID))
             .ForMember(d => d.KindID, o => o.MapFrom(x => x.KindID == 0 || x.KindID == null ? null : x.KindID))
-            .ForMember(d => d.BuildingTypeID, o => o.MapFrom(x => x.BuildingTypeID == 0 || x.KindID == null ? null : x.BuildingTypeID))
+            .ForMember(d => d.BuildingTypeID, o => o.MapFrom(x => x.BuildingTypeID == 0 || x.BuildingTypeID == null ? null : x.BuildingTypeID))
             .ForMember(d => d.ParentID, o => o.MapFrom(x => x.ParentID == 0 || x.ParentID == null ? null : x.ParentID));
 
             CreateMap<SubpackageDto, Subpackage>();

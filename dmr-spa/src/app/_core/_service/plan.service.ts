@@ -57,6 +57,9 @@ export class PlanService {
   delete(id: number) {
     return this.http.delete(this.baseUrl + 'Plan/Delete/' + id);
   }
+  achievementRate(buildingID: number) {
+    return this.http.get(this.baseUrl + 'Plan/AchievementRate/' + buildingID);
+  }
   deleteRange(plans) {
     return this.http.post(this.baseUrl + 'Plan/DeleteRange', plans);
   }

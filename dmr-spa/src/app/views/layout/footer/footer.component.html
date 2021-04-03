@@ -4,15 +4,79 @@
     <i class="fa fa-users"></i> {{online}}
   </div>
   <!-- Default to the left -->
-  <img
-  src="../../../../assets/img/logo-1.png"
-  alt="AdminLTE Logo"
-  class="img-circle"
-  style="opacity: .8"
-  width="25"
-  height="25"
-/>
-  <strong>© 2020-2021 <span class="text-danger"> (v1.0.1)</span>
-    <a href="https://adminlte.io"> - Lab Team </a>.</strong>
+  <img src="../../../../assets/img/logo-1.png" alt="AdminLTE Logo" class="img-circle" style="opacity: .8" width="25"
+    height="25" />
+  <strong>© 2020-2021 <span class="text-danger"> (alpha version 2.0.1 )</span>
+    <a style="cursor: pointer; color: blue; text-decoration: underline;" (click)='openModal(versionHistoryModal)'> -
+      Version History </a>
+    <a href="https://adminlte.io"> - Lab Team </a>.
+  </strong>
+  <!-- <a href="https://adminlte.io"> - Version History </a>.</strong> | -->
 
+  <ng-template #versionHistoryModal let-modal>
+    <div class="modal-header">
+      <h4 class="modal-title">
+        Version History
+      </h4>
+      <button type="button" class="close" aria-label="Close" (click)="modal.dismiss('Cross click')">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="Name">Alpha Version 2.0.1 (3/27/2021 15:15 PM)</label> <br>
+            <ul>
+              <li> add to do list for bottom factory function</li>
+              <li> add function to modify mixing period time and dispatch period time by manager in setting>building-lunchtime</li>
+              <li> add shaking function for rubber production line</li>
+              <li> add Setting>kind table</li>
+              <li> add factory kind and production line kind in setting>building</li>
+              <li> add glue kind in BPFC detail</li>
+            </ul>
+            <br>
+            <label for="Name">Updated by: Phạm Tiến Sỹ</label> <br>
+
+            <label for="Name">Alpha Version 1.0.5 (Tue 3/25/2021 17:15 PM)</label> <br>
+            <ul>
+              <li>Revise check duplication of chemical function - only check the duplication of visible chemical</li>
+              <li>Add the update performance on the top of workplan page</li>
+            </ul>
+            <hr>
+
+            <label for="Name">Alpha Version 1.0.4 (Tue 3/16/2021 12:15 PM)</label> <br>
+            <ul>
+              <li>Fix Bugs</li>
+            </ul>
+            <hr>
+
+            <label for="Name">Beta Version 1.0.3 (Mon 3/15/2021 12:30 PM)</label> <br>
+            <ul>
+              <li>Update inactive status for production line on work plan page</li>
+            </ul>
+            <hr>
+
+            <label for="Name">Beta Version 1.0.2 (Thu 3/11/2021 5:00 PM)</label> <br>
+            <ul>
+              <li>Bugs Fixed / Sửa lỗi hệ thống</li>
+              <li>Update dispatch list, dispatch every 1 hour / Cập nhật lại danh sách giao keo , thời gian giao keo mỗi
+                tiếng 1 lần</li>
+            </ul>
+            <!-- <span>	Bugs Fixed / Sửa lỗi hệ thống</span> <br>
+              <span>Update dispatch list , the first dispatch period start time is 7:30 am, there are 2 dispatching times within 2 hour. / Cập nhật lại danh sách giao keo , thời gian bắt đầu chu kỳ giao keo đầu tiên là 7:30 , có 2 lần giao keo trong vòng 2 giờ đồng hồ </span> -->
+            <hr>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <!-- <div class="modal-footer">
+
+        <button type="button" class="btn btn-primary" (click)="uploadFile()">Upload File</button>
+        <button type="button" class="btn btn-danger" (click)="modal.close('Close click')">Close</button>
+      </div>
+     -->
+  </ng-template>
 </footer>

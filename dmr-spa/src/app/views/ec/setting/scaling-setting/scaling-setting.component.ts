@@ -23,11 +23,14 @@ export class ScalingSettingComponent implements OnInit {
   @ViewChild('gridBuilding') public gridBuilding: GridComponent;
   @ViewChild('gridSetting') public gridSetting: GridComponent;
   toolbarOptions: string[];
+  fields: object = { text: 'text', value: 'value' };
   buildings: object;
   settings: object;
   buildingID: any;
   qrcode: string;
   toolbar: string[];
+  unit: any;
+  units = [{ value: 'k', text: 'Kilogram' }, { value: 'g', text: 'Gram' }];
   constructor(
     private buildingService: BuildingService,
     private alertify: AlertifyService,
@@ -47,7 +50,9 @@ export class ScalingSettingComponent implements OnInit {
   getSettingByBuilding(buildingID) {
     return this.settingService.getMachineByBuilding(buildingID).toPromise();
   }
-
+  onChange(args) {
+    this.unit = args.itemData.value;
+  }
   editSetting(model) {
     return this.settingService.updateMachine(model).toPromise();
   }
@@ -73,9 +78,9 @@ export class ScalingSettingComponent implements OnInit {
     const model = {
       id: data.id,
       machineType: data.machineType,
-      unit: data.unit,
+      unit: this.unit,
       buildingID: this.buildingID,
-      machineID: data.machineID,
+      machineID: this.unit === 'k' ? 2 : 1,
     };
     try {
       await this.editSetting(model);
@@ -89,10 +94,10 @@ export class ScalingSettingComponent implements OnInit {
   async add(data) {
     const model = {
       id: 0,
-      unit: data.unit,
+      unit: this.unit,
       machineType: data.machineType,
       buildingID: this.buildingID,
-      machineID: data.machineID,
+      machineID: this.unit === 'k' ? 2 : 1,
     };
     try {
       await this.createSetting(model);
@@ -120,6 +125,10 @@ export class ScalingSettingComponent implements OnInit {
   }
 
   async actionBeginSetting(args) {
+    if (args.requestType === 'beginEdit') {
+      const item = args.rowData;
+      this.unit = item.unit;
+    }
     if (args.requestType === 'save') {
       if (args.action === 'add') {
         await this.add(args.data);
@@ -175,5 +184,8 @@ export class ScalingSettingComponent implements OnInit {
   /// end event
   NO(index) {
     return +index + 1;
+  }
+  getUnitItem(value: string) {
+    return this.units.filter( x => x.value === value)[0]?.text || "N/A";
   }
 }

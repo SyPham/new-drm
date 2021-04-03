@@ -9,7 +9,12 @@
           </button>
         </div>
       </div>
-
+      <div class="d-flex justify-content-start align-items-center">
+        {{roleItem | json}}
+        <div *ngFor="let item of data" class="mr-2" >
+            <ejs-radiobutton [label]="item.name" (change)='changeRole($event, item)' name="role"></ejs-radiobutton>
+        </div>
+      </div>
       <ejs-grid #grid (actionBegin)="actionBegin($event)" gridLines='Both' (actionComplete)="actionComplete($event)"
         [toolbar]='toolbarOptions' [dataSource]='data' allowPaging='true' [allowSorting]='true' allowResizing='true'
         showColumnMenu='true' [allowExcelExport]='true' allowFiltering='true' [filterSettings]='filterSettings'

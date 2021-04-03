@@ -9,7 +9,7 @@ namespace dmr_api.Models
     {
         public int ID { get; set; }
         public double Amount { get; set; }
-        public double RemainingAmount { get; set; }
+        public double? RemainingAmount { get; set; }
         public string Unit { get; set; }
         public DateTime? DeliveryTime { get; set; }
         public DateTime? DeleteTime { get; set; }

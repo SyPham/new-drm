@@ -1830,6 +1830,33 @@ namespace DMR_API.Migrations
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("DMR_API.Models.Version", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UploadBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Versions");
+                });
+
             modelBuilder.Entity("dmr_api.Models.Dispatch", b =>
                 {
                     b.Property<int>("ID")
@@ -1879,7 +1906,7 @@ namespace DMR_API.Migrations
                     b.Property<int>("MixingInfoID")
                         .HasColumnType("int");
 
-                    b.Property<double>("RemainingAmount")
+                    b.Property<double?>("RemainingAmount")
                         .HasColumnType("float");
 
                     b.Property<string>("Unit")

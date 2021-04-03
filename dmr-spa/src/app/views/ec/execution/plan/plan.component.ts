@@ -141,6 +141,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   kindOfLine = 0;
   bpfcKindData: number[] = [];
   bpfcDataSource: Array<BPFC> = new Array<BPFC>();
+  updateOnTimePercentage = '';
   constructor(
     private alertify: AlertifyService,
     public modalService: NgbModal,
@@ -249,6 +250,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log('- Chon tòa nhà: ', this.buildingName);
     console.log(`Đây là: ${this.isSTF === true ? 'Xưởng đế' : 'Thành hình'}`);
     this.getAll();
+    this.achievementRate();
     this.getStartTimeFromPeriod();
     this.getAllBPFC();
     this.buildingID = this.buildingID === undefined ? 0 : this.buildingID;
@@ -318,6 +320,11 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
     //   this.buildings = buildingData.filter(item => item.level === SystemConstant.BUILDING_LEVEL);
     //   callback();
     // });
+  }
+  achievementRate() {
+    this.planService.achievementRate(this.buildingID).subscribe((res: any) => {
+      this.updateOnTimePercentage = res.data;
+    });
   }
   getAllLine(buildingID) {
     this.planService.getLines(buildingID).subscribe((res: any) => {
@@ -590,7 +597,7 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
       });
       this.isSTF = JSON.parse(localStorage.getItem('isSTF'));
       if (this.isSTF) {
-        this.BPFCs = res.filter(x => x.artProcess === 'STF').map((item) => {
+        const bpfcList = res.filter(x => x.artProcess === 'STF').map((item) => {
           return {
             id: item.id,
             artProcess: item.artProcess,
@@ -599,8 +606,10 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
             name: `${item.modelName} - ${item.modelNo} - ${item.articleNo} - ${item.artProcess}`,
           };
         });
+        this.BPFCs = Object.assign([], bpfcList);
+        this.BPFCsForChangeModal = Object.assign([], bpfcList);
       } else {
-        this.BPFCs = res.filter(x => x.artProcess !== 'STF').map((item) => {
+        const bpfcList = res.filter(x => x.artProcess !== 'STF').map((item) => {
           return {
             id: item.id,
             artProcess: item.artProcess,
@@ -609,6 +618,8 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
             name: `${item.modelName} - ${item.modelNo} - ${item.articleNo} - ${item.artProcess}`,
           };
         });
+        this.BPFCs = Object.assign([], bpfcList);
+        this.BPFCsForChangeModal = Object.assign([], bpfcList);
       }
       console.log('Lấy danh sách mẫu giày: ', this.BPFCs.length);
     });
@@ -992,14 +1003,14 @@ export class PlanComponent implements OnInit, OnDestroy, AfterViewInit {
   }
   created() { this.getAllBPFCForChangeModal(); }
   getAllBPFCForChangeModal() {
-    this.bPFCEstablishService.filterByApprovedStatus().subscribe((res: any) => {
-      this.BPFCsForChangeModal = res.map((item) => {
-        return {
-          id: item.id,
-          name: `${item.modelName} - ${item.modelNo} - ${item.articleNo} - ${item.artProcess}`,
-        };
-      });
-    });
+    // this.bPFCEstablishService.filterByApprovedStatus().subscribe((res: any) => {
+    //   this.BPFCsForChangeModal = res.map((item) => {
+    //     return {
+    //       id: item.id,
+    //       name: `${item.modelName} - ${item.modelNo} - ${item.articleNo} - ${item.artProcess}`,
+    //     };
+    //   });
+    // });
   }
 
 

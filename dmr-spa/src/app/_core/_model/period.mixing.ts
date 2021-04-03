@@ -4,8 +4,8 @@ export interface PeriodMixing {
     id: number;
     buildingID: number;
     isOvertime: boolean;
-    startTime: Date;
-    endTime: Date;
+    startTime: any;
+    endTime: any;
     createdTime: Date;
     updatedTime: Date | null;
     deletedTime: Date | null;

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -271,6 +272,101 @@ namespace DMR_API._Services.Services
                 Children = x,
                 HasChildren = x.Any()
             });
+        }
+        public async Task<ResponseDetail<object>> PostActionToFunction(int functionID, ActionAssignRequest request)
+        {
+            foreach (var actionId in request.ActionIds)
+            {
+                if (await _repoActionInFunctionSystem.FindAll( x=> x.FunctionSystemID == functionID && x.ActionID == actionId).AnyAsync() != false)
+                    return new ResponseDetail<object> { Status = false, Message = "This action has been existed in function" };
+                var entity = new ActionInFunctionSystem
+                {
+                    ActionID = actionId,
+                    FunctionSystemID = functionID
+                };
+
+                _repoActionInFunctionSystem.Add(entity);
+            }
+
+            try
+            {
+                var result = await _repoActionInFunctionSystem.SaveAll();
+                return new ResponseDetail<object> { Status = true };
+            }
+            catch (System.Exception ex)
+            {
+                // TODO
+                return new ResponseDetail<object> { Status = false, Message = ex.Message };
+            }
+
+            // tao role moi
+        }
+        public async Task<ResponseDetail<object>> PutPermissionByRoleId(int roleID, UpdatePermissionRequest request)
+        {
+            //create new permission list from user changed
+            var newPermissions = new List<Permission>();
+            foreach (var p in request.Permissions)
+            {
+                newPermissions.Add(new Permission(p.FunctionID, roleID, p.ActionID));
+            }
+            var existingPermissions = await _repoPermission.FindAll(x => x.RoleID == roleID).ToListAsync();
+
+            _repoPermission.RemoveMultiple(existingPermissions);
+            _repoPermission.AddRange(newPermissions.DistinctBy(x => new { x.RoleID, x.ActionID, x.FunctionSystemID }).ToList());
+            try
+            {
+                var result = await _repoPermission.SaveAll();
+                return new ResponseDetail<object>{Status = true};
+            }
+            catch (System.Exception ex)
+            {
+                // TODO
+                return new ResponseDetail<object> { Status = false, Message = ex.Message };
+            }
+          
+            // tao role moi
+        }
+        public async Task<ResponseDetail<object>> DeleteActionToFunction(int functionID, ActionAssignRequest request)
+        {
+            try
+            {
+                foreach (var actionId in request.ActionIds)
+            {
+                var entity = await _repoActionInFunctionSystem.FindAll(x => x.FunctionSystemID == functionID && x.ActionID == actionId).FirstOrDefaultAsync();
+                if (entity == null)
+                    return new ResponseDetail<object> { Status = false, Message = "This action is not existed in function" };
+
+                _repoActionInFunctionSystem.Remove(entity);
+            }
+                var result = await _repoPermission.SaveAll();
+                return new ResponseDetail<object> { Status = true };
+            }
+            catch (System.Exception ex)
+            {
+                // TODO
+                return new ResponseDetail<object> { Status = false, Message = ex.Message };
+            }
+
+            // tao role moi
+        }
+
+        public async Task<object> GetScreenAction(int functionID)
+        {
+            var query = from a in _repoAction.FindAll()
+                        join f in _repoActionInFunctionSystem.FindAll(x=> x.FunctionSystemID == functionID)
+                                    .Include(x=>x.FunctionSystem)
+                            on a.ID equals f.ActionID
+                        into af 
+                        from c in af.DefaultIfEmpty()
+                        select new
+                        {
+                            Id = a.ID,
+                            Name = a.Name,
+                            FuncName = c != null ? c.FunctionSystem.Name : "N/A",
+                            Status = c != null ? true : false,
+                        };
+            var data = await query.ToListAsync();
+           return data;
         }
     }
 }

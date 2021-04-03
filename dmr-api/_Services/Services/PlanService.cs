@@ -3079,6 +3079,20 @@ namespace DMR_API._Services.Services
             }
         }
 
+        public async Task<ResponseDetail<object>> AchievementRate(int building)
+        {
+            var today = DateTime.Now.Date;
+            var lines = await _repoBuilding.FindAll(x => x.ParentID == building).ToListAsync();
+            var linesID = lines.Select(x => x.ID);
+            var model = _repoPlan.FindAll(x => linesID.Contains(x.BuildingID) && x.CreatedDate.Date < today && x.DueDate.Date == today && x.UpdatedTime.Value < today).DistinctBy(x => x.BuildingID).ToList();
+
+            var lineTotal = lines.Count();
+            var planTotal = model.Count();
+            var rateTemp = (planTotal / (double)lineTotal) * 100;
+            var rate = Math.Round(rateTemp);
+            return new ResponseDetail<object> { Data = $"{planTotal}/{lineTotal}    {rate}%", Status = true };
+        }
+
 
         #endregion
 

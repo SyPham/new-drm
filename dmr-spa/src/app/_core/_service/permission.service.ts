@@ -76,12 +76,25 @@ export class PermissionService {
   deleteAction(id: number) {
     return this.http.delete(this.baseUrl + 'Permission/DeleteAction/' + id);
   }
-// #endregion
+  // #endregion
 
   getMenuByUserPermission(userId) {
     return this.http.get<[]>(this.baseUrl + 'Permission/GetMenuByUserPermission/' + userId, {}).pipe(map(response => {
       const menus = response;
       return menus;
     }));
+  }
+
+  putPermissionByRoleId(roleID, request) {
+    return this.http.put(this.baseUrl + 'Permission/GetMenuByUserPermission/' + roleID, request);
+  }
+  postActionToFunction(functionID, request) {
+    return this.http.post(this.baseUrl + 'Permission/PostActionToFunction/' + functionID, request);
+  }
+  deleteActionToFunction(functionID, request) {
+    return this.http.delete(`${this.baseUrl}Permission/deleteActionToFunction/${functionID}?actionIds=${request.actionIds}`);
+  }
+  getScreenAction(functionID) {
+    return this.http.get<[]>(this.baseUrl + 'Permission/GetScreenAction/' + functionID, {});
   }
 }

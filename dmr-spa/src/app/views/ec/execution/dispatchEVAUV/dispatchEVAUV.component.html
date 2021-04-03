@@ -53,10 +53,13 @@
                 <ng-template #headerTemplate>
                   {{'Remaining Amount' | translate}}
                 </ng-template>
+                <ng-template #template let-data>
+                  {{ data.remainingAmount === null ? 'N/A' : data.remainingAmount }}
+                </ng-template>
               </e-column>
-              <e-column field='amount' headerText='Amount' width='200' textAlign='Center'>
+              <e-column field='amount' headerText='Dispatch Amount' width='200' textAlign='Center'>
                 <ng-template #headerTemplate>
-                  {{'Amount' | translate}}
+                  {{'Dispatch Amount' | translate}}
                 </ng-template>
                 <ng-template #editTemplate let-data>
                   {{data.amount }}

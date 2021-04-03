@@ -72,5 +72,9 @@ namespace DMR_API._Services.Interface
         /// <param name="buildingID">BPFCID mới</param>
         /// <returns></returns>
         Task<ResponseDetail<Byte[]>> ExportExcel(ExcelExportDto dto);
+        /// <summary>
+        /// (Update on time)/12(Total)=100% Achievement Rate  => what is the standard time of "update on time" ? 
+        /// </summary>
+        Task<ResponseDetail<object>> AchievementRate(int building);
     }
 }

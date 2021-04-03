@@ -53,17 +53,17 @@ export class DispatchEVAUVComponent implements OnInit {
   }
   actionBegin(args) {
     if (args.requestType === 'beginEdit') {
-      console.log('(beginedit)', args);
       this.lineItem = args.rowData.building.name;
     }
     if (args.requestType === 'save' && args.action === 'edit') {
       const data = args.data;
-      if (data.amount === 0) {
-        this.alertify.warning('Đã giao hết!');
+      if (data.amount - data.remainingAmount < 0) {
+        this.alertify.warning('Vui lòng nhập KL còn lại nhỏ hơn hoặc bằng khối lượng!');
         args.cancel = true;
         return;
-      } else if (data.amount - data.remainingAmount < 0) {
-        this.alertify.warning('Vui lòng nhập KL còn lại nhỏ hơn hoặc bằng khối lượng!');
+      }
+      else if (data.amount - data.remainingAmount === 0) {
+        this.alertify.warning('Vui lòng nhập số lượng còn lại bằng 0.!');
         args.cancel = true;
         return;
       }
@@ -119,6 +119,7 @@ export class DispatchEVAUVComponent implements OnInit {
        }
         , err => {
           this.alertify.warning(err);
+          this.getAllDispatch();
         });
   }
 }

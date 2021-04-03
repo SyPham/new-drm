@@ -2,8 +2,8 @@ import { PeriodMixing } from "./period.mixing";
 
 export interface PeriodDispatch {
     id: number;
-    startTime: Date;
-    endTime: Date;
+    startTime: any;
+    endTime: any;
     isDelete: boolean;
     createdBy: number;
     deletedBy: number;
