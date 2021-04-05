@@ -126,15 +126,7 @@ namespace DMR_API._Services.Services
         {
             var userid = _jwtService.GetUserID();
             var role = await _userRoleRepository.FindAll(x => x.UserID == userid).AsNoTracking().FirstOrDefaultAsync();
-            switch (role.RoleID)
-            {
-                case (int)Enums.Role.Admin:
-                case (int)Enums.Role.Supervisor:
-                case (int)Enums.Role.Staff:
-                    return await _repoBuilding.FindAll().Include(x => x.LunchTime).Include(x => x.Kind).Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
-                case (int)Enums.Role.Worker:
-                case (int)Enums.Role.Dispatcher:
-                    return await _buildingUserRepository.FindAll(x => x.UserID == userid)
+           var model = await _buildingUserRepository.FindAll(x => x.UserID == userid)
                         .Include(x => x.Building).ThenInclude(x => x.Kind).Select(x => new BuildingDto
                         {
                             ID = x.Building.ID,
@@ -143,9 +135,30 @@ namespace DMR_API._Services.Services
                             Name = x.Building.Name,
                             IsSTF = x.Building.Kind == null ? false : true,
                         }).ToListAsync();
-                default:
-                    return new List<BuildingDto>();
+            if (model.Count == 0) {
+                return await _repoBuilding.FindAll().Include(x => x.LunchTime).Include(x => x.Kind).Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
             }
+            return model;
+            // switch (role.RoleID)
+            // {
+            //     case (int)Enums.Role.Admin:
+            //     case (int)Enums.Role.Supervisor:
+            //     case (int)Enums.Role.Staff:
+            //         return await _repoBuilding.FindAll().Include(x => x.LunchTime).Include(x => x.Kind).Where(x => x.Level != 5).ProjectTo<BuildingDto>(_configMapper).OrderBy(x => x.Level).ToListAsync();
+            //     case (int)Enums.Role.Worker:
+            //     case (int)Enums.Role.Dispatcher:
+            //         return await _buildingUserRepository.FindAll(x => x.UserID == userid)
+            //             .Include(x => x.Building).ThenInclude(x => x.Kind).Select(x => new BuildingDto
+            //             {
+            //                 ID = x.Building.ID,
+            //                 Level = x.Building.Level,
+            //                 ParentID = x.Building.ParentID,
+            //                 Name = x.Building.Name,
+            //                 IsSTF = x.Building.Kind == null ? false : true,
+            //             }).ToListAsync();
+            //     default:
+            //         return new List<BuildingDto>();
+            // }
 
         }
 

@@ -30,6 +30,7 @@ import { DispatchDoneListComponent } from '../dispatch-done-list/dispatch-done-l
 import { PrintGlueDispatchListComponent } from '../print-glue-dispatch-list/print-glue-dispatch-list.component.js';
 import { DispatchComponent } from '../dispatch/dispatch.component';
 import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
+import { map } from 'rxjs/operators';
 
 declare var $: any;
 const ADMIN = 1;
@@ -257,8 +258,14 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
   getBuilding(callback): void {
-    this.buildingService.getBuildings().subscribe(async (buildingData) => {
-      this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
+    this.buildingService.getBuildings()
+    .pipe(
+      map( data => {
+        return data.filter(item => item.level === BUILDING_LEVEL);
+      })
+    )
+    .subscribe((buildingData) => {
+      this.buildings = buildingData;
       callback();
     });
     const userID = +JSON.parse(localStorage.getItem('user')).user.id;
@@ -411,42 +418,58 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     return false;
   }
   checkRole(): void {
-    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
-    switch (this.role.id) {
-      case ADMIN:
-      case SUPERVISOR:
-      case STAFF:
-      case WORKER: // Chỉ hiện todolist
-        this.IsAdmin = true;
-        const buildingId = +localStorage.getItem('buildingID');
-        this.building = JSON.parse(localStorage.getItem('building'));
-        if (buildingId === 0) {
-          this.getBuilding(() => {
-            this.alertify.message('Please select a building!', true);
-          });
-        } else {
-          this.getBuilding(() => {
-            this.buildingID = buildingId;
-            this.isShowTab = this.TODO;
-            this.focusDone = this.TODO;
-            this.loadData();
-            this.todoAddition();
-            this.dispatchAddition();
-          });
-        }
-        break;
-      case DISPATCHER: // Chỉ hiện dispatchlist
-        this.building = JSON.parse(localStorage.getItem('building'));
-        this.getBuilding(() => {
-          this.buildingID = this.building[0].id;
-          this.isShowTab = this.DISPATCH;
-          this.focusDone = this.DISPATCH;
-          this.loadData();
-          this.todoAddition();
-          this.dispatchAddition();
-        });
-        break;
+    const buildingId = +localStorage.getItem('buildingID');
+    this.building = JSON.parse(localStorage.getItem('building'));
+    if (buildingId === 0) {
+      this.getBuilding(() => {
+        this.alertify.message('Please select a building!', true);
+      });
+    } else {
+      this.getBuilding(() => {
+        this.buildingID = buildingId;
+        this.isShowTab = this.TODO;
+        this.focusDone = this.TODO;
+        this.loadData();
+        this.todoAddition();
+        this.dispatchAddition();
+      });
     }
+    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
+    // switch (this.role.id) {
+    //   case ADMIN:
+    //   case SUPERVISOR:
+    //   case STAFF:
+    //   case WORKER: // Chỉ hiện todolist
+    //     this.IsAdmin = true;
+    //     const buildingId = +localStorage.getItem('buildingID');
+    //     this.building = JSON.parse(localStorage.getItem('building'));
+    //     if (buildingId === 0) {
+    //       this.getBuilding(() => {
+    //         this.alertify.message('Please select a building!', true);
+    //       });
+    //     } else {
+    //       this.getBuilding(() => {
+    //         this.buildingID = buildingId;
+    //         this.isShowTab = this.TODO;
+    //         this.focusDone = this.TODO;
+    //         this.loadData();
+    //         this.todoAddition();
+    //         this.dispatchAddition();
+    //       });
+    //     }
+    //     break;
+    //   case DISPATCHER: // Chỉ hiện dispatchlist
+    //     this.building = JSON.parse(localStorage.getItem('building'));
+    //     this.getBuilding(() => {
+    //       this.buildingID = this.building[0].id;
+    //       this.isShowTab = this.DISPATCH;
+    //       this.focusDone = this.DISPATCH;
+    //       this.loadData();
+    //       this.todoAddition();
+    //       this.dispatchAddition();
+    //     });
+    //     break;
+    // }
   }
   EVA_UVList() {
     this.bottomFactoryService.EVAUVList(this.buildingID).subscribe((res: any) => {

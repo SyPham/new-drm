@@ -43,21 +43,11 @@
               </ng-template>
             </e-column>
             <e-column field="email" textAlign='Center' headerText="Email"> </e-column>
-            <e-column field="role" textAlign='Center' headerText="Role">
+            <e-column field="role" textAlign='Center' headerText="Role Group">
               <ng-template #editTemplate let-data>
                 <ejs-dropdownlist #positionDropdownlist [dataSource]='roles' [value]="data.role"
                   [fields]='fieldsRole' [allowFiltering]='true'
                   (change)='onChangeRole($event,data)'>
-                </ejs-dropdownlist>
-              </ng-template>
-            </e-column>
-            <e-column field="building" textAlign='Center' headerText="Building">
-              <!-- <ng-template #template let-data>
-                {{data.building}}
-              </ng-template> -->
-              <ng-template #editTemplate let-data>
-                <ejs-dropdownlist *ngIf="data.role === 'Dispatcher'" #positionDropdownlist [dataSource]='buildingDatas' [value]="data.building"
-                  [fields]='fieldsBuilding' [allowFiltering]='true' (change)='onChangeBuilding($event,data)'>
                 </ejs-dropdownlist>
               </ng-template>
             </e-column>

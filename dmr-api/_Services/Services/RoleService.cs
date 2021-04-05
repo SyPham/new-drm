@@ -19,6 +19,8 @@ namespace DMR_API._Services.Services
         private readonly IRoleRepository _repoRole;
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _configMapper;
+        private readonly string SUPPER_ADMIN = "SUPPER_ADMIN";
+
         public RoleService(IRoleRepository repoRole, IMapper mapper, MapperConfiguration configMapper)
         {
             _configMapper = configMapper;
@@ -51,7 +53,7 @@ namespace DMR_API._Services.Services
         public async Task<List<RoleDto>> GetAllAsync()
         {
             // x => x.Code != "SUPPER_ADMIN"
-            return await _repoRole.FindAll().ProjectTo<RoleDto>(_configMapper).OrderBy(x => x.ID).ToListAsync();
+            return await _repoRole.FindAll(x => x.Code != SUPPER_ADMIN).ProjectTo<RoleDto>(_configMapper).OrderBy(x => x.ID).ToListAsync();
         }
 
 

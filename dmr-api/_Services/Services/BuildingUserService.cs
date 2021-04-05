@@ -449,36 +449,58 @@ namespace DMR_API._Services.Services
         {
             var buildingLevel = 2;
             var role = await _userRoleRepository.FindAll(x => x.UserID == userid).FirstOrDefaultAsync();
-            if (role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
-            {
 
-                var model = await (from b in _buildingRepository.FindAll(x => x.Level == buildingLevel)
-                                   join l in _buildingRepository.FindAll() on b.ID equals l.ParentID
-                                   join bu in _buildingUserRepository.FindAll(x => x.UserID == userid) on b.ID equals bu.BuildingID
-                                   select b
-                                   ).Distinct().ProjectTo<BuildingDto>(_configMapper).ToListAsync();
+            // Nếu gán nhóm quyền rồi nhưng chưa gán tòa nhà thì load hết tòa nhà
+            var model = await (from b in _buildingRepository.FindAll(x => x.Level == buildingLevel)
+                               join l in _buildingRepository.FindAll() on b.ID equals l.ParentID
+                               join bu in _buildingUserRepository.FindAll(x => x.UserID == userid) on b.ID equals bu.BuildingID
+                               select b
+                                 ).Distinct().ProjectTo<BuildingDto>(_configMapper).ToListAsync();
+            if (model.Count == 0 ) {
+                var allBuildings = await _buildingRepository.FindAll(x => x.Level == buildingLevel)
+                               .ProjectTo<BuildingDto>(_configMapper).ToListAsync();
                 return new ResponseDetail<List<BuildingDto>>
                 {
-                    Data = model,
+                    Data = allBuildings,
                     Status = true
                 };
             }
-            if (role.RoleID == (int)Enums.Role.Admin || role.ID == (int)Enums.Role.Supervisor || role.ID == (int)Enums.Role.Staff)
-            {
-                var model = await _buildingRepository.FindAll(x => x.Level == buildingLevel)
-                                .ProjectTo<BuildingDto>(_configMapper).ToListAsync();
-                return new ResponseDetail<List<BuildingDto>>
-                {
-                    Data = model,
-                    Status = true
-                };
-            }
-
             return new ResponseDetail<List<BuildingDto>>
             {
-                Data = null,
-                Status = false
+                Data = model,
+                Status = true
             };
+            
+            // // if (role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
+            // // {
+
+            // //     var model = await (from b in _buildingRepository.FindAll(x => x.Level == buildingLevel)
+            // //                        join l in _buildingRepository.FindAll() on b.ID equals l.ParentID
+            // //                        join bu in _buildingUserRepository.FindAll(x => x.UserID == userid) on b.ID equals bu.BuildingID
+            // //                        select b
+            // //                        ).Distinct().ProjectTo<BuildingDto>(_configMapper).ToListAsync();
+            // //     return new ResponseDetail<List<BuildingDto>>
+            // //     {
+            // //         Data = model,
+            // //         Status = true
+            // //     };
+            // // }
+            // // if (role.RoleID == (int)Enums.Role.Admin || role.ID == (int)Enums.Role.Supervisor || role.ID == (int)Enums.Role.Staff)
+            // // {
+            // //     var model = await _buildingRepository.FindAll(x => x.Level == buildingLevel)
+            // //                     .ProjectTo<BuildingDto>(_configMapper).ToListAsync();
+            // //     return new ResponseDetail<List<BuildingDto>>
+            // //     {
+            // //         Data = model,
+            // //         Status = true
+            // //     };
+            // // }
+
+            // return new ResponseDetail<List<BuildingDto>>
+            // {
+            //     Data = null,
+            //     Status = false
+            // };
         }
     }
 }

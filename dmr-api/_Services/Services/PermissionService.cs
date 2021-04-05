@@ -27,7 +27,7 @@ namespace DMR_API._Services.Services
         private readonly IActionInFunctionSystemRepository _repoActionInFunctionSystem;
         private readonly IUserRoleRepository _repoUserRole;
         private readonly MapperConfiguration _configMapper;
-
+        private readonly string[] Permissions = new string [] {"Action", "Action In Function", "Module", "Function"};
         public PermissionService(
             IPermissionRepository repoPermission,
             IMapper mapper,
@@ -407,6 +407,7 @@ namespace DMR_API._Services.Services
                 .Select(x => new
                 {
                     Id = x.FunctionSystem.ID,
+                    FunctionCode = x.FunctionSystem.Code,
                     Name = x.FunctionSystem.Name,
                     ActionName = x.Action.Name,
                     ActionID = x.Action.ID,
@@ -414,8 +415,8 @@ namespace DMR_API._Services.Services
                     ModuleCode = x.FunctionSystem.Module.Code,
                     ModuleNameID = x.FunctionSystem.Module.ID,
                     Code = x.Action.Code,
-                });
-                // .Where(x => x.ModuleCode != "SYSTEM")
+                })
+                .Where(x => !Permissions.Contains(x.FunctionCode));
           var model =  from t1 in query
                         from t2 in permission.Where(x => roleID.Contains(x.RoleID) && t1.Id == x.FunctionSystemID && x.ActionID== t1.ActionID)
                             .DefaultIfEmpty()

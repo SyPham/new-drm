@@ -685,7 +685,6 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
           isShowOvertimeOption: item.isShowOvertimeOption
         };
       });
-      this.data = this.data || [];
       console.log('Lấy tất cả kế hoạch làm việc của tòa nhà : ', this.buildingName);
 
     });

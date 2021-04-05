@@ -65,7 +65,7 @@
                                N/A
                             </ng-template>
                         </e-column>
-                      
+
                         <!-- <e-column field='minRPM' textAlign='Center' headerText='Min RPM' width='100'>
                         <ng-template #template let-data>{{data.minRPM}}</ng-template>
                         </e-column>
@@ -92,7 +92,7 @@
             <div class="col-md-4"></div>
             <div class="col-md-4 text-left">
                 <div class='center '>
-                    <ejs-qrcodegenerator #barcode style="display: block;" id='qrcode' #barcode width="100px" height="130px" [displayText]='displayTextMethod' mode="SVG" [value]="qrcode">
+                    <ejs-qrcodegenerator style="display: block;" id='qrcode' #barcode width="100px" height="130px" [displayText]='displayTextMethod' mode="SVG" [value]="qrcode">
                     </ejs-qrcodegenerator>
                 </div>
                 <div><label>QrCode:</label> {{qrcode}}</div>
