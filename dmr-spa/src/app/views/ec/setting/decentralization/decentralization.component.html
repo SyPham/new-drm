@@ -33,7 +33,7 @@
             </e-column>
             <e-column field="building" textAlign='Center' headerText="Building">
               <ng-template #template let-data>
-                 <ejs-multiselect [dataSource]='data.buildingsData' (close)='closeBuilding()'
+                 <ejs-multiselect #multiSelectBuildings [dataSource]='data.buildingsData' (close)='closeBuilding(data.index)'
                  (removing)='removingBuilding($event, data)' (select)="onSelectBuilding($event, data)" [(ngModel)]="data.buildings"
                   [mode]='mode' [fields]='fieldsBuilding' [showDropDownIcon]='true'  placeholder='Select building'>
                 </ejs-multiselect>
@@ -41,7 +41,7 @@
             </e-column>
             <e-column field="line" textAlign='Center' headerText="Line">
               <ng-template #template let-data>
-                <ejs-multiselect [dataSource]='data.linesData'  (close)='closeLine()'
+                <ejs-multiselect #multiSelectLines [dataSource]='data.linesData'  (close)='closeLine(data.index)'
                  (removing)='removing($event, data)' (select)="onSelect($event, data)" [(ngModel)]="data.lines"
                   [mode]='mode' [fields]='fieldsLine' [showDropDownIcon]='true'  placeholder='Select line'>
                 </ejs-multiselect>

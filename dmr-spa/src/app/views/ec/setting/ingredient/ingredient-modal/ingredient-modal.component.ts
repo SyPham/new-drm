@@ -96,17 +96,17 @@ export class IngredientModalComponent implements OnInit {
       this.alertify.warning('The days to expiry must be greater than zero<br> Vui lòng nhập ngày hết hạn phải lớn hơn 0', true);
       return false;
     }
-    if (this.ingredient.replacementFrequency === 0 || this.ingredient.replacementFrequency > 9.5) {
-      this.alertify.warning(`
-      Please key in the replacement frequency.
-       This must be greater than zero or less than 9.5 hours (a working day)
-      <br> Vui lòng nhập replacement frequency lớn hơn 0 và không được vượt quá 9.5 giờ (1 ngày làm việc tính cả giờ tăng ca)`, true);
-      return false;
-    }
-    if (this.ingredient.prepareTime === 0) {
-      this.alertify.warning('The prepare time must be greater than zero<br> Vui lòng nhập thời gian chuẩn bị phải lớn hơn 0', true);
-      return false;
-    }
+    // if (this.ingredient.replacementFrequency === 0 || this.ingredient.replacementFrequency > 9.5) {
+    //   this.alertify.warning(`
+    //   Please key in the replacement frequency.
+    //    This must be greater than zero or less than 9.5 hours (a working day)
+    //   <br> Vui lòng nhập replacement frequency lớn hơn 0 và không được vượt quá 9.5 giờ (1 ngày làm việc tính cả giờ tăng ca)`, true);
+    //   return false;
+    // }
+    // if (this.ingredient.prepareTime === 0) {
+    //   this.alertify.warning('The prepare time must be greater than zero<br> Vui lòng nhập thời gian chuẩn bị phải lớn hơn 0', true);
+    //   return false;
+    // }
     if (this.ingredient.supplierID === 0) {
       this.alertify.warning('Please select a supplier<br> Vui lòng chọn 1 nhà cung cấp', true);
       return false;
