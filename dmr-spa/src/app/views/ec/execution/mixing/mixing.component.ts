@@ -155,11 +155,17 @@ export class MixingComponent implements OnInit, OnDestroy {
         const item = arg.ingredient;
         this.ingredientsTamp = item;
         this.position = item.position;
-        const input = args.split('-') || [];
-        const dateAndBatch = /(\d+)-(\w+)-/g;
-        const qr = args.match(item.materialNO);
-        const validFormat = args.match(dateAndBatch);
-        const qrcode = args.replace(validFormat[0], '');
+        // const input = args.split('-') || [];
+        // const dateAndBatch = /(\d+)-(\w+)-/g;
+        // const validFormat = args.match(dateAndBatch);
+        // const qrcode = args.replace(validFormat[0], '');
+
+        //Update 08/04/2021 - Leo
+        const input = args.split('    ') || [];
+        const qr = item.partNO;
+        // const qr = args.match(item.materialNO);
+        const qrcode = input[2].split(":")[1].trim() + ':' + input[0].split(":")[1].trim();
+         //End update
         if (qr === null) {
           this.alertify.warning(`Mã QR không hợp lệ!<br>The QR Code invalid!`);
           this.qrCode = '';
@@ -169,15 +175,15 @@ export class MixingComponent implements OnInit, OnDestroy {
         if (qr !== null) {
           try {
             // check neu batch va code giong nhau
-            if (qrcode !== qr[0]) {
+            if (qrcode !== qr) {
               this.alertify.warning(`Mã QR không hợp lệ!<br>Please you should look for the chemical name "${item.name}"`);
               this.qrCode = '';
               this.errorScan();
               return;
             }
-            this.qrCode = qr[0];
+            this.qrCode = qr;
             // const result = await this.scanQRCode();
-            if (this.qrCode !== item.materialNO) {
+            if (this.qrCode !== item.partNO) { //Update 08/04/2021 - Leo
               this.alertify.warning(`Mã QR không hợp lệ!<br>Please you should look for the chemical name "${item.name}"`);
               this.qrCode = '';
               this.errorScan();
@@ -284,6 +290,7 @@ export class MixingComponent implements OnInit, OnDestroy {
             code: item.code,
             scanCode: '',
             materialNO: item.materialNO,
+            partNO: item.partNO,
             name: item.name,
             percentage: item.percentage,
             position: item.position,

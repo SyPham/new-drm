@@ -14,7 +14,8 @@ namespace DMR_API.Models
         public string Name { get; set; }
         public string CreatedDate { get; set; }
         public string MaterialNO { get; set; }
-      
+        public string PartNO { get; set; }
+
         public int CreatedBy { get; set; }
         public bool isShow { get; set; }
         public DateTime ModifiedDate { get; set; }

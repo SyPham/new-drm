@@ -21,8 +21,9 @@ namespace DMR_API.DTO
         public string Supplier { get; set; }
         public string Position { get; set; }
         public string MaterialNO { get; set; }
+        public string PartNO { get; set; }
 
-  
+
         public DateTime ManufacturingDate { get; set; }
         public DateTime ModifiedDate { get; set; }
 

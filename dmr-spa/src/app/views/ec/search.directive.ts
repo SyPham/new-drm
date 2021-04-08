@@ -17,7 +17,7 @@ export class SearchDirective implements AfterViewInit, OnInit, OnDestroy {
   @HostListener('focusout') onFocusout() {
     setTimeout(() => {
       this.host.nativeElement.focus();
-    }, 2000);
+    }, 200);
   }
   @HostListener('ngModelChange', ['$event']) onChange(value) {
     this.subject.next(value);
@@ -30,18 +30,22 @@ export class SearchDirective implements AfterViewInit, OnInit, OnDestroy {
   }
   ngOnInit() {
     this.subscription.push(this.subject
-      .pipe(debounceTime(300))
-      .subscribe(async (arg) => {
-        this.host.nativeElement.select();
-      }));
+    .pipe(debounceTime(300))
+    .subscribe(async (arg) => {
+      this.host.nativeElement.select();
+    }));
   }
   ngOnDestroy() {
     this.subscription.forEach(item => item.unsubscribe());
   }
+
   @HostListener('document:keydown.enter', ['$event'])
   onKeydownHandler(event: KeyboardEvent) {
     event.preventDefault();
     this.host.nativeElement.value = this.host.nativeElement.value + '    ';
+    // const input = this.host.nativeElement.value + '    '.split(' ') || [];
+    // this.host.nativeElement.value = input[20]
+    // this.host.nativeElement.value = this.host.nativeElement.value.replace('    ', '');
   }
   @HostListener('document:keydown.tab', ['$event'])
   onKeydownTabHandler(event: KeyboardEvent) {

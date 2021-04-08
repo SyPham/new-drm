@@ -61,6 +61,7 @@ export class IngredientComponent extends BaseComponent implements OnInit {
     daysToExpiration: 0,
     voc: 0,
     materialNO: '',
+    partNO: '',
     unit: 0,
     real: 0,
     cbd: 0,
@@ -153,6 +154,7 @@ export class IngredientComponent extends BaseComponent implements OnInit {
           expiredTime: 0,
           daysToExpiration: 0,
           materialNO: '',
+          partNO: '',
           unit: 0,
           real: 0,
           cbd: 0,
@@ -554,6 +556,7 @@ export class IngredientComponent extends BaseComponent implements OnInit {
             expiredTime: item.expiredTime,
             daysToExpiration: item.daysToExpiration,
             materialNO: item.materialNO,
+            partNO: item.partNO?.split(':')[0],
             unit: item.unit,
             real: item.real,
             cbd: item.cbd,
@@ -621,6 +624,7 @@ export class IngredientComponent extends BaseComponent implements OnInit {
   getAll() {
     this.ingredientService.getAllIngredient().subscribe(res => {
       this.data = res;
+      console.log(res);
     });
   }
   delete(ingredient: IIngredient) {

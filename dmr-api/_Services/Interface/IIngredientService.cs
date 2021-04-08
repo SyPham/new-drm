@@ -29,7 +29,11 @@ namespace DMR_API._Services.Interface
         Task<object> GetAllIngredientReportByRangeWithBuilding(DateTime min, DateTime max, string name);
         Task<List<GlueType>> GetAllGlueTypeAsync();
         Task<object> ScanQRCodeFromChemialWareHouse(string qrCode, string building, int userid);
-         Task<object> ScanQRCodeOutput(string qrCode, string building, int userid);
+        //Update 08/04/2021 - Leo
+        Task<object> ScanQRCodeFromChemialWareHouseV1(ScanQrCodeDto entity);
+        Task<object> ScanQRCodeOutputV1(ScanQrCodeDto entity);
+        //End update
+        Task<object> ScanQRCodeOutput(string qrCode, string building, int userid);
         Task<object> ScanQRCodeFromChemialWareHouseDate(string qrCode, string start , string end);
         Task<bool> UpdateConsumptionChemialWareHouse(string qrCode , int consump);
 

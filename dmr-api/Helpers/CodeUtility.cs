@@ -802,7 +802,7 @@ namespace DMR_API.Helpers
             DateTime result = DateTime.MinValue;
 
             string[] formats = {"d/M/yyyy", "dd/MM/yyyy", "d/M/yyyy HH:mm:ss", "d/M/yyyy HH:mm", "dd/MM/yyyy HH:mm", "HH:mm:ss", "HH:mm",
-"d-M-yyyy", "dd-MM-yyyy", "MM-dd-yyyy","MM-dd-yy", "yyyy-MM-dd", "d-M-yyyy HH:mm:ss", "d-M-yyyy HH:mm", "dd-MM-yyyy HH:mm", "HH:mm:ss", "HH:mm"};//HH phủ cả từ 1-24h còn hh chỉ phủ từ 1-12h
+"d-M-yyyy", "dd-MM-yyyy", "yyyyMMdd" , "ddMMyyyy" , "MMddyyyy", "MM-dd-yyyy","MM-dd-yy", "yyyy-MM-dd", "d-M-yyyy HH:mm:ss", "d-M-yyyy HH:mm", "dd-MM-yyyy HH:mm", "HH:mm:ss", "HH:mm"};//HH phủ cả từ 1-24h còn hh chỉ phủ từ 1-12h
 
             string[] dateStrings = {"5/1/2009 6:32 PM", "05/01/2009 6:32:05 PM",
                               "5/1/2009 6:32:00", "05/01/2009 06:32",

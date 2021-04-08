@@ -26,6 +26,7 @@ export class IngredientModalComponent implements OnInit {
     expiredTime: 0,
     daysToExpiration: 0,
     materialNO: '',
+    partNO: '',
     unit: 0,
     real: 0,
     cbd: 0,
@@ -82,6 +83,11 @@ export class IngredientModalComponent implements OnInit {
     }
     if (this.ingredient.materialNO === '') {
       this.alertify.warning('Please key in the material NO <br> Vui lòng nhập material NO', true);
+      return false;
+    }
+
+    if (this.ingredient.partNO === '') {
+      this.alertify.warning('Please key in the part NO <br> Vui lòng nhập part NO', true);
       return false;
     }
     if (this.ingredient.unit === 0) {
