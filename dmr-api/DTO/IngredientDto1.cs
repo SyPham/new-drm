@@ -15,6 +15,7 @@ namespace DMR_API.DTO
         public string CreatedDate { get; set; }
         public string Position { get; set; }
         public string MaterialNO { get; set; }
+        public string PartNO { get; set; }
         public string Supplier { get; set; }
 
         public GlueType GlueType { get; set; }

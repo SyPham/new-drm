@@ -4,6 +4,7 @@ export interface IIngredient {
     code: string;
     scanCode: string;
     materialNO: string;
+    partNO: string;
     name: string;
     percentage: string;
     position: string;

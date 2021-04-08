@@ -43,11 +43,13 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
   }
   @HostListener('document:keydown.enter', ['$event'])
   onKeydownHandler(event: KeyboardEvent) {
+    console.log('document:keydown.enter',);
     event.preventDefault();
     this.host.nativeElement.value = this.host.nativeElement.value + '    ';
   }
   @HostListener('document:keydown.tab', ['$event'])
   onKeydownTabHandler(event: KeyboardEvent) {
+    console.log('document:keydown.tab',);
     event.preventDefault();
     this.host.nativeElement.value = this.host.nativeElement.value + '    ';
   }

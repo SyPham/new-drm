@@ -43,6 +43,7 @@ import { GridAllModule } from '@syncfusion/ej2-angular-grids';
 import { L10n, loadCldr, setCulture } from '@syncfusion/ej2-base';
 import { ToolbarModule } from '@syncfusion/ej2-angular-navigations';
 import { AutoSelectDispatchDirective } from './select.dispatch.directive';
+// import { AutoSelectDirective } from './select.directive';
 import { TreeGridAllModule } from '@syncfusion/ej2-angular-treegrid/';
 import { CountdownModule } from 'ngx-countdown';
 import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
@@ -126,7 +127,8 @@ if (lang === 'vi') {
     // AutofocusDirective,
     AutoSelectDispatchDirective,
     SelectQrCodeDirective,
-    SelectTextDirective
+    // AutoSelectDirective,
+    SelectTextDirective,
   ]
 })
 export class ECModule {
