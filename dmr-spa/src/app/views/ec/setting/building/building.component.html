@@ -22,7 +22,7 @@
                     childMapping="childNodes"
                     allowExcelExport='true'
                     allowPdfExport='true'
-                     (queryCellInfo)='queryCellInfoEvent($event)'
+                    (queryCellInfo)='queryCellInfoEvent($event)'
       >
         <e-columns>
 
@@ -47,7 +47,7 @@
               {{'KIND' | translate}}
             </ng-template>
             <ng-template #editTemplate let-data>
-              <ejs-dropdownlist #kindDropdownlist [dataSource]='kinds' [value]="data.entity.kindID" [fields]='fieldsKindEdit'
+              <ejs-dropdownlist #kindDropdownlist *ngIf="data.entity.level === 3 && data.parent.buildingType?.id === 2" [dataSource]='kinds' [value]="data.entity.kindID" [fields]='fieldsKindEdit'
                 [allowFiltering]='true' (change)='onChangeKindEdit($event)'>
               </ejs-dropdownlist>
             </ng-template>

@@ -25,7 +25,6 @@ export class BuildingComponent extends BaseComponent implements OnInit {
   toolbar: object;
   data: Array<HierarchyNode<IBuilding>>;
   editing: any;
-
   contextMenuItems: any;
   pageSettings: any;
   editparams: { params: { format: string; }; };
@@ -34,6 +33,7 @@ export class BuildingComponent extends BaseComponent implements OnInit {
   @ViewChild('buildingModal')
   buildingModal: any;
   building: IBuilding = {} as IBuilding;
+  parent: IBuilding = {} as IBuilding;
   edit: IBuilding = {} as IBuilding;
   kindID: any;
   kinds: object;
@@ -123,6 +123,7 @@ export class BuildingComponent extends BaseComponent implements OnInit {
       case 'Add-Sub-Item':
         this.building.parentID = data.id; // Gán ID hiện tại là cha của record đc tạo
         this.building.level = data.level; // Gán ID hiện tại là cha của record đc tạo
+        this.parent = data;
         this.openSubModal();
         break;
       default:
@@ -185,7 +186,7 @@ export class BuildingComponent extends BaseComponent implements OnInit {
   openMainModal() {
     this.clearFrom();
     const modalRef = this.modalService.open(BuildingModalComponent, { size: 'lg' });
-    modalRef.componentInstance.title = 'Add Main Building';
+    modalRef.componentInstance.title = 'Add Root';
     modalRef.componentInstance.building = this.building;
     modalRef.result.then((result) => {
     }, (reason) => {
@@ -193,8 +194,9 @@ export class BuildingComponent extends BaseComponent implements OnInit {
   }
   openSubModal() {
     const modalRef = this.modalService.open(BuildingModalComponent, { size: 'lg' });
-    modalRef.componentInstance.title = 'Add Sub Building';
+    modalRef.componentInstance.title = this.building.level === 1 ? 'Add building' : 'Add Line';
     modalRef.componentInstance.building = this.building;
+    modalRef.componentInstance.parent = this.parent;
     modalRef.result.then((result) => {
     }, (reason) => {
     });

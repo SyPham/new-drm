@@ -1,3 +1,4 @@
+import { CoreDirectivesModule } from 'src/app/_core/_directive/core.directives.module';
 // Angular
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -33,7 +34,6 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
-import { AutofocusDirective } from './focus.directive';
 import { TooltipModule } from '@syncfusion/ej2-angular-popups';
 import { DateTimePickerModule } from '@syncfusion/ej2-angular-calendars';
 import { Ng2SearchPipeModule } from 'ng2-search-filter';
@@ -49,6 +49,7 @@ import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
 import { SelectTextDirective } from './select.text.directive';
 import { AuthGuard } from 'src/app/_core/_guards/auth.guard';
+import { AutofocusDirective } from './focus.directive';
 
 declare var require: any;
 let defaultLang: string;
@@ -103,6 +104,7 @@ if (lang === 'vi') {
     ToolbarModule,
     CheckBoxModule,
     MultiSelectModule,
+    CoreDirectivesModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -121,7 +123,7 @@ if (lang === 'vi') {
     PrintBarCodeComponent,
     LineComponent,
     BuildingUserComponent,
-    AutofocusDirective,
+    // AutofocusDirective,
     AutoSelectDispatchDirective,
     SelectQrCodeDirective,
     SelectTextDirective

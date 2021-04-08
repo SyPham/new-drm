@@ -1,3 +1,4 @@
+import { AutoSelectDirective } from './../select.directive';
 import { CoreDirectivesModule } from './../../../_core/_directive/core.directives.module';
 // Angular
 import { CommonModule } from '@angular/common';
@@ -55,8 +56,8 @@ import {
   DispatchDoneListComponent,
   DispatchEVAUVComponent
 } from ".";
-import { AutoSelectDirective } from '../select.directive';
 import { SearchDirective } from '../search.directive';
+import { FocusDirectivesModule } from 'src/app/_core/_directive/focus.directives.module';
 declare var require: any;
 let defaultLang: string;
 const lang = localStorage.getItem('lang');
@@ -114,6 +115,7 @@ if (lang === 'vi') {
     CheckBoxModule,
     MultiSelectModule,
     CoreDirectivesModule,
+    FocusDirectivesModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,
@@ -133,8 +135,8 @@ if (lang === 'vi') {
     DispatchEVAUVComponent,
     IncomingComponent,
     DispatchDoneListComponent,
-    AutoSelectDirective,
-    SearchDirective
+    SearchDirective,
+    AutoSelectDirective
   ]
 })
 export class ExecutionModule {

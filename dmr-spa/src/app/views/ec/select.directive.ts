@@ -13,7 +13,13 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
   @HostListener('focus') onFocus() {
     setTimeout( () => {
       this.host.nativeElement.select();
-    }, 0);
+    }, 300);
+  }
+  @HostListener('focusout', ['$event']) onFocusout(value) {
+    setTimeout(() => {
+      this.host.nativeElement.focus();
+      this.host.nativeElement.select();
+    }, 300);
   }
   @HostListener('ngModelChange', ['$event']) onChange(value) {
     this.subject.next(value);
@@ -26,8 +32,9 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
   }
   ngOnInit() {
     this.subscription.push(this.subject
-      .pipe(debounceTime(500))
+      .pipe(debounceTime(1000))
       .subscribe(async (arg) => {
+        this.host.nativeElement.focus();
         this.host.nativeElement.select();
       }));
   }

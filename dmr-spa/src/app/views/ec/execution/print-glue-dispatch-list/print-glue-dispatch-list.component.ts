@@ -61,7 +61,7 @@ export class PrintGlueDispatchListComponent implements OnInit, OnDestroy {
     this.isHideScanQRCode = true;
     const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
-    const USER = JSON.parse(localStorage.getItem('user')).User;
+    const USER = JSON.parse(localStorage.getItem('user')).user;
     this.role = ROLE;
     this.user = USER;
     this.building = BUIDLING;
@@ -94,7 +94,7 @@ export class PrintGlueDispatchListComponent implements OnInit, OnDestroy {
           glueName: this.value.glueName,
           glueID: this.value.glueID,
           buildingID: this.building.id,
-          mixBy: this.user.ID,
+          mixBy: JSON.parse(localStorage.getItem('user')).user.id || 0,
           estimatedStartTime: this.value.estimatedStartTime,
           estimatedFinishTime: this.value.estimatedFinishTime,
           details: [{

@@ -63,7 +63,7 @@ export class DispatchComponent implements OnInit {
     this.title = this.value.glueName;
     const BUIDLING: IBuilding = JSON.parse(localStorage.getItem('building'));
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
-    const USER = JSON.parse(localStorage.getItem('user')).User;
+    const USER = JSON.parse(localStorage.getItem('user')).user;
     this.role = ROLE;
     this.user = USER;
     this.building = BUIDLING;

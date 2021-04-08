@@ -1,11 +1,8 @@
-import { Subscription } from 'rxjs';
-import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
-import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { GridComponent } from '@syncfusion/ej2-angular-grids';
 import { KindService } from 'src/app/_core/_service/kind.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ActionConstant } from 'src/app/_core/_constants';
+import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from 'src/app/_core/_component/base.component';
 
 @Component({

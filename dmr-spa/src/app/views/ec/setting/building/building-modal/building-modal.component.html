@@ -9,14 +9,14 @@
 <div class="modal-body">
   <div class="row">
     <div class="col-md-12">
-      <label>{{isLine === true ? 'Line Name' : 'Building Name'}}: </label>
+      <label>Name: </label>
       <div class="form-group">
-        <input name="Building"  type="text" [(ngModel)]="building.name" placeholder="Building name" class="form-control Name" />
+        <input name="Building"  type="text" [(ngModel)]="building.name" placeholder="Name" class="form-control Name" />
       </div>
     </div>
 
-  <div class="col-md-12" *ngIf="isLine">
-    <label>Line Kind: </label>
+  <div class="col-md-12" *ngIf="isLine" >
+    <label>Kind: </label>
     <div class="form-group">
     <ejs-dropdownlist #kindDropdownlist [dataSource]='kinds' [value]="building.kindName" placeholder="Select kind" [fields]='fieldsKindEdit'
       [allowFiltering]='true' (change)='onChangeKindEdit($event)'>
@@ -24,10 +24,10 @@
     </div>
   </div>
 
-  <div class="col-md-12" *ngIf="isLine === false">
-    <label>Building Type: </label>
+  <div class="col-md-12" *ngIf="isShowBuildingType">
+    <label>Type: </label>
     <div class="form-group">
-      <ejs-dropdownlist #buildingDropdownlist [dataSource]='buildingTypeData' placeholder="Select building type" [value]="building.buildingType?.name"
+      <ejs-dropdownlist #buildingDropdownlist [dataSource]='buildingTypeData' placeholder="Select type" [value]="building.buildingType?.name"
         [fields]='fieldsBuildingType' [allowFiltering]='true' (change)='onChangeBuildingType($event)'>
       </ejs-dropdownlist>
     </div>
