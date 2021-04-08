@@ -5,9 +5,9 @@ import { IScanner } from 'src/app/_core/_model/IToDoList';
 
 @Directive({
   // tslint:disable-next-line:directive-selector
-  selector: '[autoselect]'
+  selector: '[autoselectsubpackage]'
 })
-export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
+export class AutoSelectSubpackageDirective implements AfterViewInit, OnInit, OnDestroy {
   subject = new Subject<string>();
   subscription: Subscription[] = [];
   @HostListener('focus') onFocus() {
@@ -19,7 +19,7 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
     setTimeout(() => {
       this.host.nativeElement.focus();
       this.host.nativeElement.select();
-    }, 300);
+    }, 30000);
   }
   @HostListener('ngModelChange', ['$event']) onChange(value) {
     this.subject.next(value);

@@ -715,14 +715,14 @@ namespace DMR_API._Services.Services
         public async Task<ResponseDetail<BottomFactoryForReturnDto>> ScanQRCodeV110(ScanQRCodeParams scanQRCodeParams)
         {
             var mixBy = _jwtService.GetUserID();
-            var ingredient = await _ingredientRepository.FindAll(x => x.MaterialNO == scanQRCodeParams.PartNO).FirstOrDefaultAsync();
+            var ingredient = await _ingredientRepository.FindAll(x => x.PartNO== scanQRCodeParams.PartNO).FirstOrDefaultAsync();
             if (ingredient == null) return new ResponseDetail<BottomFactoryForReturnDto>(new BottomFactoryForReturnDto(ingredient, null, 0), false, "Không tìm thấy hóa chất này! Vui lòng thử lại!");
             var glue = await _repoGlue.FindAll()
             .Include(x => x.GlueIngredients)
                 .ThenInclude(x => x.Ingredient)
             .FirstOrDefaultAsync(x => x.ID == scanQRCodeParams.GlueID);
 
-            var materialNO = glue.GlueIngredients.FirstOrDefault().Ingredient.MaterialNO;
+            var materialNO = glue.GlueIngredients.FirstOrDefault().Ingredient.PartNO;
             if (!materialNO.Equals(scanQRCodeParams.PartNO))
                 return new ResponseDetail<BottomFactoryForReturnDto>(
                     new BottomFactoryForReturnDto(ingredient, null, 0),

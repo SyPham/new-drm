@@ -160,12 +160,12 @@ export class MixingComponent implements OnInit, OnDestroy {
         // const validFormat = args.match(dateAndBatch);
         // const qrcode = args.replace(validFormat[0], '');
 
-        //Update 08/04/2021 - Leo
+        // Update 08/04/2021 - Leo
         const input = args.split('    ') || [];
         const qr = item.partNO;
-        // const qr = args.match(item.materialNO);
         const qrcode = input[2].split(":")[1].trim() + ':' + input[0].split(":")[1].trim();
-         //End update
+        // const qr = args.match(item.materialNO);
+         // End update
         if (qr === null) {
           this.alertify.warning(`Mã QR không hợp lệ!<br>The QR Code invalid!`);
           this.qrCode = '';
@@ -183,7 +183,7 @@ export class MixingComponent implements OnInit, OnDestroy {
             }
             this.qrCode = qr;
             // const result = await this.scanQRCode();
-            if (this.qrCode !== item.partNO) { //Update 08/04/2021 - Leo
+            if (this.qrCode !== item.partNO) { // Update 08/04/2021 - Leo
               this.alertify.warning(`Mã QR không hợp lệ!<br>Please you should look for the chemical name "${item.name}"`);
               this.qrCode = '';
               this.errorScan();

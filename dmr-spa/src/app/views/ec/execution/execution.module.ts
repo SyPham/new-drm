@@ -58,6 +58,8 @@ import {
 } from ".";
 import { SearchDirective } from '../search.directive';
 import { FocusDirectivesModule } from 'src/app/_core/_directive/focus.directives.module';
+import { AutoSelectSubpackageDirective } from '../select.subpackage.directive';
+import { AutofocusSubpackageDirective } from '../focus.subpackage.directive';
 declare var require: any;
 let defaultLang: string;
 const lang = localStorage.getItem('lang');
@@ -136,7 +138,9 @@ if (lang === 'vi') {
     IncomingComponent,
     DispatchDoneListComponent,
     SearchDirective,
-    AutoSelectDirective
+    AutoSelectDirective,
+    AutoSelectSubpackageDirective,
+    AutofocusSubpackageDirective
   ]
 })
 export class ExecutionModule {

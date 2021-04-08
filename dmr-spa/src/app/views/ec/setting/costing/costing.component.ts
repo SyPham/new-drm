@@ -60,7 +60,8 @@ export class CostingComponent implements OnInit {
         glueTypeID: data.glueTypeID,
         replacementFrequency: data.replacementFrequency,
         prepareTime: data.prepareTime,
-        standardCycle: data.standardCycle
+        standardCycle: data.standardCycle,
+        partNO: data.partNO
       };
       this.update(ingredient);
     }

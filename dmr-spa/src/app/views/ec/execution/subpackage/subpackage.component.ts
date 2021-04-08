@@ -40,6 +40,7 @@ export class SubpackageComponent implements OnInit, OnDestroy {
   subpackageCapacity: any;
   batch: string;
   subpackageLatestItem: any;
+  focusNumberOfScan: boolean;
   constructor(
     public activeModal: NgbActiveModal,
     public bottomFactoryService: BottomFactoryService,
@@ -53,6 +54,7 @@ export class SubpackageComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     console.log('oninit', this.data);
+    this.focusNumberOfScan = false;
     this.status = null;
     this.statusText = '';
     this.checkQRCodeV110();
@@ -125,6 +127,7 @@ export class SubpackageComponent implements OnInit, OnDestroy {
         this.chemical = valid.ingredient;
         this.mixingInfoCode = valid.code;
         this.batch = valid.batch;
+        this.focusNumberOfScan = true;
         this.getInfo();
       }));
   }
@@ -133,28 +136,15 @@ export class SubpackageComponent implements OnInit, OnDestroy {
       , mixingInfoID: number,
       code: string, batch: string
   }> {
-    const commonPattern = /(\d+)-(\w+)-([\w\-\d]+)/g;
-    const input = args.QRCode.split('-') || [];
-    const dateAndBatch = /(\d+)-(\w+)-/g;
-    const validFormat = args.QRCode.match(dateAndBatch);
-    const partNO = args.QRCode.replace(validFormat[0], '');
-    const qrCodeTemp = validFormat[0] + partNO;
-    if (qrCodeTemp.length !== args.QRCode.length) {
-      this.alertify.warning('The QR Code is invalid!<br> Mã QR không hợp lệ! Vui lòng thử lại mã khác.', true);
-      const res = {} as {
-        status: boolean; ingredient: any; subpackages: []
-        , mixingInfoID: number,
-        code: string, batch: string
-      };
-      res.status = false;
-      return res;
-    }
+    const input = args.QRCode.split('    ') || [];
+    const qrcode = input[2].split(":")[1].trim() + ':' + input[0].split(":")[1].trim();
+    const partNO = qrcode;
     this.partNO = partNO;
     this.scanParams = {
       partNO,
       glueID: this.data.glueID,
       glueName: this.data.glueName,
-      batchNO: 'DEFAULT',
+      batchNO: input[4].split(":")[1].trim() + ':' + input[0].split(":")[1].trim(),
       glueNameID: this.data.glueNameID,
       mixingInfoID: this.data.mixingInfoID,
       buildingID: this.data.buildingID,
@@ -167,15 +157,29 @@ export class SubpackageComponent implements OnInit, OnDestroy {
     this.batch = result.batch;
     this.mixingInfoID = result.data.mixingInfoID;
     console.log('scannQRcode', result);
-    // const checkLock = await this.hasLock(result.name, input[1]);
-    // if (checkLock === true) {
-    //   this.alertify.error('This chemical has been locked! <br> Hóa chất này đã bị khóa!', true);
-    //   this.qrCode = '';
-    //   return {
-    //     status: false,
-    //     ingredient: null
-    //   };
-    // }
+    const checkLock = await this.hasLock(result.name, input[4].split(":")[1].trim() + ':' + input[0].split(":")[1].trim());
+    if (result === null) {
+      this.alertify.warning('The QR Code is invalid!<br> Mã QR không hợp lệ! Vui lòng thử lại mã khác.', true);
+      this.qrCode = '';
+      const res = {} as {
+        status: boolean; ingredient: any; subpackages: []
+        , mixingInfoID: number,
+        code: string, batch: string
+      };
+      res.status = false;
+      return res;
+    }
+    if (checkLock === true) {
+      this.alertify.error('This chemical has been locked! <br> Hóa chất này đã bị khóa!', true);
+      this.qrCode = '';
+      const res = {} as {
+        status: boolean; ingredient: any; subpackages: []
+        , mixingInfoID: number,
+        code: string, batch: string
+      };
+      res.status = false;
+      return res;
+    }
     return {
       status: true,
       ingredient: result.data.ingredient,
@@ -218,7 +222,10 @@ export class SubpackageComponent implements OnInit, OnDestroy {
   generateScanByNumber() {
     return new Promise((resolve, reject) => {
       this.bottomFactoryService.generateScanByNumber(this.generateSubpackageParams)
-        .subscribe((res: any) => { this.subpackages = res.data; }
+        .subscribe((res: any) => {
+          this.subpackages = res.data;
+          this.focusNumberOfScan = false;
+        }
           , err => {
             this.alertify.error(err);
           });

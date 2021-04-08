@@ -1572,6 +1572,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
                 cbd: item.cbd,
                 replacementFrequency: 0,
                 prepareTime: 0,
+                partNO: '',
                 standardCycle: 0
               };
               return ingredient;
