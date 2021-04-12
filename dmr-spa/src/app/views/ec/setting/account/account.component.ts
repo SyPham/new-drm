@@ -78,12 +78,12 @@ export class AccountComponent extends BaseComponent implements OnInit {
         systemCode: environment.systemCode
       };
       if (args.data.employeeID === undefined) {
-        this.alertify.error('Please key in a account!');
+        this.alertify.error('Please key in a account! <br> Vui lòng nhập tài khoản đăng nhập!');
         args.cancel = true;
         return;
       }
       if (args.data.password === undefined) {
-        this.alertify.error('Please key in a password!');
+        this.alertify.error('Please key in a password! <br> Vui lòng nhập mật khẩu!');
         args.cancel = true;
         return;
       }
@@ -91,7 +91,7 @@ export class AccountComponent extends BaseComponent implements OnInit {
         this.create();
       } else {
         args.cancel = true;
-        this.alertify.error('Please select a role!');
+        this.alertify.error('Please select a role! <br> Vui lòng chọn 1 quyền!');
         return;
       }
     }
@@ -241,17 +241,17 @@ export class AccountComponent extends BaseComponent implements OnInit {
   }
   delete(id) {
     this.accountService.deleteUser(id).subscribe(res => {
-      this.alertify.success('The user has been deleted!');
+      this.alertify.success('The user has been deleted! <br> Xóa thành công!');
       this.getAllUserInfo();
     });
   }
   create() {
     this.accountService.createUser(this.userCreate).subscribe((res: number) => {
-      this.alertify.success('The user has been created!');
+      this.alertify.success('The user has been created! <br> Tạo thành công!');
       if (res > 0) {
-        if (res > 0) {
-          this.mapBuildingUser(res, this.buildingID);
-        }
+        // if (res > 0) {
+        //   this.mapBuildingUser(res, this.buildingID);
+        // }
         if (res > 0) {
           this.mapUserRole(res, this.roleID);
         }
@@ -262,7 +262,7 @@ export class AccountComponent extends BaseComponent implements OnInit {
   }
   update() {
     this.accountService.updateUser(this.userUpdate).subscribe(res => {
-      this.alertify.success('The user has been updated!');
+      this.alertify.success('The user has been updated! <br> Chỉnh sửa thành công!');
       if (this.userID && this.buildingID) {
         this.mapBuildingUser(this.userID, this.buildingID);
       }

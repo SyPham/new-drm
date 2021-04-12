@@ -78,28 +78,32 @@ namespace DMR_API._Services.Services
                 try
                 {
                     var glue = _mapper.Map<Glue>(model);
-                    // Neu chua co GlueName trong bang GlueName thi them moi va cap nhat ID vao Glues
-                    // nguoc lai thi update
                     var glueNameModal = _repoGlueName.FindAll(x => x.Name == model.Name).FirstOrDefault();
+                    int glueNameID = 0;
+                    // Tim trong bang GlueName xem có tên keo chưa nếu chưa thì tạo mới
                     if (glueNameModal is null)
                     {
                         var glueNameItem = new GlueName { Name = model.Name };
                         _repoGlueName.Add(glueNameItem);
                         await _repoGlueName.SaveAll();
+                        glueNameID = glueNameItem.ID;
 
                         glue.GlueNameID = glueNameItem.ID;
                         glue.Name = model.Name;
-                    }
+                    }// có rồi thì update glueName vào keo mới tạo
                     else
                     {
+                        glueNameID = glueNameModal.ID;
                         glue.Name = model.Name;
                         glue.GlueNameID = glueNameModal.ID;
                     }
                     glue.isShow = true;
                     glue.Code = await GenatateGlueCode(glue.Code);
                     glue.CreatedDate = DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss tt");
-
+                    _repoGlue.Add(glue);
+                    await _repoGlue.SaveAll();
                     var nameList = new List<int>();
+                    // Kiểm tra xem nếu cái Glue này có tồn tại Name là kiểu số thì tăng lên 1, sau đó cập nhật lại
                     foreach (var item in _repoGlue.FindAll().Include(x => x.GlueName).Where(x => x.isShow == true && x.BPFCEstablishID == model.BPFCEstablishID))
                     {
                         if (item.Name.ToInt() > 0)
@@ -111,36 +115,17 @@ namespace DMR_API._Services.Services
                     {
                         var name = nameList.OrderByDescending(x => x).FirstOrDefault();
                         var nameTemp = name + "";
-                        var glueNameModalTemp = _repoGlueName.FindAll(x => x.Name == nameTemp).FirstOrDefault();
-                        if (glueNameModal is null)
-                        {
-                            var glueNameItem = new GlueName { Name = model.Name };
-                            _repoGlueName.Add(glueNameItem);
-                            _repoGlueName.Save();
-
-                            glue.GlueNameID = glueNameItem.ID;
-                            glue.Name = (name + 1).ToString();
-                            _repoGlue.Save();
-
-                        }
-                        else
-                        {
-                            glue.Name = model.Name;
-                            glue.GlueNameID = glueNameModal.ID;
-                            glue.Name = glueNameModalTemp.Name;
-                            glue.isShow = true;
-                            _repoGlue.Add(glue);
-                            _repoGlue.Save();
-                        }
+                        glue.GlueNameID = glueNameID;
+                        glue.Name = (name + 1).ToString();
+                        _repoGlue.Update(glue);
+                        await _repoGlue.SaveAll();
                     }
 
-
-                    _repoGlue.Add(glue);
-                    await _repoGlue.SaveAll();
+                  
                     transaction.Complete();
                     return true;
                 }
-                catch 
+                catch( Exception ex) 
                 {
                     transaction.Dispose();
                     return false;
@@ -209,6 +194,7 @@ namespace DMR_API._Services.Services
 
                         glue.GlueNameID = glueNameItem.ID;
                         glue.Name = glueNameItem.Name;
+                        _repoGlue.Update(glue);
                         await _repoGlue.SaveAll();
 
                     }

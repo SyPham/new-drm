@@ -31,10 +31,10 @@
                         {{NO(data.index)}}
                       </ng-template>
                   </e-column>
-                  <e-column field='name' headerText='Kind Name' width='200' textAlign='Center' >
+                  <e-column field='name' headerText="{{'Name' | translate}}" width='200' textAlign='Center' >
                   </e-column>
 
-                    <e-column field='kindType.name' headerText='Kind Type' width='200' textAlign='Center'>
+                    <e-column field='kindType.name' headerText="{{'Type' | translate}}" width='200' textAlign='Center'>
                     <ng-template #editTemplate let-data>
                         <ejs-dropdownlist #kindTypeDropdownlist [dataSource]='kindTypeData' [value]="data.kindType?.name"
                             [fields]='fieldsKindType' [allowFiltering]='true' (change)='onChangeKindType($event)'>

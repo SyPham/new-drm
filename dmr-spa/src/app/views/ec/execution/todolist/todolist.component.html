@@ -30,7 +30,7 @@
             <ng-template #template>
               <button type="button" (click)='reloadPage()'
                 class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib">
-                <i class="e-btn-icon e-icons e-icon-left fas fa-refresh"></i> 
+                <i class="e-btn-icon e-icons e-icon-left fas fa-refresh"></i>
                 <span class="e-tbar-btn-text">
                   {{'Refresh Todolist' | translate}}
                 </span>
@@ -39,16 +39,16 @@
           </e-item>
           <e-item >
             <ng-template #template>
-              <button class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib" 
-                *ngIf="hasShowFullScreen" 
+              <button class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib"
+                *ngIf="hasShowFullScreen"
                 (click)='openFullscreen()' >
                   <i class="e-btn-icon e-icons e-icon-left fa fa-expand-arrows-alt"></i>
                   <span class="e-tbar-btn-text">
                     FullScreen
                   </span>
               </button>
-              <button class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib" 
-                *ngIf="!hasShowFullScreen" 
+              <button class="e-tbar-btn e-tbtn-txt e-control e-btn e-lib"
+                *ngIf="!hasShowFullScreen"
                 (click)='closeFullscreen()'>
                   <i class="e-btn-icon e-icons e-icon-left fas fa-compress-arrows-alt"></i>
                   <span class="e-tbar-btn-text">
@@ -58,12 +58,12 @@
             </ng-template>
           </e-item>
           <e-item type='Separator'></e-item>
-         
+
           <e-item prefixIcon='e-bold-icon tb-icons' tooltipText='Bold'>
             <ng-template #template>
               <ejs-dropdownlist [dataSource]='buildings' [fields]='fieldsBuildings' [allowFiltering]='true'
                 [value]="buildingID" (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)'
-                (select)='onSelectBuildingToDo($event)' placeholder="Select a building">
+                (select)='onSelectBuildingToDo($event)' placeholder="{{ 'Select a building' | translate}}">
               </ejs-dropdownlist>
             </ng-template>
           </e-item>
@@ -85,7 +85,7 @@
               <div class="e-toolbar-item e-search-wrapper e-toolbar-right" aria-disabled="false" title="Search">
                 <div class="e-input-group e-search" role="search"> <input id="toolbar_searchbar" style="width:178px" autocomplete="off"
                     [(ngModel)]="glueName" (change)='searchDone($event)' class="e-input"
-                    placeholder="Search">
+                    placeholder="{{ 'Search' | translate }}">
                   <span id="toolbar_searchbutton" class="e-input-group-icon fa fa-search e-icons" tabindex="-1"
                     title="Search" aria-label="search"></span>
                 </div>
@@ -417,7 +417,7 @@
               </ejs-tooltip>
             </ng-template>
             <ng-template #template let-data>
-             
+
                 <div *ngIf="data.jobType == 1">
                   {{data.glueName.indexOf(' + ') === -1 || data.finishMixingTime === null || data.finishMixingTime ===
                   "0001-01-01T00:00:00" ? 'N/A':
@@ -459,7 +459,7 @@
               <div *ngIf="data.jobType == 2">
                 -
               </div>
-            
+
             </ng-template>
           </e-column>
           <e-column field='finishStirTime' type='date' format='HH:mm' headerText='FST' width='160' textAlign='Center'>
@@ -493,7 +493,7 @@
               <div *ngIf="data.jobType == 2">
                 -
               </div>
-              
+
             </ng-template>
           </e-column>
           <e-column field='printTime' type='date' format='HH:mm' headerText='PT' width='160' textAlign='Center'>
@@ -610,7 +610,7 @@
       </ejs-grid>
 
     </div>
-    
+
   </div>
   <!-- End Done -->
 
@@ -640,7 +640,7 @@
               </ejs-dropdownlist>
             </ng-template>
           </e-column>
-<!-- 
+<!--
           <e-column field="startTime" type="date" headerText="Start Working Time" width="120" textAlign="Center">
             <ng-template #headerTemplate let-data>
               {{ "Start Time" | translate }}

@@ -1,3 +1,4 @@
+import { MyMultiSelectComponent } from './../../../_core/_component/my-multi-select/my-multi-select.component';
 // Angular
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -141,7 +142,8 @@ if (lang === 'vi') {
     BuildingModalComponent,
     CostingComponent,
     RoleComponent,
-    PrivilegeComponent
+    PrivilegeComponent,
+    MyMultiSelectComponent
   ]
 })
 export class SettingModule {

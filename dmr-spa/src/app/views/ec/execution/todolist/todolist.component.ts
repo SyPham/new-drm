@@ -422,7 +422,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     this.building = JSON.parse(localStorage.getItem('building'));
     if (buildingId === 0) {
       this.getBuilding(() => {
-        this.alertify.message('Please select a building!', true);
+        this.alertify.message('Please select a building! <br> Vui lòng chọn 1 tòa nhà!', true);
       });
     } else {
       this.getBuilding(() => {

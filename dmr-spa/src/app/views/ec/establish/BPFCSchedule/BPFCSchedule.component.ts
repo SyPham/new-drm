@@ -209,7 +209,7 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
   detail(data) {
     this.dataService.changeMessage(this.textSearch);
     return this.router.navigate([
-      `/ec/establish/bpfc-schedule/detail/${data.id}`,
+      `/ec/establish/bpfc-schedule/detailv2/${data.id}`,
     ]);
   }
   onChangeArticleNo(args) {

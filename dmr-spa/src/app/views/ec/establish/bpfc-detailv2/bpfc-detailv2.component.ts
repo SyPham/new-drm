@@ -7,6 +7,7 @@ import {
   AfterViewInit,
   QueryList,
   ViewChildren,
+  OnDestroy,
 } from '@angular/core';
 import { EmitType } from '@syncfusion/ej2-base/';
 import { FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -32,9 +33,7 @@ import { GlueService } from 'src/app/_core/_service/glue.service';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { DropDownListComponent } from '@syncfusion/ej2-angular-dropdowns';
-import {
-  IGlueIngredient,
-} from 'src/app/_core/_model/glue-ingredient-detail';
+import { IGlueIngredient } from 'src/app/_core/_model/glue-ingredient-detail';
 import { ArticleNoService } from 'src/app/_core/_service/articleNoService.service';
 import { IArticleNo } from 'src/app/_core/_model/Iarticle-no';
 import { AuthService } from 'src/app/_core/_service/auth.service';
@@ -46,18 +45,20 @@ import { PartService } from 'src/app/_core/_service/part.service';
 import { MaterialService } from 'src/app/_core/_service/material.service';
 import { BuildingUserService } from 'src/app/_core/_service/building.user.service';
 import { SwitchComponent } from '@syncfusion/ej2-angular-buttons';
+import { DataService } from 'src/app/_core/_service/data.service';
 import { IRole } from 'src/app/_core/_model/role';
 import { IngredientModalComponent } from '../../setting/ingredient/ingredient-modal/ingredient-modal.component';
 
 declare const $: any;
 const LEVEL_1 = 3;
+
 @Component({
-  selector: 'app-glue-ingredient',
-  templateUrl: './bpfc-1.component.html',
-  styleUrls: ['./bpfc-1.component.css'],
+  selector: 'app-bpfc-detailv2',
+  templateUrl: './bpfc-detailv2.component.html',
+  styleUrls: ['./bpfc-detailv2.component.css'],
   providers: [ToolbarService, EditService, PageService],
 })
-export class Bpfc1Component implements OnInit, AfterViewInit {
+export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
   modalReference: NgbModalRef;
   @ViewChild('switch') public switch: SwitchComponent;
   data: IGlue[];
@@ -86,8 +87,39 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   expiredTime: number;
   glueDefaultName: any;
   glueNewName: any;
-  glue: IGlue = {} as IGlue;
-  ingredient: IIngredient = {} as IIngredient;
+  glue: IGlue = {
+    id: 0,
+    name: '',
+    gluename: '',
+    code: '',
+    createdDate: '',
+    partID: 0,
+    kindID: 0,
+    materialID: 0,
+    BPFCEstablishID: 0,
+    consumption: '',
+    expiredTime: 0,
+    createdBy: 0,
+    glueNameID: 0,
+    glueIngredients: []
+  };
+  ingredient = {
+    id: 0,
+    name: '',
+    code: '',
+    percentage: 0,
+    createdDate: new Date(),
+    supplierID: 0,
+    position: 0,
+    allow: 0,
+    voc: 0,
+    expiredTime: 0,
+    daysToExpiration: 0,
+    materialNO: '',
+    unit: 0,
+    real: 0,
+    cbd: 0,
+  };
   editPercentage = {
     glueID: 0,
     ingredientID: 0,
@@ -118,7 +150,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   percentageChange: any;
   allowChange: any;
   public toolbarOptions = ['Search', 'Delete'];
-  public toolbarOptions2 = ['Search', 'Add', 'Delete', 'Cancel'];
+  public toolbarOptions2 = ['Search'];
   public toolbarOptionsHistory = ['Search'];
   public selectionOptions = { type: 'Multiple', mode: 'Both' };
   public editSettings: object;
@@ -132,8 +164,8 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   public orderidrules: object;
   public customeridrules: object;
   public freightrules: object;
-  @ViewChild('grid')
-  public grid: GridComponent;
+  @ViewChildren('grid')
+  public grid: QueryList<GridComponent>;
   @ViewChild('gridglue')
   public gridglue: GridComponent;
   @ViewChild('grid2')
@@ -283,9 +315,27 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   userData: any[] = [];
   public value: any;
   public valuemodelNo: any;
+  modelNameDetail: string;
+  modelNoDetail: string;
+  articleNoDetail: string;
+  artProcessDetail: string;
   materialID: any;
   partID: any;
   kindID: any;
+
+  modelNameLeo: string = null;
+  modelNoLeo: string = null;
+  articleNoLeo: string = null;
+  articleNoNewLeo: string = null;
+  artProcessLeo: string = null;
+  modelNameIDLeo = 0;
+  modelNoIDLeo = 0;
+  articleNoIDLeo = 0;
+  artProcessIDLeo = 0;
+  BPFCIDLeo = 0;
+  textSearch: string = null;
+  dataSearch: any;
+  ingredientGroupData = [[], []];
   constructor(
     private glueIngredientService: GlueIngredientService,
     private modalNameService: ModalNameService,
@@ -302,8 +352,14 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     private materialService: MaterialService,
     private buildingUserService: BuildingUserService,
     private artProcessService: ArtProcessService,
-    private ingredientService: IngredientService
-  ) { }
+    private ingredientService: IngredientService,
+    private dataService: DataService
+  ) {
+    this.dataSearch = this.dataService.currentMessage.subscribe((res: any) => {
+      this.textSearch = res;
+
+    });
+  }
 
   ngOnInit() {
     this.getModelNames();
@@ -319,6 +375,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     this.glueid = 0;
     this.onService();
     this.getAllSupllier();
+    this.GetDetailBPFC();
     this.sortOptions = { columns: [{ field: 'item', direction: 'Decending' }] };
     this.editParams = { params: { value: '' } };
     if (this.glue.id === 0) {
@@ -363,6 +420,57 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     this.customeridrules = { required: true };
     this.freightrules = { required: true };
     this.editparams = { paramss: { popupHeight: '300px' } };
+  }
+
+  ngOnDestroy() {
+    this.dataService.changeMessages(this.textSearch);
+    this.dataSearch.unsubscribe();
+  }
+  GetDetailBPFC() {
+    this.BPFCID = this.route.snapshot.params.id;
+    this.bPFCEstablishService
+      .getDetailBPFC(this.BPFCID)
+      .subscribe((res: any) => {
+        const data = res[0];
+        this.BPFCIDLeo = data.id;
+        this.modelNameLeo = data.modelName;
+        this.modelNoLeo = data.modelNo;
+        this.articleNoLeo = data.articleNo;
+        this.artProcessLeo = data.artProcess;
+        this.articleNoNewLeo = data.articleNo;
+
+        this.modelNameID = data.modelNameID;
+        this.modelNoID = data.modelNoID;
+        this.articleNoID = data.articleNoID;
+        if (data.artProcess === 'ASY') {
+          this.artProcessIDLeo = 1;
+        } else {
+          this.artProcessIDLeo = 2;
+        }
+
+        this.modelNameDetail = res[0].modelName;
+        this.modelNameID = res[0].modelNameID;
+        this.modelNoDetail = res[0].modelNo;
+        this.articleNoDetail = res[0].articleNo;
+        this.artProcessDetail = res[0].artProcess;
+        this.modelNameIDClone = res[0].modelNameID;
+        this.value = res[0].modelNameID;
+        this.valuemodelNo = res[0].modelNoID;
+        this.articleNoID = res[0].articleNoID;
+        this.resetLifeCycleBPFC();
+        this.BPFCID = res[0]?.id;
+        this.approvalStatus = res[0].approvalStatus;
+        this.createdStatus = res[0].finishedStatus;
+        localStorage.removeItem('details');
+        this.glue.BPFCEstablishID = this.BPFCID;
+        this.getAllGluesByBPFCID(this.BPFCID);
+        this.getAllPart();
+        this.getAllKind();
+        this.getAllMaterial();
+        this.getAllIngredient();
+        this.existGlue = true;
+        this.modified = true;
+      });
   }
   public onFiltering: EmitType<FilteringEventArgs> = (
     e: FilteringEventArgs
@@ -448,10 +556,10 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     // document.querySelectorAll(
     //   'button[aria-label=Update] > span.e-tbar-btn-text'
     // )[0].innerHTML = 'Save';
-    $('[data-toggle="tooltip"]').tooltip();
+    // $('[data-toggle="tooltip"]').tooltip();
     if (this.selectedRow.length) {
       this.gridglue.selectRows(this.selectedRow);
-      this.selectedRow = [];
+      // this.selectedRow = [];
     } else {
       this.gridglue.selectRows(this.selIndex);
     }
@@ -500,7 +608,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
           articleNoID: this.articleNoID,
           artProcessID: this.artProcessID,
         };
-        this.getBPFCID(bpfcInfo);
+        // this.getBPFCID(bpfcInfo);
       });
       this.saveGlue();
     }
@@ -520,8 +628,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
               this.removeLocalStore('details');
               this.glueIngredientDetail = [];
               this.oldDetail = [];
-              this.grid.refresh();
-              this.grid2.refresh();
               this.alertify.success('Glue has been deleted');
             },
             (error) => {
@@ -529,7 +635,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
             }
           );
         });
-
       }
     }
   }
@@ -550,7 +655,9 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
           .then((result) => {
             this.modified = true;
             if (this.gridglue.getSelectedRowIndexes().length) {
-              const glueSelected = (this.gridglue.dataSource as any[])[previousRowIndex];
+              const glueSelected = (this.gridglue.dataSource as any[])[
+                previousRowIndex
+              ];
               glueSelected.name = glueSelected.chemical.name;
               this.gridglue.refresh();
             }
@@ -614,9 +721,12 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
             break;
         }
         if (selectedPositon !== nextPositon) {
-          this.alertify.warning(`Hãy chọn chất tiếp theo là ${nextPositon}`, true);
-          this.grid.refresh();
-          this.grid2.refresh();
+          this.alertify.warning(
+            `Hãy chọn chất tiếp theo là ${nextPositon}`,
+            true
+          );
+          this.grid.toArray().forEach(item => item.refresh());
+          // this.grid2.refresh();
           args.cancel = true;
           return;
         }
@@ -644,7 +754,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
           this.glueIngredientDetail = this.getLocalStore('details');
           this.makeFormula();
           this.updateChemicalList();
-          this.grid.refresh();
+          this.grid.toArray().forEach(item => item.refresh());
         } else {
           details = this.getLocalStore('details');
           // insert
@@ -670,7 +780,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
           this.makeFormula();
           this.updateChemicalList();
           if (args.value === 'A') {
-            this.grid.refresh();
+            this.grid.toArray().forEach(item => item.refresh());
           }
         }
       }
@@ -681,12 +791,16 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
 
   toolbarClickIngredient(args) {
-    switch (args.item.text) {
-      case 'Add':
-        args.cancel = true;
-        this.openIngredientModalComponent();
-        break;
+    if (args.item.id.includes('add')) {
+      args.cancel = true;
+      this.openIngredientModalComponent();
     }
+    // switch (args.item.id) {
+    //   case 'Add':
+    //     args.cancel = true;
+    //     this.openIngredientModalComponent();
+    //     break;
+    // }
   }
 
   onDoubleClickIngredient(args: any): void {
@@ -1016,28 +1130,41 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
 
   updateChemicalList() {
     const details = this.getLocalStore('details');
-    for (const item of details) {
-      const index = this.ingredients1.findIndex(
-        (obj) =>
-          obj.name === item.ingredientName && obj.id === item.ingredientID
-      );
-      if (index !== -1) {
-        this.ingredients1[index].position = item.position;
-        this.ingredients1[index].percentage = item.percentage;
-        this.ingredients1[index].allow = item.allow;
+    for (const ingredientDataItem of this.ingredientGroupData) {
+      for (const item of details) {
+        const index = ingredientDataItem.findIndex(
+          (obj) =>
+            obj.name === item.ingredientName && obj.id === item.ingredientID
+        );
+        if (index !== -1) {
+          ingredientDataItem[index].position = item.position;
+          ingredientDataItem[index].percentage = item.percentage;
+          ingredientDataItem[index].allow = item.allow;
+        }
       }
     }
-    for (const item of details) {
-      const index2 = this.ingredients2.findIndex(
-        (obj) =>
-          obj.name === item.ingredientName && obj.id === item.ingredientID
-      );
-      if (index2 !== -1) {
-        this.ingredients2[index2].position = item.position;
-        this.ingredients2[index2].percentage = item.percentage;
-        this.ingredients2[index2].allow = item.allow;
-      }
-    }
+    // for (const item of details) {
+    //   const index = this.ingredients1.findIndex(
+    //     (obj) =>
+    //       obj.name === item.ingredientName && obj.id === item.ingredientID
+    //   );
+    //   if (index !== -1) {
+    //     this.ingredients1[index].position = item.position;
+    //     this.ingredients1[index].percentage = item.percentage;
+    //     this.ingredients1[index].allow = item.allow;
+    //   }
+    // }
+    // for (const item of details) {
+    //   const index2 = this.ingredients2.findIndex(
+    //     (obj) =>
+    //       obj.name === item.ingredientName && obj.id === item.ingredientID
+    //   );
+    //   if (index2 !== -1) {
+    //     this.ingredients2[index2].position = item.position;
+    //     this.ingredients2[index2].percentage = item.percentage;
+    //     this.ingredients2[index2].allow = item.allow;
+    //   }
+    // }
   }
 
   actionBeginIngredient(args) {
@@ -1063,6 +1190,8 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     }
 
     if (args.requestType === 'save') {
+      const previousData = args.previousData;
+      const newData = args.data;
       this.percentageEdit = {
         percentage: Number(args.data.percentage),
         id: Number(args.rowData.id),
@@ -1077,8 +1206,9 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       }
       this.editPercentage.percentage = args.data.percentage;
       this.editAllow.allow = args.data.allow;
-      const percentageChanged = Number(this.percentageDefault) !== Number(this.percentageChange);
-      const allowChanged = Number(this.allowDefault) !== Number(this.allowChange);
+      const allowChanged = previousData.allow !== newData.allow;
+      const percentageChanged = previousData.percentage !== newData.percentage;
+
       if (percentageChanged) {
         // update lai percentage
         this.modified = false;
@@ -1090,15 +1220,14 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         );
         details[objIndex].percentage = args.data.percentage;
         this.setLocalStore('details', details);
-        this.updateChemicals();
-        // update glueIngredient
-        // if (this.gridglue.getSelectedRecords().length > 0) {
-        //   const glueIngredients = (this.gridglue.getSelectedRecords()[0] as any).glueIngredients;
-        //   if (glueIngredients.length > 0) {
-        //     const index = glueIngredients.findIndex((obj) => obj.ingredientID === args.data.id);
-        //     glueIngredients[index].percentage = args.data.percentage;
-        //   }
-        // }
+        this.updateChemicalsV2();
+        if (this.gridglue.getSelectedRecords().length > 0) {
+          const glueIngredients = (this.gridglue.getSelectedRecords()[0] as any).glueIngredients;
+          if (glueIngredients.length > 0) {
+            const index = glueIngredients.findIndex((obj) => obj.ingredientID === args.data.id);
+            glueIngredients[index].percentage = args.data.percentage;
+          }
+        }
       }
 
       if (allowChanged) {
@@ -1113,22 +1242,22 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         this.setLocalStore('details', details);
         this.modified = false;
         this.history.BeforeAllow = this.glueNewName;
-        this.updateChemicals();
-
+        this.updateChemicalsV2();
         // update glueIngredient
-        // if (this.gridglue.getSelectedRecords().length > 0) {
-        //   const glueIngredients = (this.gridglue.getSelectedRecords()[0] as any).glueIngredients;
-        //   if (glueIngredients.length > 0) {
-        //     const index = glueIngredients.findIndex((obj) => obj.ingredientID === args.data.id);
-        //     glueIngredients[index].allow = args.data.allow;
-        //   }
-        // }
+        if (this.gridglue.getSelectedRecords().length > 0) {
+          const glueIngredients = (this.gridglue.getSelectedRecords()[0] as any).glueIngredients;
+          if (glueIngredients.length > 0) {
+            const index = glueIngredients.findIndex((obj) => obj.ingredientID === args.data.id);
+            glueIngredients[index].allow = args.data.allow;
+          }
+        }
       }
     }
     if (args.requestType === 'delete') {
       this.deleteIngredient();
     }
   }
+
   updateGlueIngredient() {
     // if (this.gridglue.getSelectedRecords()[0])
   }
@@ -1176,6 +1305,8 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       (res: any) => {
         this.ingredients1 = res.result.list1;
         this.ingredients2 = res.result.list2;
+        this.ingredientGroupData = [];
+        this.ingredientGroupData.push(...[res.result.list1, res.result.list2]);
       },
       (error) => {
         this.alertify.error(error);
@@ -1223,22 +1354,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         }
       });
   }
-  mapGlueIngredientByGlueID(params) {
-    this.glueIngredientService.mapGlueIngredientByGlueID(params).subscribe(res => {
-      this.alertify.success('Cập nhật thành công!');
-      this.getAllGluesByBPFCID(this.BPFCID);
-      this.detailGlue = true;
-      this.modified = true;
-      this.modified = true;
-      if (this.subID === undefined) {
-        this.sortBySup(0);
-        this.getDetail(this.glueid);
-      } else {
-        this.sortBySup(this.subID);
-        this.getDetail(this.glueid);
-      }
-    });
-  }
 
   openIngredientModalComponent() {
     const modalRef = this.modalService.open(IngredientModalComponent, {
@@ -1253,17 +1368,18 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
 
   actionCompleteIngredient(e: any): void {
-    if (e.requestType === 'beginEdit') {
-      if (this.setFocus.field !== 'Item') {
-        e.form.elements.namedItem(this.setFocus.field).focus(); // Set focus to the Target element
-        e.form.elements.namedItem(this.setFocus.field).value = ''; // Set focus to the Target element
-      }
-    }
+    // if (e.requestType === 'beginEdit') {
+    //   if (this.setFocus.field !== 'Item') {
+    //     e.form.elements.namedItem(this.setFocus.field).focus(); // Set focus to the Target element
+    //     e.form.elements.namedItem(this.setFocus.field).value = ''; // Set focus to the Target element
+    //   }
+    // }
   }
 
   openPopupDropdownlist() {
     $('[data-toggle="tooltip"]').tooltip();
   }
+
   toolbarClick(args: any): void {
     switch (args.item.text) {
       case 'Add New':
@@ -1278,10 +1394,23 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
               'Bạn có chắc chắn muốn bỏ qua những thay đổi này?'
             )
             .then((result) => {
-              this.glue.id = 0;
-              this.glue.name = '1';
-              this.glue.BPFCEstablishID = this.BPFCID;
-              this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
+              const glue: IGlue = {
+                id: 0,
+                name: '1',
+                code: '',
+                gluename: '',
+                createdDate: '',
+                BPFCEstablishID: this.BPFCID,
+                kindID: null,
+                partID: null,
+                materialID: null,
+                consumption: '',
+                expiredTime: 0,
+                createdBy: JSON.parse(localStorage.getItem('user')).user.id,
+                glueNameID: 0,
+                glueIngredients: []
+              };
+              this.glue = glue;
               this.saveGlue();
               // this.sortBySup(0);
             })
@@ -1289,10 +1418,23 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
               args.cancel = true;
             });
         } else {
-          this.glue.id = 0;
-          this.glue.name = '1';
-          this.glue.BPFCEstablishID = this.BPFCID;
-          this.glue.createdBy = JSON.parse(localStorage.getItem('user')).user.id;
+          const glue: IGlue = {
+            id: 0,
+            name: '1',
+            code: '',
+            gluename: '',
+            createdDate: '',
+            BPFCEstablishID: this.BPFCID,
+            kindID: null,
+            partID: null,
+            materialID: null,
+            consumption: '',
+            expiredTime: 0,
+            createdBy: JSON.parse(localStorage.getItem('user')).user.id,
+            glueNameID: 0,
+            glueIngredients: []
+          };
+          this.glue = glue;
           this.saveGlue();
           // this.sortBySup(0);
         }
@@ -1301,8 +1443,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
 
   openModal(ref) {
-    this.getModelNamesClone();
-    this.getAllProcess();
     this.modalReference = this.modalService.open(ref);
   }
 
@@ -1353,7 +1493,9 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     if (id === 0) {
       return '#N/A';
     }
-    const result = this.userData.filter((item: any) => item.ID === id)[0] as any;
+    const result = this.userData.filter(
+      (item: any) => item.ID === id
+    )[0] as any;
     if (result !== undefined) {
       return result.Username;
     } else {
@@ -1361,7 +1503,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     }
   }
   // End BPFC HISTORY
-
 
   cloneModelname() {
     this.alertify.confirm(
@@ -1513,7 +1654,42 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         this.makeFormula();
       });
   }
+  updateChemicalsV2() {
+    this.ingredientService
+      .sortBySup(this.glueid, this.subID)
+      .subscribe((res: any) => {
+        const ingredients1 = res.list1;
+        const ingredients2 = res.list2;
+        const details = this.getLocalStore('details');
+        for (const item of details) {
+          const index = ingredients1.findIndex(
+            (obj) =>
+              obj.name === item.ingredientName && obj.id === item.ingredientID
+          );
+          if (index !== -1) {
+            ingredients1[index].position = item.position;
+            ingredients1[index].percentage = item.percentage;
+            ingredients1[index].allow = item.allow;
+          }
+        }
+        for (const item of details) {
+          const index2 = ingredients2.findIndex(
+            (obj) =>
+              obj.name === item.ingredientName && obj.id === item.ingredientID
+          );
+          if (index2 !== -1) {
+            ingredients2[index2].position = item.position;
+            ingredients2[index2].percentage = item.percentage;
+            ingredients2[index2].allow = item.allow;
+          }
+        }
+        this.ingredientGroupData = [];
+        this.ingredientGroupData.push(...[ingredients1, ingredients2]);
 
+        this.glueIngredientDetail = details;
+        this.makeFormula();
+      });
+  }
   // getAllBPFC() {
   //   this.bPFCEstablishService.getAll().subscribe((res: any) => {
   //     this.BPFCs = res.map((item) => {
@@ -1548,12 +1724,14 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       this.ingredientService
         .sortBySup(this.glueid, id)
         .subscribe((res: any) => {
-          this.ingredients1 = res.list1;
-          this.ingredients2 = res.list2;
+          let ingredients1 = res.list1;
+          const ingredients2 = res.list2;
+          this.ingredientGroupData = [];
+          this.ingredientGroupData.push(ingredients1, ingredients2);
           if (id === 0) {
             const details = this.getLocalStore('details');
-            this.ingredients1 = details.map((item) => {
-              const ingredient: IIngredient = {
+            ingredients1 = details.map((item) => {
+              const ingredient = {
                 id: item.ingredientID,
                 name: item.ingredientName,
                 code: '',
@@ -1568,15 +1746,12 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
                 materialNO: item.materialNO,
                 unit: item.unit,
                 real: item.real,
-                glueTypeID: 0,
                 cbd: item.cbd,
-                replacementFrequency: 0,
-                prepareTime: 0,
-                partNO: '',
-                standardCycle: 0
               };
               return ingredient;
             });
+            this.ingredientGroupData = [];
+            this.ingredientGroupData.push(ingredients1, ...[]);
             this.glueIngredientDetail = details;
           } else {
             this.updateChemicalList();
@@ -1622,7 +1797,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   createGlue() {
     this.glueService.create(this.glue).subscribe(
       () => {
-        this.alertify.success('Add successfully!<br>Đã tạo thành công!');
+        this.alertify.success('Đã tạo thành công!');
         this.getAllGluesByBPFCID(this.BPFCID);
         this.clearGlueForm();
         this.genaratorGlueCode();
@@ -1674,7 +1849,10 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   finished() {
     const userid = JSON.parse(localStorage.getItem('user')).user.id;
     if (this.gridglue.getSelectedRowIndexes().length === 0) {
-      this.alertify.warning('Hãy chọn vào 1 glue và tạo công thức sau đó mới bấm hoàn thành!', true);
+      this.alertify.warning(
+        'Hãy chọn vào 1 glue và tạo công thức sau đó mới bấm hoàn thành!',
+        true
+      );
     } else {
       // this.history.Action = 'Created';
       this.history.BPFCEstablishID = this.BPFCID;
@@ -1697,34 +1875,18 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         selectedrecords.partID === 0 ? null : selectedrecords.partID;
       selectedrecords.materialID =
         selectedrecords.materialID === 0 ? null : selectedrecords.materialID;
+
       this.selectedRow = this.gridglue.getSelectedRowIndexes();
       // update glue
-      // this.glueService.update(selectedrecords).subscribe((res) => {
-      //   this.alertify.success('Cập nhật thành công!');
-      //   this.getAllGluesByBPFCID(this.BPFCID);
-      //   this.detailGlue = true;
-      //   this.modified = true;
-      //   // const bpfcInfo = {
-      //   //   modelNameID: this.modelNameID,
-      //   //   modelNoID: this.modelNoID,
-      //   //   articleNoID: this.articleNoID,
-      //   //   artProcessID: this.artProcessID,
-      //   // };
-      //   // this.getBPFCID(bpfcInfo);
-      // });
+      this.glueService.update(selectedrecords).subscribe((res) => {
+        this.alertify.success('Update sucessfully!<br>Cập nhật thành công!');
+        this.getAllGluesByBPFCID(this.BPFCID);
+        this.detailGlue = true;
+        this.modified = true;
+      });
       if (details.length > 0) {
-        const params = {
-          glueName: selectedrecords.name,
-          glueID: selectedrecords.id,
-          glueIngredientForMapDto: details
-        };
-        this.mapGlueIngredientByGlueID(params);
-
-        // this.mapGlueIngredients(details);
-        // for (const item of details) {
-        //   this.mapGlueIngredient(item);
-        // }
-        // this.alertify.success('Successfully!');
+        this.mapGlueIngredients(details);
+        this.modified = true;
       }
     }
   }
@@ -1772,62 +1934,6 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     );
   }
   approval() {
-    // const glueData = (this.gridglue.dataSource as any);
-    // let flagAllow = false;
-    // let flagPercentage = false;
-    // let flagConsumption = false;
-    // if (glueData) {
-    //   for (const glue of glueData) {
-    //     if (glue.glueIngredients.length > 0) {
-    //       const glueIngredients = glue.glueIngredients.filter(x => x.position !== 'A');
-    //       for (const item of glueIngredients) {
-    //         if (item.allow <= 0) {
-    //           flagAllow = false;
-    //           this.approvalStatus = !this.approvalStatus;
-    //           this.alertify.warning(`The allowance of checmical name ${item.ingredient.name} must be greater than 0 <br>
-    //           Mức cho phép của hóa chất ${item.ingredient.name} phải lớn hơn 0!<br>
-    //            <label>Glue Name: </label> ${glue.name} <br>
-    //           `, true);
-    //           return;
-    //         }
-    //         if (item.percentage <= 0) {
-    //           flagPercentage = false;
-    //           this.approvalStatus = !this.approvalStatus;
-    //           this.alertify.warning(`The percentage of checmical name ${item.ingredient.name} must be greater than 0 <br>
-    //           Phần trăm của hóa chất ${item.ingredient.name} phải lớn hơn 0!<br>
-    //            <label>Glue Name: </label> ${glue.name} <br>
-    //           `, true);
-    //           return;
-    //         }
-    //         flagAllow = true;
-    //         flagPercentage = true;
-    //       }
-    //     }
-    //     if (glue.consumption <= 0) {
-    //       flagConsumption = false;
-    //       this.approvalStatus = !this.approvalStatus;
-    //       this.alertify.warning(`The consumption of glue name ${glue.name} must be greater than 0 <br>
-    //       Mức tiêu thụ của keo ${glue.name} phải lớn hơn 0! <br>
-    //       <label>Glue Name: </label> ${glue.name} <br>
-    //       `, true);
-    //       return;
-    //     }
-    //     flagConsumption = true;
-    //   }
-    //   if (flagAllow && flagPercentage && flagConsumption) {
-    //     const userid = JSON.parse(localStorage.getItem('user')).user.id;
-    //     this.bPFCEstablishService.approval(this.BPFCID, userid).subscribe((res) => {
-    //       this.alertify.success('The BPFC has been approved!');
-    //       this.createdStatus = this.approvalStatus;
-    //       const value = this.modelNameDropdownlist.value;
-    //       const bpfc = this.modelNameDropdownlist.getDataByValue(value) as any;
-    //       this.modelNameDropdownlist.valueTemplate = `(${this.checkStatus(
-    //         this.approvalStatus,
-    //         this.createdStatus
-    //       )}) ${bpfc.name}`;
-    //     });
-    //   }
-    // }
     const glueData = this.gridglue.dataSource as any;
     let flagAllow = false;
     let flagPercentage = false;
@@ -1899,31 +2005,39 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     }
   }
   done() {
-    const glueData = (this.gridglue.dataSource as any);
+    const glueData = this.gridglue.dataSource as any;
     let flagAllow = false;
     let flagPercentage = false;
     let flagConsumption = false;
     if (glueData) {
       for (const glue of glueData) {
         if (glue.glueIngredients.length > 0) {
-          const glueIngredients = glue.glueIngredients.filter(x => x.position !== 'A');
+          const glueIngredients = glue.glueIngredients.filter(
+            (x) => x.position !== 'A'
+          );
           for (const item of glueIngredients) {
             if (item.allow <= 0) {
               flagAllow = false;
               this.createdStatus = !this.createdStatus;
-              this.alertify.warning(`The allow of checmical name ${item.ingredient.name} is greater than 0 <br>
+              this.alertify.warning(
+                `The allow of checmical name ${item.ingredient.name} is greater than 0 <br>
               Mức cho phép của hóa chất ${item.ingredient.name} phải lớn hơn 0!<br>
                <label>Glue Name: </label> ${glue.name} <br>
-              `, true);
+              `,
+                true
+              );
               return;
             }
             if (item.percentage <= 0) {
               flagPercentage = false;
               this.createdStatus = !this.createdStatus;
-              this.alertify.warning(`The percentage of checmical name ${item.ingredient.name} is greater than 0 <br>
+              this.alertify.warning(
+                `The percentage of checmical name ${item.ingredient.name} is greater than 0 <br>
               Phần trăm của hóa chất ${item.ingredient.name} phải lớn hơn 0!<br>
                <label>Glue Name: </label> ${glue.name} <br>
-              `, true);
+              `,
+                true
+              );
               return;
             }
             flagAllow = true;
@@ -1934,13 +2048,16 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
             flagPercentage = true;
           }
         }
-        if (glue.consumption <= 0) {
+        if (+glue.consumption <= 0) {
           flagConsumption = false;
           this.createdStatus = !this.createdStatus;
-          this.alertify.warning(`The consumption of glue name ${glue.name} is greater than 0 <br>
+          this.alertify.warning(
+            `The consumption of glue name ${glue.name} is greater than 0 <br>
           Mức tiêu thụ của keo ${glue.name} phải lớn hơn 0! <br>
           <label>Glue Name: </label> ${glue.name} <br>
-          `, true);
+          `,
+            true
+          );
           return;
         }
         flagConsumption = true;
@@ -1985,7 +2102,8 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       });
   }
   getModelNoByModelNameID(modelNameID) {
-    this.modelNoService.getModelNoByModelNameID(modelNameID)
+    this.modelNoService
+      .getModelNoByModelNameID(modelNameID)
       .subscribe((res) => {
         this.modelNoData = res;
       });
@@ -2059,7 +2177,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     });
   }
   OndataBound(args) {
-    this.modelNoDropdownlist.value = this.value;
+    // this.modelNoDropdownlist.value = this.value;
   }
   /// API Clone
   getModelNamesClone() {
@@ -2102,24 +2220,13 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         });
       });
   }
-  clone(clone) {
-    this.modalNameService.clone(clone).subscribe((res: any) => {
-      if (res.status === true) {
-        this.alertify.success('Đã sao chép thành công!');
-        this.modalService.dismissAll();
-        this.getArtProcessByArticleNoID(this.articleNoID);
-        this.clearFormClone();
-      } else {
-        this.alertify.error('The BPFC exists!');
-      }
-    });
-  }
+
   // END CLone
   // End API ------------------------------------------------------------------------------
 
   onChangeModelName(args) {
     this.resetLifeCycleBPFC();
-    this.modelNameID = args.itemData.id;
+    this.modelNameID = args.value;
     this.getModelNoByModelNameID(this.modelNameID);
     this.existGlue = false;
     this.modelNameIDClone = args.value;
@@ -2133,12 +2240,11 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     this.modelNoSelect = false;
     this.modelArtSelect = false;
     this.modelProcessSelect = false;
-
   }
   onChangeModelNo(args) {
     if (args.isInteracted) {
-      this.modelNoID = args.itemData.id;
-      this.valuemodelNo = args.itemData.id;
+      this.modelNoID = args.value;
+      this.valuemodelNo = args.value;
       this.getArticleNoByModelNoID(this.modelNoID);
       this.existGlue = false;
       this.modified = false;
@@ -2149,7 +2255,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
   onChangeArticleNo(args) {
     if (args.isInteracted) {
-      this.articleNoID = args.itemData.id;
+      this.articleNoID = args.value;
       this.getArtProcessByArticleNoID(this.articleNoID);
       this.existGlue = false;
       this.modified = false;
@@ -2168,7 +2274,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
         articleNoID: this.articleNoID,
         artProcessID: this.artProcessID,
       };
-      this.getBPFCID(bpfcInfo);
+      // this.getBPFCID(bpfcInfo);
     }
   }
   ClickProcessData(args) { }
@@ -2185,27 +2291,44 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
   onClickClone() {
     const clone = {
-      modelNameID: this.modelNameIDClone,
-      modelNOID: this.modelNOIDClone,
-      articleNOID: this.articleNOIDClone,
-      artProcessID: Number(this.artProcessIDClone),
-      bpfcID: this.BPFCID,
+      modelNameID: this.modelNameIDLeo,
+      modelNOID: this.modelNoIDLeo,
+      articleNOID: this.articleNoIDLeo,
+      artProcessID: Number(this.artProcessIDLeo),
+      bpfcID: this.BPFCIDLeo,
+      name: this.articleNoNewLeo,
       cloneBy: JSON.parse(localStorage.getItem('user')).user.id,
     };
+
     this.clone(clone);
   }
+  clone(clone) {
+    if (this.articleNoNewLeo !== this.articleNoLeo) {
+      this.modalNameService.cloneBPFC(clone).subscribe((res: any) => {
+        if (res.status === true) {
+          this.alertify.success('Đã sao chép thành công!');
+          this.modalService.dismissAll();
+          this.getAllUsers();
+        } else {
+          this.alertify.error('The BPFC exists!');
+        }
+      });
+    } else {
+      this.alertify.error('The BPFC exists!');
+    }
+  }
   onChangeModelNameClone(args) {
-    const valueChange = args.itemData.id;
+    const valueChange = args.value;
     if (this.value !== valueChange) {
       this.modelNOsDataClone = [];
-      this.modelNameIDClone = args.itemData.id;
+      this.modelNameIDClone = args.value;
       this.getModelNoByModelNameIDClone(this.modelNameIDClone);
     }
-    this.modelNameIDClone = args.itemData.id;
+    this.modelNameIDClone = args.value;
     this.getModelNoByModelNameIDClone(this.modelNameIDClone);
   }
   onChangeModelNoClone(args) {
-    this.modelNOIDClone = args.itemData.id;
+    this.modelNOIDClone = args.value;
     if (this.modelNOIDClone !== null) {
       this.getArticleNoByModelNameIDClone(this.modelNOIDClone);
     }
@@ -2214,13 +2337,13 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
   onChangeArticleNoClone(args) {
     if (args.isInteracted) {
-      this.articleNOIDClone = args.itemData.id;
+      this.articleNOIDClone = args.value;
       this.getArtProcessByArticleNoIDClone(this.articleNOIDClone);
     }
   }
   onChangeProcessClone(args) {
     if (args.isInteracted) {
-      this.artProcessIDClone = args.itemData.id;
+      this.artProcessIDClone = args.value;
     }
   }
 
@@ -2266,19 +2389,28 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   }
   /// End Clone
   changeAllowColor(data) {
-    if (data.position === null) { return ''; }
-    if (this.positions.includes(data.position) && data.allow === 0 || this.positions.includes(data.position) && data.allow === null) {
+    if (data.position === null) {
+      return '';
+    }
+    if (
+      (this.positions.includes(data.position) && data.allow === 0) ||
+      (this.positions.includes(data.position) && data.allow === null)
+    ) {
       return 'font-weight-bold text-white p-2 rounded-circle warning-text';
     }
   }
   changePercentageColor(data) {
-    if (data.percentage === null) { return ''; }
+    if (data.percentage === null) {
+      return '';
+    }
     if (this.positions.includes(data.position) && data.percentage === 0) {
       return 'font-weight-bold text-white p-2 rounded-circle warning-text';
     }
   }
   changeConsumptionColor(data) {
-    if (data.glueIngredients.length === 0) { return ''; }
+    if (data.glueIngredients.length === 0) {
+      return '';
+    }
     if (data.consumption === '') {
       return 'font-weight-bold text-white p-2 rounded-circle warning-text';
     }

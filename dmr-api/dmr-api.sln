@@ -9,13 +9,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TodolistScheduleService", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DMR_Testing", "..\DMR_Testing\DMR_Testing.csproj", "{63D36039-BC39-424C-A5AF-16FAC3D9085C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WeighingScaleEmulator", "..\WeighingScaleEmulator\WeighingScaleEmulator.csproj", "{EA114366-F910-4148-BA89-2C7459F3C6ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WeighingScaleEmulator", "..\WeighingScaleEmulator\WeighingScaleEmulator.csproj", "{EA114366-F910-4148-BA89-2C7459F3C6ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalrServer", "..\SignalrServer\SignalrServer.csproj", "{F12E6607-C872-4988-B749-07EAEB4E2F42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalrServer", "..\SignalrServer\SignalrServer.csproj", "{F12E6607-C872-4988-B749-07EAEB4E2F42}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScalingMachineService", "..\ScalingMachineService\ScalingMachineService.csproj", "{9DE05B9E-16EF-4FB9-98CA-17BF0EC3DE5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignalRSelfHost", "..\SignalRSelfHost\SignalRSelfHost.csproj", "{F28D3CB0-B679-4ADD-9D43-6B924B16236C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSelfHost", "..\SignalRSelfHost\SignalRSelfHost.csproj", "{F28D3CB0-B679-4ADD-9D43-6B924B16236C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

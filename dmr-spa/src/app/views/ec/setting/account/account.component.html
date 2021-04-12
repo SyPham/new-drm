@@ -35,15 +35,15 @@
                 #
               </ng-template>
             </e-column>
-            <e-column field="username" textAlign='Center' headerText="Username"> </e-column>
-            <e-column field="employeeID" textAlign='Center' headerText="Account"> </e-column>
-            <e-column field="password" textAlign='Center' headerText="Password">
+            <e-column field="username" textAlign='Center' headerText="{{ 'Username' | translate}}"> </e-column>
+            <e-column field="employeeID" textAlign='Center' headerText="{{ 'Account' | translate}}"> </e-column>
+            <e-column field="password" textAlign='Center' headerText="{{ 'Password' | translate}}">
               <ng-template #template let-data>
                 ************
               </ng-template>
             </e-column>
             <e-column field="email" textAlign='Center' headerText="Email"> </e-column>
-            <e-column field="role" textAlign='Center' headerText="Role Group">
+            <e-column field="role" textAlign='Center' headerText="{{ 'Role' | translate}}">
               <ng-template #editTemplate let-data>
                 <ejs-dropdownlist #positionDropdownlist [dataSource]='roles' [value]="data.role"
                   [fields]='fieldsRole' [allowFiltering]='true'
@@ -51,7 +51,7 @@
                 </ejs-dropdownlist>
               </ng-template>
             </e-column>
-            <e-column field="option" width="100" textAlign='Center' headerText="Option">
+            <e-column field="option" width="100" textAlign='Center' headerText="{{ 'Option' | translate}}">
               <ng-template #template let-data>
                 <div class="btn-group">
                   <button type="button" *ngIf="data.isLock" (click)='lock(data)' class="btn btn-xs btn-danger"><i class="fa fa-lock"></i></button>

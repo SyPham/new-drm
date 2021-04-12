@@ -10,21 +10,14 @@ using DMR_API._Services.Interface;
 using DMR_API.DTO;
 using DMR_API.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Dynamic;
-using Newtonsoft.Json;
 using System.Collections.Immutable;
 using DMR_API.SignalrHub;
 using Microsoft.AspNetCore.SignalR;
-using Google.Protobuf.WellKnownTypes;
 using OfficeOpenXml;
 using System.IO;
 using OfficeOpenXml.Style;
 using System.Drawing;
 using Microsoft.AspNetCore.Http;
-using DMR_API.Enums;
-using DMR_API._Repositories;
-using System.Transactions;
-using DMR_API.Helpers.Enum;
 using dmr_api.Models;
 
 namespace DMR_API._Services.Services
@@ -2865,7 +2858,7 @@ namespace DMR_API._Services.Services
                 return new Byte[] { };
             }
         }
-   
+
         private double FindPercentageByPosition(List<GlueIngredient> glueIngredients, string position)
         {
             var glueIngredient = glueIngredients.FirstOrDefault(x => x.Position == position);
@@ -2873,17 +2866,16 @@ namespace DMR_API._Services.Services
             return glueIngredient == null ? 0 : glueIngredient.Percentage;
         }
 
-        public async Task<ResponseDetail<Byte[]>> ExportExcelWorkPlanWholeBuilding(int buildingID)
+        public async Task<ResponseDetail<Byte[]>> ExportExcelWorkPlanWholeBuilding(int buildingID, DateTime startDate, DateTime endDate)
         {
             var buildingModel = await _repoBuilding.FindAll().FirstOrDefaultAsync(x => x.ID == buildingID);
             var _buildings = await _repoBuilding.FindAll().Where(x => x.BuildingTypeID == buildingModel.BuildingTypeID).OrderBy(x => x.Name).ToListAsync();
-           var data = new List<ExportExcelPlanDto>();
-           foreach (var building in _buildings)
-           {
-
+            var data = new List<ExportExcelPlanDto>();
+            foreach (var building in _buildings)
+            {
                 var lines = _repoBuilding.FindAll(x => building.ID == x.ParentID.Value).Select(a => a.ID).ToList();
                 var plans = await _repoPlan.FindAll()
-                 .Where(x => lines.Contains(x.BuildingID) && x.DueDate == DateTime.Now.Date)
+                 .Where(x => lines.Contains(x.BuildingID) && x.DueDate >= startDate && x.DueDate <= endDate)
                  .Include(x => x.BPFCEstablish)
                      .ThenInclude(x => x.ModelName)
                  .Include(x => x.BPFCEstablish)
@@ -2901,13 +2893,13 @@ namespace DMR_API._Services.Services
                  }).OrderBy(x => x.Line)
                  .ThenBy(x => x.CreatedDate)
                  .ToListAsync();
-                 foreach (var item in plans)
-                 {
+                foreach (var item in plans)
+                {
                     item.Building = building.Name;
-                 }
-                 data.AddRange(plans);
-           }
-            
+                }
+                data.AddRange(plans);
+            }
+
             var groupBy = data.GroupBy(g => g.Building).ToList();
             try
             {
@@ -2953,13 +2945,12 @@ namespace DMR_API._Services.Services
                             pattern.Style.Fill.BackgroundColor.SetColor(ColorTranslator.FromHtml("#FFFF00"));
                         }
 
-
                         // end Style
 
                         int colIndex = 1;
                         int rowIndex = 1;
                         // với mỗi item trong danh sách sẽ ghi trên 1 dòng
-                        foreach (var body in groupbyItem)
+                        foreach (var body in groupbyItem.OrderBy(x=> x.DueDate))
                         {
                             // bắt đầu ghi từ cột 1. Excel bắt đầu từ 1 không phải từ 0 #c0514d
                             colIndex = 1;
@@ -3207,7 +3198,8 @@ namespace DMR_API._Services.Services
             var planTotal = model.Count();
             var rateTemp = (planTotal / (double)lineTotal) * 100;
             var rate = Math.Round(rateTemp);
-            var data = new {
+            var data = new
+            {
                 Text = $"{planTotal}/{lineTotal}    {rate}%",
                 UpdateOnTime = planTotal,
                 Total = lineTotal,
@@ -3216,7 +3208,8 @@ namespace DMR_API._Services.Services
             return new ResponseDetail<object> { Data = data, Status = true };
         }
 
-        private async Task<List<PlanDto>> GetAllPlanToDay(int buildingTypeID) {
+        private async Task<List<PlanDto>> GetAllPlanToDay(int buildingTypeID)
+        {
             var _buildings = await _repoBuilding.FindAll().Where(x => x.BuildingTypeID == buildingTypeID).ToListAsync();
             var lines = _repoBuilding.FindAll(x => _buildings.Select(a => a.ID).Contains(x.ParentID.Value)).Select(a => a.ID).ToList();
             var model = await _repoPlan.FindAll()

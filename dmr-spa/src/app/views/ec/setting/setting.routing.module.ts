@@ -40,7 +40,7 @@ const routes: Routes = [
         data: {
           title: 'Supplier',
           breadcrumb: 'Supplier',
-          functionCode: 'Supllier Menu'
+          functionCode: 'Supplier Menu'
         },
         canActivate: [AuthGuard]
       },

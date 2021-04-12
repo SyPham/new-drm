@@ -19,6 +19,7 @@
 @import '../node_modules/@syncfusion/ej2-angular-dropdowns/styles/bootstrap4.css';
 /* @import '../pretty-checkbox/src/pretty-checkbox.scss'; */
 /* @import '~pretty-checkbox/src/pretty-checkbox.scss'; */
+@import "~@ng-select/ng-select/themes/default.theme.css";
 .modal-xxl {
     min-width: 95%!important;
 }

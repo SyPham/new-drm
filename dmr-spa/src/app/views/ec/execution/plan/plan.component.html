@@ -20,7 +20,7 @@
                 <!-- Sử dụng [value] thay thế cho [(ngModel)] để bắt đc sự kiện change. -->
                 <ejs-dropdownlist class="pr-3" [dataSource]='buildings' [fields]='fieldsBuildings'
                   [allowFiltering]='true' [value]="buildingID" (filtering)='onFilteringBuilding($event)'
-                  (change)='onChangeBuilding($event)' placeholder="Select a building">
+                  (change)='onChangeBuilding($event)' placeholder="{{'Select a building' | translate}}">
                 </ejs-dropdownlist>
                 <button class="btn btn-sm btn-default" (click)='onClickDefault()'>
                   <i class="fa fa-times"></i>
@@ -28,9 +28,9 @@
                 <h4 class="font-weight-bold px-3 text-danger">{{planInfo.text}}</h4>
                 <div class="div">
                   <ul class="list-unstyled">
-                    <li class="text-danger">Update On Time: {{planInfo.updateOnTime}}</li>
-                    <li class="text-danger">Total: {{planInfo.total}}</li>
-                    <li class="text-danger">Archievement Rate: {{planInfo.rate}}%</li>
+                    <li class="text-danger">{{ 'Update Before 18:00' | translate}}: {{planInfo.updateOnTime}}</li>
+                    <li class="text-danger">{{ 'Total' | translate}}: {{planInfo.total}}</li>
+                    <li class="text-danger">{{ 'Achievement Rate' | translate}}: {{planInfo.rate}}%</li>
                   </ul>
                 </div>
               </div>

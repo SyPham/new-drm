@@ -330,12 +330,24 @@ namespace DMR_API.Controllers
             var res = await _planService.ExportExcel(dto);
             return File(res.Data, "application/octet-stream", $"report{DateTime.Now.ToString("MMddyyyy")}.xlsx");
         }
-        [HttpGet("{buildingID}")]
-        public async Task<IActionResult> ExportExcelWorkPlanWholeBuilding(int buildingID)
+
+        [HttpGet("{buildingID}/{startDate}/{endDate}")]
+        public async Task<IActionResult> ExportExcelWorkPlanWholeBuilding(int buildingID, DateTime startDate, DateTime endDate)
         {
-            var res = await _planService.ExportExcelWorkPlanWholeBuilding(buildingID);
+            var delta = endDate - startDate;
+            var str = Math.Abs(delta.TotalDays);
+            if (str > 31)
+            {
+                var error = $"Chỉ được xuất dữ liệu báo cáo trong 30 ngày!!!<br>The report data can only be exported for 30 days!!!";
+                return BadRequest(error);
+            }
+            else
+            {
+                var res = await _planService.ExportExcelWorkPlanWholeBuilding(buildingID, startDate, endDate);
             return File(res.Data, "application/octet-stream", $"{DateTime.Now.ToString("MMddyyyy")}_WorkPlan.xlsx");
+            }
         }
+
         [HttpPost]
         public async Task<IActionResult> ReportConsumptionCase2(ReportParams reportParams)
         {
@@ -352,6 +364,7 @@ namespace DMR_API.Controllers
                 return File(bin, "application/octet-stream", "reportConsumption2.xlsx");
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> GetReport(GetReportDto getReportDto)
         {

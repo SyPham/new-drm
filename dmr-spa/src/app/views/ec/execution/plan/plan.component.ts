@@ -80,8 +80,8 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
     hourlyOutput: 0,
     workingHour: 0,
     dueDate: new Date(),
-    startWorkingTime: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDay(), 7, 0, 0),
-    finishWorkingTime: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDay(), 16, 30, 0),
+    startWorkingTime: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 7, 0, 0),
+    finishWorkingTime: new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate(), 16, 30, 0),
     startTime: {
       hour: 7,
       minute: 0
@@ -202,35 +202,47 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
     this.subscription.push(watchAction);
   }
   checkRole(): void {
-    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
-    switch (this.role.id) {
-      case RoleConstant.ADMIN:
-      case RoleConstant.SUPERVISOR:
-      case RoleConstant.SUPER_ADMIN:
-      case RoleConstant.STAFF:
-      case RoleConstant.WORKER: // Chỉ hiện todolist
-        this.IsAdmin = true;
-        const buildingId = +localStorage.getItem('buildingID');
-        if (buildingId === 0) {
-          this.getBuilding(() => {
-            this.alertify.message('Please select a building!', true);
-          });
-        } else {
-          this.getBuilding(() => {
-            this.buildingID = buildingId;
-            // this.getAll();
-            // this.getStartTimeFromPeriod();
-          });
-        }
-        break;
-      case RoleConstant.DISPATCHER: // Chỉ hiện dispatchlist
-        this.building = JSON.parse(localStorage.getItem('building'));
-        this.getBuilding(() => {
-          this.buildingID = this.building[0].id;
-          // this.getAll();
-        });
-        break;
+    const buildingId = +localStorage.getItem('buildingID');
+    if (buildingId === 0) {
+      this.getBuilding(() => {
+        this.alertify.message('Please select a building! <br> Vui lòng chọn 1 tòa nhà!', true);
+      });
+    } else {
+      this.getBuilding(() => {
+        this.buildingID = buildingId;
+        // this.getAll();
+        // this.getStartTimeFromPeriod();
+      });
     }
+    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
+    // switch (this.role.id) {
+    //   case RoleConstant.ADMIN:
+    //   case RoleConstant.SUPERVISOR:
+    //   case RoleConstant.SUPER_ADMIN:
+    //   case RoleConstant.STAFF:
+    //   case RoleConstant.WORKER: // Chỉ hiện todolist
+    //     this.IsAdmin = true;
+    //     const buildingId = +localStorage.getItem('buildingID');
+    //     if (buildingId === 0) {
+    //       this.getBuilding(() => {
+    //         this.alertify.message('Please select a building!', true);
+    //       });
+    //     } else {
+    //       this.getBuilding(() => {
+    //         this.buildingID = buildingId;
+    //         // this.getAll();
+    //         // this.getStartTimeFromPeriod();
+    //       });
+    //     }
+    //     break;
+    //   case RoleConstant.DISPATCHER: // Chỉ hiện dispatchlist
+    //     this.building = JSON.parse(localStorage.getItem('building'));
+    //     this.getBuilding(() => {
+    //       this.buildingID = this.building[0].id;
+    //       // this.getAll();
+    //     });
+    //     break;
+    // }
   }
   ngOnDestroy() {
     localStorage.removeItem('isSTF');
@@ -298,7 +310,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
         if (lang === 'vi') {
           return [
             {
-              text: 'Cập Nhật', tooltipText: 'Cập Nhật',
+              text: 'Cập nhật', tooltipText: 'Cập nhật',
               prefixIcon: 'fa fa-tasks', id: 'Update'
             }
           ];
@@ -749,20 +761,23 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
       case 'exportExcel':
         this.spinner.show();
         const plans = this.data.map((item: any) => item.id);
-        this.planService.exportExcelWorkPlanWholeBuilding(this.buildingID).subscribe((data: any) => {
+        const start = this.datePipe.transform(this.startDate, "YYYY-MM-dd");
+        const end = this.datePipe.transform(this.endDate, "YYYY-MM-dd");
+        this.planService.exportExcelWorkPlanWholeBuilding(this.buildingID, start, end).subscribe((data: any) => {
           const blob = new Blob([data],
             { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
           const downloadURL = window.URL.createObjectURL(data);
           const link = document.createElement('a');
           link.href = downloadURL;
-          const ct = new Date();
-          link.download = `${ct.getFullYear()}${ct.getMonth()}${ct.getDay()}_WorkPlan.xlsx`;
+          const startDateFormat = this.datePipe.transform(this.startDate, "YYYYMMdd");
+          const endDateFormat = this.datePipe.transform(this.endDate, "YYYYMMdd");
+          link.download = `${startDateFormat}-${endDateFormat}_WorkPlan.xlsx`;
           link.click();
           this.spinner.hide();
         }, err => {
           this.spinner.hide();
-          this.alertify.error('Server error!');
+          this.alertify.error('Server error! Can not download excel file!');
         });
         break;
       default:

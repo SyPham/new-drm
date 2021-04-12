@@ -66,7 +66,7 @@ namespace DMR_API._Services.Interface
         Task<ResponseDetail<object>> Online(int planID);// v102
         Task<ResponseDetail<object>> Offline(int planID);// v102
 
-        Task<ResponseDetail<Byte[]>> ExportExcelWorkPlanWholeBuilding(int buildingID);
+        Task<ResponseDetail<Byte[]>> ExportExcelWorkPlanWholeBuilding(int buildingID, DateTime startDate, DateTime endDate);
         /// <summary>
         /// Excel Export
         /// </summary>

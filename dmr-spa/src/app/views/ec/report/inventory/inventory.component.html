@@ -31,7 +31,6 @@
   <div class="card-body">
     <div class="row">
       <div class="col-md-12">
-        {{toolbarOptions | json}}
         <ejs-grid #ingredientinforeportGrid  [dataSource]='data'
           [allowExcelExport]='true' [allowSorting]='true' allowFiltering='true' [filterSettings]='filterSettings'
           [toolbar]='toolbarOptions' showColumnMenu='true' [pageSettings]='pageSettings'

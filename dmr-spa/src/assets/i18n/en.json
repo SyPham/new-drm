@@ -93,6 +93,7 @@
     "COUNT": "Count",
     "TOTAL_COMSUMPTION": "Total Consumption",
     "CHEMICAL": "Chemical",
+    "Chemical": "Hóa Chất",
     "STANDARD": "Std.Con.",
     "STIR": "Stir",
     "Stir": "Stir",
@@ -267,5 +268,19 @@
     "Black List": "Black List",
     "Delivery History": "Delivery History",
     "System": "System",
-    "Supplier Menu": "Supplier"
+    "Supplier Menu": "Supplier",
+    "Update Before 18:00": "Update Before 18:00",
+    "Total": "Total",
+    "Achievement Rate": "Achievement Rate",
+    "Select a building": "Select a building",
+    "Name": "Name",
+    "Supplier Name": "Supplier Name",
+    "Username": "Username",
+    "Password": "Password",
+    "Time Period Mixing": "Time Period Mixing",
+    "Time Period Dispatch": "Time Period Dispatch",
+    "Building Name": "Building Name",
+    "Building List": "Building List",
+    "Level": "Level",
+    "Type": "Type"
 }

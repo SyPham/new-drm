@@ -2427,9 +2427,8 @@ namespace DMR_API._Services.Services
                 message = "Không tìm thấy chuyền nào trong hệ thống!"
             };
 
-            var checkExistLine = _repoPlan.FindAll().Any(x => x.BuildingID == line.ID);
-
             var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
+              .Include(x=> x.LunchTime)
               .Include(x => x.PeriodMixingList)
               .FirstOrDefaultAsync();
 
@@ -2474,7 +2473,7 @@ namespace DMR_API._Services.Services
                     var dispatchlistForUpdate = new List<DispatchList>();
                     foreach (var item in periods)
                     {
-                        var todolist = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
+                        var todolist = await _repoToDoList.FindAll(x => plans.Contains(x.PlanID) && x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
                                                                 && x.EstimatedFinishTime.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
                         todolist.ForEach(item =>
                         {
@@ -2482,7 +2481,7 @@ namespace DMR_API._Services.Services
                         });
                         todolistForUpdate.AddRange(todolist);
 
-                        var dispatchlist = await _repoDispatchList.FindAll(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
+                        var dispatchlist = await _repoDispatchList.FindAll(x => plans.Contains(x.PlanID) && x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
                         dispatchlist.ForEach(item =>
                         {
                             item.IsDelete = false;
@@ -2576,6 +2575,7 @@ namespace DMR_API._Services.Services
             var checkExistLine = _repoPlan.FindAll().Any(x => x.BuildingID == line.ID);
 
             var building = await _repoBuilding.FindAll(x => x.ID == line.ParentID)
+                .Include(x => x.LunchTime)
               .Include(x => x.PeriodMixingList)
               .FirstOrDefaultAsync();
 
@@ -2609,7 +2609,7 @@ namespace DMR_API._Services.Services
                     var dispatchlistForUpdate = new List<DispatchList>();
                     foreach (var item in periods)
                     {
-                        var todolist = await _repoToDoList.FindAll(x => x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
+                        var todolist = await _repoToDoList.FindAll(x => plans.Contains(x.PlanID) && x.EstimatedStartTime.TimeOfDay == item.StartTime.TimeOfDay
                                                                 && x.EstimatedFinishTime.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
                         todolist.ForEach(item =>
                         {
@@ -2617,7 +2617,7 @@ namespace DMR_API._Services.Services
                         });
                         todolistForUpdate.AddRange(todolist);
 
-                        var dispatchlist = await _repoDispatchList.FindAll(x => x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
+                        var dispatchlist = await _repoDispatchList.FindAll(x => plans.Contains(x.PlanID) && x.StartTimeOfPeriod.TimeOfDay == item.StartTime.TimeOfDay && x.FinishTimeOfPeriod.TimeOfDay == item.EndTime.TimeOfDay).ToListAsync();
                         dispatchlist.ForEach(item =>
                         {
                             item.IsDelete = true;

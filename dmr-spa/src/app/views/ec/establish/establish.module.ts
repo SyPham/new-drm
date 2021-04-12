@@ -45,6 +45,7 @@ import { TimePickerModule } from '@progress/kendo-angular-dateinputs';
 import { QRCodeModule } from 'angularx-qrcode';
 import { BPFCScheduleComponent, BpfcDetailComponent, BpfcStatusComponent, Bpfc1Component, BpfcComponent } from '.';
 import { EstablishRoutingModule } from './establish.routing.module';
+import { BpfcDetailV2Component } from './bpfc-detailv2/bpfc-detailv2.component';
 
 
 declare var require: any;
@@ -118,7 +119,8 @@ if (lang === 'vi') {
     BpfcDetailComponent,
     BpfcStatusComponent,
     Bpfc1Component,
-    BpfcComponent
+    BpfcComponent,
+    BpfcDetailV2Component
   ]
 })
 export class EstablishModule {

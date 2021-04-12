@@ -53,6 +53,8 @@ export class DecentralizationComponent implements OnInit {
   lineRemovingList = [];
   buildingList = [];
   buildingRemovingList = [];
+  checkAll = [];
+  public selectAllText = '';
   constructor(
     private accountService: AccountService,
     public modalService: NgbModal,
@@ -61,6 +63,7 @@ export class DecentralizationComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.selectAllText = 'Select All';
     this.mode = 'CheckBox';
     this.roleID = 0;
     this.buildingID = 0;
@@ -198,5 +201,8 @@ export class DecentralizationComponent implements OnInit {
   // end api
   NO(index) {
     return (this.grid.pageSettings.currentPage - 1) * this.pageSettings.pageSize + Number(index) + 1;
+  }
+  selectedAll(args) {
+    console.log(args);
   }
 }

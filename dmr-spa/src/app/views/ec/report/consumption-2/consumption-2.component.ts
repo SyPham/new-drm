@@ -196,8 +196,9 @@ export class Consumption2Component extends BaseComponent implements OnInit {
       const downloadURL = window.URL.createObjectURL(data);
       const link = document.createElement('a');
       link.href = downloadURL;
-      const ct = new Date();
-      link.download = `${ct.getFullYear()}${ct.getMonth()}${ct.getDay()}_Consumption2.xlsx`;
+      const startDateFormat = this.datePipe.transform(this.startDate, "YYYYMMdd");
+      const endDateFormat = this.datePipe.transform(this.endDate, "YYYYMMdd");
+      link.download = `${startDateFormat}-${endDateFormat}_Consumption2.xlsx`;
       link.click();
       this.spinner.hide();
     });
