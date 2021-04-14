@@ -718,9 +718,16 @@ namespace DMR_API._Services.Services
             {
                 try
                 {
-                    var checkExist = await _repoPlan.FindAll().AnyAsync(x => x.BuildingID == model.BuildingID && x.DueDate.Date == model.DueDate.Date);
-                    if (checkExist) return false;
                     var plan = _mapper.Map<Plan>(model);
+                    var checkExist = await _repoPlan.FindAll().OrderByDescending(x=> x.CreatedDate).FirstOrDefaultAsync(x => x.BuildingID == model.BuildingID && x.DueDate.Date == model.DueDate.Date);
+                    // Neu ton tai thi kiem tra xem co phai la ngung chuyen khong
+                    if (checkExist != null) {
+                        if (checkExist.IsOffline) {
+                            plan.StartWorkingTime = DateTime.Now.ToRemoveSecond();
+                        } else { // Khong phai la ngung chuyen thi thong bao da ton tại
+                            return false;
+                        }
+                    }
                     DateTime dt = DateTime.Now.ToLocalTime().ToRemoveSecond();
                     plan.CreatedDate = dt;
                     plan.CreateBy = userID;
@@ -3190,13 +3197,21 @@ namespace DMR_API._Services.Services
         public async Task<ResponseDetail<object>> AchievementRate(int building)
         {
             var today = DateTime.Now.Date;
+            var tomorrow = DateTime.Now.AddDays(1).Date;
             var lines = await _repoBuilding.FindAll(x => x.ParentID == building).ToListAsync();
             var linesID = lines.Select(x => x.ID);
-            var model = _repoPlan.FindAll(x => linesID.Contains(x.BuildingID) && x.CreatedDate.Date < today && x.DueDate.Date == today && x.UpdatedTime.Value < today).DistinctBy(x => x.BuildingID).ToList();
+            var model = _repoPlan.FindAll(x => linesID.Contains(x.BuildingID) 
+             && x.DueDate.Date == tomorrow)
+            .Include(x => x.ToDoList)
+            .Include(x => x.DispatchList)
+            .DistinctBy(x => x.BuildingID)
+            .ToList();
 
-            var lineTotal = lines.Count();
-            var planTotal = model.Count();
-            var rateTemp = (planTotal / (double)lineTotal) * 100;
+            var lineTotal = model.Count();
+            var planTotal = model.Where(x=> x.ToDoList.Count() > 0 || x.DispatchList.Count() > 0
+                                         && x.UpdatedTime.Value.Date == today 
+                                         && x.CreatedDate.Date == today).Count();
+            var rateTemp = planTotal != 0 && lineTotal != 0 ? (planTotal / (double)lineTotal) * 100 : 0;
             var rate = Math.Round(rateTemp);
             var data = new
             {

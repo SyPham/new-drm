@@ -539,6 +539,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
           if (res) {
             this.alertify.success('Tạo thành công!<br>Created succeeded!');
             this.getAll();
+            this.achievementRate();
             this.clearForm();
           } else {
             this.alertify.warning('Dữ liệu đã tồn tại! <br>This plan has already existed!!!');
@@ -917,6 +918,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
       if (res.status) {
         this.alertify.success('Tạo nhiệm vụ thành công!<br>Success!', true);
         this.getAll();
+        this.achievementRate();
       } else {
         this.alertify.error(res.message, true);
       }

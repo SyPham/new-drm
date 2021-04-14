@@ -1194,7 +1194,7 @@ namespace DMR_API._Services.Services
             };
 
 
-            if (building.PeriodMixingList.Count == 0) return new ResponseDetail<List<PeriodMixing>>
+            if (building.PeriodMixingList.Where(x => x.IsDelete == false).Count() == 0) return new ResponseDetail<List<PeriodMixing>>
             {
                 Status = false,
                 Message = $"Tòa nhà {building.Name} chưa cài đặt period!"
@@ -1241,7 +1241,7 @@ namespace DMR_API._Services.Services
                     if (result.Status == false) return result;
 
                     // +Lấy ra period
-                    var periods = building.PeriodMixingList.ToList();
+                    var periods = building.PeriodMixingList.Where(x => x.IsDelete == false).ToList();
                     var endWorkingTime = new TimeSpan(16, 30, 0); // Giờ kết thúc làm việc
 
                     // + Lấy ra những period tăng ca
@@ -1437,7 +1437,7 @@ namespace DMR_API._Services.Services
                    .ThenInclude(x => x.PeriodDispatchList)
                .FirstOrDefaultAsync();
 
-            var periods = building.PeriodMixingList.ToList();
+            var periods = building.PeriodMixingList.Where(x => x.IsDelete == false).ToList();
             var dispatchlistOvertime = periods.Where(x => x.IsOvertime).ToList();
             var startLunchTimeBuilding = building.LunchTime.StartTime;
             var endLunchTimeBuilding = building.LunchTime.EndTime;
@@ -1461,7 +1461,7 @@ namespace DMR_API._Services.Services
                             var endTime = periodMixingItem.EndTime.TimeOfDay;
                             var startTimeOfPeriod = item.DueDate.Date.Add(startTime);
                             var finishTimeOfPeriod = item.DueDate.Date.Add(endTime);
-                            foreach (var periodDispatchItem in periodMixingItem.PeriodDispatchList)
+                            foreach (var periodDispatchItem in periodMixingItem.PeriodDispatchList.Where(x => x.IsDelete == false))
                             {
                                 var startTimeDispatch = periodMixingItem.StartTime.TimeOfDay;
                                 var endTimeDispatch = periodMixingItem.EndTime.TimeOfDay;
@@ -1501,7 +1501,7 @@ namespace DMR_API._Services.Services
                             var endTime = periodMixingItem.EndTime.TimeOfDay;
                             var startTimeOfPeriod = item.DueDate.Date.Add(startTime);
                             var finishTimeOfPeriod = item.DueDate.Date.Add(endTime);
-                            foreach (var periodDispatchItem in periodMixingItem.PeriodDispatchList)
+                            foreach (var periodDispatchItem in periodMixingItem.PeriodDispatchList.Where(x => x.IsDelete == false))
                             {
                                 var startTimeDispatch = periodMixingItem.StartTime.TimeOfDay;
                                 var endTimeDispatch = periodMixingItem.EndTime.TimeOfDay;
@@ -1622,7 +1622,7 @@ namespace DMR_API._Services.Services
                .Include(x => x.PeriodMixingList)
                .FirstOrDefaultAsync();
 
-            var periods = building.PeriodMixingList.ToList();
+            var periods = building.PeriodMixingList.Where(x => x.IsDelete == false).ToList();
             var endWorkTime = new TimeSpan(16, 30, 0);
             var dispatchlistOvertime = periods.Where(x => x.IsOvertime || (x.StartTime.TimeOfDay >= endWorkTime && x.EndTime.TimeOfDay >= endWorkTime)).ToList();
             var startLunchTimeBuilding = building.LunchTime.StartTime;
@@ -1895,7 +1895,7 @@ namespace DMR_API._Services.Services
                 status = false,
                 message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
             };
-            var periods = building.PeriodMixingList.ToList();
+            var periods = building.PeriodMixingList.Where(x => x.IsDelete == false).ToList();
             if (periods.Count == 0 && periods == null) return new
             {
                 status = false,
@@ -2444,7 +2444,7 @@ namespace DMR_API._Services.Services
                 message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
             };
 
-            var periods = building.PeriodMixingList;
+            var periods = building.PeriodMixingList.Where(x => x.IsDelete == false).ToList();
 
             if (periods.Count == 0 && periods == null) return new
             {
@@ -2591,7 +2591,7 @@ namespace DMR_API._Services.Services
                 message = $"Tòa nhà {building.Name} chưa cài đặt giờ ăn trưa!"
             };
 
-            var periods = building.PeriodMixingList;
+            var periods = building.PeriodMixingList.Where(x => x.IsDelete == false).ToList();
 
             if (periods.Count == 0 && periods == null) return new
             {

@@ -31,6 +31,11 @@ export class ScalingSettingComponent implements OnInit {
   toolbar: string[];
   unit: any;
   units = [{ value: 'k', text: 'Kilogram' }, { value: 'g', text: 'Gram' }];
+  machine: any;
+  WeighingScale30KG = 0;
+  WeighingScale3KG = 1;
+  machines = ['Weighing Scale 30KG', 'Weighing Scale 3KG'];
+  machineType: any;
   constructor(
     private buildingService: BuildingService,
     private alertify: AlertifyService,
@@ -51,7 +56,17 @@ export class ScalingSettingComponent implements OnInit {
     return this.settingService.getMachineByBuilding(buildingID).toPromise();
   }
   onChange(args) {
-    this.unit = args.itemData.value;
+    // this.unit = args.itemData.value;
+  }
+  onChangeMachine(args, data) {
+    this.machineType = args.value;
+    if (this.machineType === this.machines[this.WeighingScale30KG]) {
+      this.unit = 'k';
+    } else if (this.machineType === this.machines[this.WeighingScale3KG]) {
+      this.unit = 'g';
+    } else {
+      this.unit = '';
+    }
   }
   editSetting(model) {
     return this.settingService.updateMachine(model).toPromise();
@@ -77,7 +92,7 @@ export class ScalingSettingComponent implements OnInit {
   async edit(data) {
     const model = {
       id: data.id,
-      machineType: data.machineType,
+      machineType: this.machineType,
       unit: this.unit,
       buildingID: this.buildingID,
       machineID: this.unit === 'k' ? 2 : 1,
@@ -86,6 +101,8 @@ export class ScalingSettingComponent implements OnInit {
       await this.editSetting(model);
       this.alertify.success('Success');
       this.settings = await this.getSettingByBuilding(this.buildingID);
+      this.unit = '';
+      this.machineType = '';
     } catch (error) {
       this.alertify.error(error + '');
     }
@@ -95,7 +112,7 @@ export class ScalingSettingComponent implements OnInit {
     const model = {
       id: 0,
       unit: this.unit,
-      machineType: data.machineType,
+      machineType: this.machineType,
       buildingID: this.buildingID,
       machineID: this.unit === 'k' ? 2 : 1,
     };
@@ -103,6 +120,8 @@ export class ScalingSettingComponent implements OnInit {
       await this.createSetting(model);
       this.alertify.success('Success');
       this.settings = await this.getSettingByBuilding(this.buildingID);
+      this.unit = '';
+      this.machineType = '';
     } catch (error) {
       this.alertify.error(error + '');
     }
@@ -127,7 +146,8 @@ export class ScalingSettingComponent implements OnInit {
   async actionBeginSetting(args) {
     if (args.requestType === 'beginEdit') {
       const item = args.rowData;
-      this.unit = item.unit;
+      // this.unit = item.unit;
+      this.machineType = item.machineType;
     }
     if (args.requestType === 'save') {
       if (args.action === 'add') {

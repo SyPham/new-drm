@@ -1,6 +1,6 @@
 <div class="card">
   <div class="card-header">
-    <h2>{{ 'Building Setting' | translate }}</h2>
+    <h2>{{ 'Scaling' | translate }}</h2>
   </div>
   <div class="card-body">
     <div class="row">
@@ -32,13 +32,23 @@
               </ng-template>
             </e-column>
             <!-- <e-column field='machineCode' textAlign='Center' headerText='Machine' width='100'></e-column> -->
-            <e-column field='machineType' textAlign='Center' headerText='Machine Type' width='130'></e-column>
+            <e-column field='machineType' textAlign='Center' headerText='Machine Type' width='130'>
+                <ng-template #editTemplate let-data>
+                  <ejs-dropdownlist [dataSource]='machines' [value]="data.machineType" [allowFiltering]='true'
+                    (change)='onChangeMachine($event, data)'>
+                  </ejs-dropdownlist>
+                </ng-template>
+                <ng-template #template let-data>
+                  {{ data.machineType }}
+                </ng-template>
+            </e-column>
 
             <e-column field='unit' textAlign='Center' headerText='Unit' width='100'>
                 <ng-template #editTemplate let-data>
-                  <ejs-dropdownlist [dataSource]='units' [value]="data.unit" [fields]='fields' [allowFiltering]='true'
+                  {{getUnitItem(this.unit)}}
+                  <!-- <ejs-dropdownlist [dataSource]='units' [value]="data.unit" [fields]='fields' [allowFiltering]='true'
                     (change)='onChange($event)'>
-                  </ejs-dropdownlist>
+                  </ejs-dropdownlist> -->
                 </ng-template>
                 <ng-template #template let-data>
                   {{getUnitItem(data.unit)}}
