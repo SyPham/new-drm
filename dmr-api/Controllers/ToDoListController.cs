@@ -19,11 +19,16 @@ namespace DMR_API.Controllers
     {
         private readonly IToDoListService _toDoList;
         private readonly IBottomFactoryService _bottomFactoryService;
+        private readonly IMailExtension _mailingService;
         private readonly IHubContext<ECHub> _hubContext;
-        public ToDoListController(IToDoListService toDoList, IBottomFactoryService bottomFactoryService, IHubContext<ECHub> hubContext)
+        public ToDoListController(IToDoListService toDoList,
+            IBottomFactoryService bottomFactoryService,
+            IMailExtension mailingService,
+            IHubContext<ECHub> hubContext)
         {
             _toDoList = toDoList;
             _bottomFactoryService = bottomFactoryService;
+            _mailingService = mailingService;
             _hubContext = hubContext;
         }
 
@@ -133,8 +138,6 @@ namespace DMR_API.Controllers
             return Ok(batchs);
         }
 
-
-
         [HttpGet("{mixingInfoID}")]
         public IActionResult FindPrintGlue(int mixingInfoID)
         {
@@ -185,11 +188,25 @@ namespace DMR_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllBuildingReport()
+        public async Task<IActionResult> GetAllBuildingReport([FromQuery]List<string> emails)
         {
             var bin = await _toDoList.ExportExcelToDoListWholeBuilding();
+            var subject = "Mixing Room Report";
+            var fileName = $"{DateTime.Now.ToString("MMddyyyy")}_AchievementRateReport.xlsx";
+            var message = "Please refer to the Mixing Room Report";
+            if (bin.Length > 0)
+            {
+                await _mailingService.SendEmailWithAttactExcelFileAsync(emails, subject, message, fileName, bin);
+            }
+
             return File(bin, "application/octet-stream", "doneListReport.xlsx");
         }
+        //[HttpGet]
+        //public async Task<IActionResult> GetAllBuildingReport()
+        //{
+        //    var bin = await _toDoList.ExportExcelToDoListWholeBuilding();
+        //    return File(bin, "application/octet-stream", "doneListReport.xlsx");
+        //}
         [HttpGet("{start}/{end}")]
         public async Task<IActionResult> GetAllBuildingReportByRange(DateTime start, DateTime end)
         {

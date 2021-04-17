@@ -18,7 +18,6 @@ namespace SignalrServer
                 }).ConfigureWebHost(config =>
                 {
                     config.UseUrls("http://*:5001");
-
                 }).UseWindowsService();
     }
 }

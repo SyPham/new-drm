@@ -37,7 +37,7 @@
               </ng-template>
               <ng-template #editTemplate let-data>
                 <kendo-timepicker *ngIf="frequencyItem === 'Daily'" style="width: 150px;" (valueChange)="onChangeTimeSend($event)"
-                  [value]="data.timeSend" [format]="'HH:mm'"></kendo-timepicker>
+                  [value]="data.timeSend" [format]="'hh:mm a'"></kendo-timepicker>
 
                   <ejs-datetimepicker *ngIf="frequencyItem !== 'Daily'" (change)="onChangeDatetimeSend($event)" [value]='data.timeSend' placeholder='Enter date time'></ejs-datetimepicker>
               </ng-template>
