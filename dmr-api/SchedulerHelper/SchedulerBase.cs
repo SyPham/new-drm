@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using DMR_API.Helpers;
+using Microsoft.Extensions.Configuration;
 using Quartz;
 using Quartz.Impl;
-using System.Threading;
+
 namespace DMR_API.SchedulerHelper
 {
     public class SchedulerBase<TClass> where TClass : IJob
@@ -12,14 +14,19 @@ namespace DMR_API.SchedulerHelper
         IScheduler _scheduler;
         IJobDetail _job;
         ITrigger _trigger;
+        private readonly IConfiguration _configuration;
 
         public SchedulerBase()
         {
         }
+        public SchedulerBase(IConfiguration Configuration)
+        {
+            _configuration = Configuration;
+        }
+
         public async Task Start(int hour, int minute)
         {
-
-            _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
+             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
             await _scheduler.Start();
             _job = JobBuilder.Create<TClass>().Build();
 
@@ -36,10 +43,15 @@ namespace DMR_API.SchedulerHelper
         }
         public async Task Start(int repeatMinute, TimeSpan startHourAt, TimeSpan endHourAt)
         {
-            var ct = DateTime.Now.ToLocalTime();
+            var appsettings = _configuration.GetSection("Appsettings").Get<Appsettings>();
+            IDictionary<string, object> map = new Dictionary<string, object>();
+            map.Add("Signalr_URL", appsettings.Signalr_URL);
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
             await _scheduler.Start();
-            _job = JobBuilder.Create<TClass>().Build();
+
+            _job = JobBuilder.Create<TClass>()
+                .SetJobData(new JobDataMap(map))
+                .Build();
             var st = DateTime.Now.Date.Add(startHourAt);
             var end = DateTimeOffset.Now.Date.Add(endHourAt);
             _trigger = TriggerBuilder.Create()
@@ -99,12 +111,18 @@ namespace DMR_API.SchedulerHelper
         }
         public async Task Start(int interval = 1, IntervalUnit intervalUnit = IntervalUnit.Hour, int hour = 6, int minute = 0)
         {
-
+            var appsettings = _configuration.GetSection("Appsettings").Get<Appsettings>();
+            IDictionary<string, object> map = new Dictionary<string, object>();
+            map.Add("Signalr_URL", appsettings.Signalr_URL);
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
             await _scheduler.Start();
-            _job = JobBuilder.Create<TClass>().Build();
+
+            _job = JobBuilder.Create<TClass>()
+                .SetJobData(new JobDataMap(map))
+                .Build();
 
             _trigger = TriggerBuilder.Create()
+                
                 .WithDailyTimeIntervalSchedule
                   (s =>
                     s.WithInterval(interval, intervalUnit)

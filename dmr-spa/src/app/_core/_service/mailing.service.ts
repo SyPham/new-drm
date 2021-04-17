@@ -34,4 +34,7 @@ export class MailingService {
   delete(id: number) {
     return this.http.delete(this.baseUrl + 'Mailing/Delete/' + id);
   }
+  deleteRange(obj) {
+    return this.http.post(this.baseUrl + 'Mailing/DeleteRange/', obj);
+  }
 }

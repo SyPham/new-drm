@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using TodolistScheduleService.Dto;
 using TodolistScheduleService.Jobs;
+using TodolistScheduleService.Services;
 
 namespace TodolistScheduleService.Schedulers
 {
@@ -16,118 +15,152 @@ namespace TodolistScheduleService.Schedulers
     public class SchedulerMultiple
     {
         IScheduler _scheduler;
-        IJobDetail _jobDaily;
-        ITrigger _triggerDaily;
+        private readonly ILogger<Todo> _logger;
 
-        IJobDetail _jobWeekly;
-        ITrigger _triggerWeekly;
+        public SchedulerMultiple(ILogger<Todo> logger)
+        {
+            _logger = logger;
+        }
 
-        IJobDetail _jobMonthly;
-
-        ITrigger _triggerMonthly;
-
-        IJobDetail _jobDispatch;
-        ITrigger _triggerDisaptch;
-
-        IJobDetail _jobTodo;
-        ITrigger _triggerTodo;
-
+        /// <summary>
+        /// Bắt đầu lập lịch
+        /// </summary>
+        /// <returns></returns>
         public async Task StartAllJob()
         {
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
             await _scheduler.Start();
         }
 
-        public async Task StartDaily(int hour, int minute)
-        {
-
-            _jobDaily = JobBuilder.Create<SendMailJob>()
-                                .Build();
-
-            _triggerDaily = TriggerBuilder.Create()
-                .WithDailyTimeIntervalSchedule
-                  (s =>
-                     s.WithIntervalInHours(24)
-                    .OnEveryDay()
-                    .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                  )
-
-                .Build();
-
-            await _scheduler.ScheduleJob(_jobDaily, _triggerDaily);
-        }
+        /// <summary>
+        /// Lập lịch hàng ngày
+        /// </summary>
+        /// <param name="hour">Giờ</param>
+        /// <param name="minute">Phút</param>
+        /// <param name="map">Các tham số muốn tiêm vào JobDetail</param>
+        /// <returns></returns>
         public async Task StartDaily(int hour, int minute, IDictionary<string, object> map)
         {
-            _jobDaily = JobBuilder.Create<SendMailJob>()
+            var json = map["Data"].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+            var jobKey = new JobKey(data.Report, data.Frequency);
+
+            var jobDaily = JobBuilder.Create<SendMailJob>()
+                                .WithIdentity(jobKey)
                                 .SetJobData(new JobDataMap(map))
                                 .Build();
 
-            _triggerDaily = TriggerBuilder.Create()
-                .WithDailyTimeIntervalSchedule
-                  (s =>
-                     s.WithIntervalInHours(24)
-                    .OnEveryDay()
-                    .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                  )
+            var triggerDaily = TriggerBuilder.Create()
+                 .WithIdentity(triggerKey)
+                 .WithDailyTimeIntervalSchedule
+                   (s =>
+                      s.WithIntervalInHours(24)
+                     .OnEveryDay()
+                     .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
+                   )
 
-                .Build();
+                 .Build();
+            await _scheduler.ScheduleJob(jobDaily, triggerDaily);
+            _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} everyday.");
 
-            await _scheduler.ScheduleJob(_jobDaily, _triggerDaily);
+           
         }
+
+        /// <summary>
+        /// Lập lịch hàng tuần
+        /// </summary>
+        /// <param name="dayOfWeek">Ngày trong tuần</param>
+        /// <param name="hour">Giờ</param>
+        /// <param name="minute">Phút</param>
+        /// <param name="map">Các tham số muốn tiêm vào JobDetail</param>
+        /// <returns></returns>
         public async Task StartWeekly(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map)
         {
-           
-            _jobWeekly = JobBuilder.Create<SendMailWeeklyJob>()
+            var json = map["Data"].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+            var jobKey = new JobKey(data.Report, data.Frequency);
+            var jobWeekly = JobBuilder.Create<SendMailWeeklyJob>()
+                .WithIdentity(jobKey)
                             .SetJobData(new JobDataMap(map))
                             .Build();
 
-            _triggerWeekly = TriggerBuilder.Create()
-                .WithDailyTimeIntervalSchedule
-                  (s =>
-                    s.WithInterval(1, IntervalUnit.Week)
-                    .OnDaysOfTheWeek(dayOfWeek)
-                    .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                  )
+            var triggerWeekly = TriggerBuilder.Create()
+                .WithIdentity(triggerKey)
+                .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(dayOfWeek, hour, minute))
                 .Build();
-            await _scheduler.ScheduleJob(_jobWeekly, _triggerWeekly);
+
+            await _scheduler.ScheduleJob(jobWeekly, triggerWeekly);
+            _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} every week.");
+
+
         }
-        public async Task StartMonthly(int hour, int minute)
+        /// <summary>
+        /// Lập lịch hàng tháng
+        /// </summary>
+        /// <param name="hour">Giờ</param>
+        /// <param name="minute">Phút</param>
+        /// <param name="map">Các tham số muốn tiêm vào JobDetail</param>
+        /// <returns></returns>
+        public async Task StartMonthly(int hour, int minute, IDictionary<string, object> map)
         {
-            _jobMonthly = JobBuilder.Create<SendMailMonthlyJob>().Build();
-            _triggerMonthly = TriggerBuilder.Create()
+            var json = map["Data"].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+            var jobKey = new JobKey(data.Report, data.Frequency);
+            var jobMonthly = JobBuilder.Create<SendMailMonthlyJob>()
+                .WithIdentity(jobKey)
+                .SetJobData(new JobDataMap(map))
+                .Build();
+
+            var triggerMonthly = TriggerBuilder.Create()
+                .WithIdentity(triggerKey)
                 .WithCronSchedule
                   ($"0 {minute} {hour} L * ?") // Meaning: Fire at 10:15am on the last day of every month
+                .ForJob(jobMonthly.Key)
                 .Build();
-            await _scheduler.ScheduleJob(_jobMonthly, _triggerMonthly);
+            await _scheduler.ScheduleJob(jobMonthly, triggerMonthly);
+            _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} on the last day of every month.");
+
+
         }
+
         public async Task StartDisaptch(int repeatMinute, TimeSpan startHourAt, TimeSpan endHourAt)
         {
 
-            _jobDispatch = JobBuilder.Create<ReloadDispatchJob>().Build();
+            var jobDispatch = JobBuilder.Create<ReloadDispatchJob>().Build();
             var st = DateTime.Now.Date.Add(startHourAt);
             var end = DateTimeOffset.Now.Date.Add(endHourAt);
-            Console.WriteLine(st);
-            _triggerDisaptch = TriggerBuilder.Create()
-                        .StartAt(st)
-                        .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
-                        .EndAt(end)
-                        .Build();
+            var triggerDisaptch = TriggerBuilder.Create()
+                         .StartAt(st)
+                         .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
+                         .EndAt(end)
+                         .Build();
 
-            await _scheduler.ScheduleJob(_jobDispatch, _triggerDisaptch);
+            await _scheduler.ScheduleJob(jobDispatch, triggerDisaptch);
         }
         public async Task StartTodo(int repeatMinute, TimeSpan startHourAt, TimeSpan endHourAt)
         {
-            _jobTodo = JobBuilder.Create<ReloadTodoJob>().Build();
+            var jobTodo = JobBuilder.Create<ReloadTodoJob>().Build();
             var st = DateTime.Now.Date.Add(startHourAt);
             var end = DateTimeOffset.Now.Date.Add(endHourAt);
-            Console.WriteLine(st);
-            _triggerTodo = TriggerBuilder.Create()
-                        .StartAt(st)
-                        .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
-                        .EndAt(end)
-                        .Build();
-            await _scheduler.ScheduleJob(_jobTodo, _triggerTodo);
+            var triggerTodo = TriggerBuilder.Create()
+                         .StartAt(st)
+                         .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
+                         .EndAt(end)
+                         .Build();
+            await _scheduler.ScheduleJob(jobTodo, triggerTodo);
         }
+
+
+      /// <summary>
+      /// Kiểm tra đã bắt đầu lập lịch
+      /// </summary>
+      /// <returns></returns>
         public async Task<bool> checkScheduleStart()
         {
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
@@ -135,54 +168,141 @@ namespace TodolistScheduleService.Schedulers
         }
         // You can't change (update) a job once it has been scheduled. 
         //You can only re-schedule it (with any changes you might want to make) or delete it and create a new one.
-        public async Task UpdateDailyTrigger(int hour, int minute, IDictionary<string, object> maps)
+        public async Task UpdateDailyTrigger(int hour, int minute, IDictionary<string, object> map)
         {
-            var builderJob = _jobDaily.GetJobBuilder();
-            builderJob.SetJobData(new JobDataMap(maps));
-            builderJob.Build();
+            var json = map["Data"].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var triggerKey = new TriggerKey(data.Report, data.Frequency);
 
-            var builder = _triggerDaily.GetTriggerBuilder();
-            builder.StartNow();
-            var newtriggerDaily = builder
-               .WithDailyTimeIntervalSchedule
-                 (s =>
-                    s.WithIntervalInHours(24)
-                   .OnEveryDay()
-                   .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                 )
-               .Build();
-            await _scheduler.RescheduleJob(_triggerDaily.Key, newtriggerDaily);
+            var jobKey = new JobKey(data.Report, data.Frequency);
+            var trigger = await _scheduler.GetTrigger(triggerKey);
+
+
+            var checkExists = await _scheduler.CheckExists(jobKey);
+            if (checkExists)
+            {
+
+                var builder = trigger.GetTriggerBuilder();
+                builder.StartNow();
+
+                var newtriggerDaily = builder
+                   .WithDailyTimeIntervalSchedule
+                     (s =>
+                        s.WithIntervalInHours(24)
+                       .OnEveryDay()
+                       .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
+                     )
+                   .Build();
+
+                await _scheduler.RescheduleJob(trigger.Key, newtriggerDaily);
+                _logger.LogInformation($"Update {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                _logger.LogInformation($"Update {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} everyday.");
+
+            }
+            else
+            {
+                await StartDaily(hour, minute, map);
+            }
         }
-        public async Task UpdateWeeklyTrigger(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string,object> maps)
-        {
-            var builderJob = _jobDaily.GetJobBuilder();
-            builderJob.SetJobData(new JobDataMap(maps));
-            builderJob.Build();
 
-            var builder = _triggerWeekly.GetTriggerBuilder();
-            builder.StartNow();
-            var newtriggerWeekly = builder
-               .WithDailyTimeIntervalSchedule
-                 (s =>
-                   s.WithInterval(1, IntervalUnit.Week)
-                   .OnDaysOfTheWeek(dayOfWeek)
-                   .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                 )
-               .Build();
-            await _scheduler.RescheduleJob(_triggerWeekly.Key, newtriggerWeekly);
+        /// <summary>
+        /// Cập nhật lịch hàng tuần
+        /// </summary>
+        /// <param name="dayOfWeek">Ngày trong tuần</param>
+        /// <param name="hour">Giờ</param>
+        /// <param name="minute">Phút</param>
+        /// <param name="map">Các tham số muốn tiêm vào JobDetail</param>
+        /// <returns></returns>
+        public async Task UpdateWeeklyTrigger(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map)
+        {
+            var json = map["Data"].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+
+            var jobKey = new JobKey(data.Report, data.Frequency);
+            var trigger = await _scheduler.GetTrigger(triggerKey);
+            var job = await _scheduler.GetJobDetail(jobKey);
+            var checkExists = await _scheduler.CheckExists(jobKey);
+            if (checkExists)
+            {
+                var builderJob = job.GetJobBuilder();
+                builderJob.UsingJobData(new JobDataMap(map));
+                builderJob.Build();
+
+                var builder = trigger.GetTriggerBuilder();
+                builder.StartNow();
+                var newtriggerWeekly = builder
+                    .WithSchedule(CronScheduleBuilder.WeeklyOnDayAndHourAndMinute(dayOfWeek, hour, minute))
+                   .Build();
+
+                await _scheduler.RescheduleJob(trigger.Key, newtriggerWeekly);
+                _logger.LogInformation($"Update {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                _logger.LogInformation($"Update {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} every week.");
+
+            }
+            else
+            {
+                await StartWeekly(dayOfWeek, hour, minute, map);
+            }
         }
-
-        public async Task UpdateMonthlyTrigger(int hour, int minute)
+        /// <summary>
+        /// Cập nhật lịch hàng tháng
+        /// </summary>
+        /// <param name="hour">Giờ</param>
+        /// <param name="minute">Phút</param>
+        /// <param name="map">Các tham số muốn tiêm vào JobDetail</param>
+        /// <returns></returns>
+        public async Task UpdateMonthlyTrigger(int hour, int minute, IDictionary<string, object> map)
         {
-            var builder = _triggerMonthly.GetTriggerBuilder();
-            builder.StartNow();
-            var newtriggerMonthly = builder
-                .WithCronSchedule
-                  ($"0 {minute} {hour} L * ?") // Meaning: Fire at 10:15am on the last day of every month
-                .Build();
+            var json = map["Data"].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var triggerKey = new TriggerKey(data.Report, data.Frequency);
 
-            // if you don't want that it starts now, pass 'false' for the 'startNow' parameter
-            await _scheduler.RescheduleJob(_triggerMonthly.Key, newtriggerMonthly);
+            var jobKey = new JobKey(data.Report, data.Frequency);
+            var trigger = await _scheduler.GetTrigger(triggerKey);
+            var job = await _scheduler.GetJobDetail(jobKey);
+            var checkExists = await _scheduler.CheckExists(jobKey);
+            if (checkExists)
+            {
+                var builderJob = job.GetJobBuilder();
+                builderJob.UsingJobData(new JobDataMap(map));
+                builderJob.Build();
+
+                var builder = trigger.GetTriggerBuilder();
+                builder.StartNow();
+                var newtriggerMonthly = builder
+                    .WithCronSchedule
+                      ($"0 {minute} {hour} L * ?") // Meaning: Fire at 10:15am on the last day of every month
+                      .ForJob(jobKey)
+                    .Build();
+
+                // if you don't want that it starts now, pass 'false' for the 'startNow' parameter
+                await _scheduler.RescheduleJob(trigger.Key, newtriggerMonthly);
+                _logger.LogInformation($"Update {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                _logger.LogInformation($"Update {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} on the last day of every month.");
+
+
+            }
+            else
+            {
+                await StartMonthly(hour, minute, map);
+            }
+
+        }
+        /// <summary>
+        /// Hủy lịch
+        /// </summary>
+        /// <param name="triggerKey"></param>
+        /// <returns></returns>
+        public async Task UnscheduleJob(TriggerKey triggerKey)
+        {
+            var trigger = await _scheduler.GetTrigger(triggerKey);
+            if (trigger != null)
+            {
+                await _scheduler.UnscheduleJob(trigger.Key);
+                _logger.LogInformation($"UnscheduleJob {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            }
+            await Task.CompletedTask;
         }
         public async Task Stop()
         {

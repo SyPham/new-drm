@@ -171,19 +171,21 @@ namespace DMR_API.Helpers.Extensions
             return services;
         }
 
-        public static IServiceCollection AddShedulerExention(this IServiceCollection services)
+        public static IServiceCollection AddShedulerExention(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddQuartz(async q =>
             {
                 q.SchedulerId = "dmr-api";
+
                 // Thuc thi luc 6:00, lap lai 1 tieng 1 lan
-                await new SchedulerBase<ReloadTodoJob>().Start(1, IntervalUnit.Hour, 6, 00);
+                var option = new ReloadTodoJob();
+                await new SchedulerBase<ReloadTodoJob>(configuration).Start(1, IntervalUnit.Hour, 6, 00);
 
                 // Thuc thi luc 6:00 đên 21 gio la ngung lap lai 30 phut 1 lan
                 var startAt = TimeSpan.FromHours(6);
                 var endAt = TimeSpan.FromHours(21);
                 var repeatMins = 30;
-                await new SchedulerBase<ReloadDispatchJob>().Start(repeatMins, startAt, endAt);
+                await new SchedulerBase<ReloadDispatchJob>(configuration).Start(repeatMins, startAt, endAt);
             });
 
             // ASP.NET Core hosting

@@ -22,10 +22,10 @@ export class MailingComponent implements OnInit {
   filterSettings = { type: 'Excel' };
   frequencyOption = ['Daily', 'Weekly', 'Monthly'];
   frequencyItem = '';
-  reportOption = ['Done List', 'Cost'];
+  reportOption = ['Done List', 'Cost', 'Achievement Rate'];
   reportItem = '';
-  fields: object = { text: 'Username', value: 'ID' };
-  userData: { ID: any; Username: any; Email: any; }[];
+  fields: object = { text: 'username', value: 'id' };
+  userData: { id: any; username: any; email: any; }[];
   box = 'Box';
   timeSend = new Date();
   datetimeSend = new Date();
@@ -50,9 +50,9 @@ export class MailingComponent implements OnInit {
     this.buildingUserService.getAllUsers(1, 1000).subscribe(res => {
       const data = res.result.map((i: any) => {
         return {
-          ID: i.ID,
-          Username: i.Username,
-          Email: i.Email,
+          id: i.id,
+          username: i.username,
+          email: i.email,
         };
       });
       this.userData = data;
@@ -71,6 +71,7 @@ export class MailingComponent implements OnInit {
           report: item.report,
           userIDList: item.userIDList,
           userList: item.userList,
+          pathName: item.pathName,
           timeSend: new Date(item.timeSend),
         };
       });
@@ -79,7 +80,7 @@ export class MailingComponent implements OnInit {
   }
   create() {
     this.mailingService.create(this.mailing).subscribe(() => {
-      this.alertify.success('Add Mailing Successfully');
+      this.alertify.success('Add mailing Successfully');
       this.getAllMailing();
       this.mailing.name = '';
     });
@@ -97,47 +98,54 @@ export class MailingComponent implements OnInit {
     this.datetimeSend = args.value;
   }
   removing(args) {
-    const filteredItems = this.userIDList.filter(item => item !== args.itemData.ID);
+    const filteredItems = this.userIDList.filter(item => item !== args.itemData.id);
     this.userIDList = filteredItems;
-    this.userList = this.userList.filter(item => item.id !== args.itemData.ID);
+    this.userList = this.userList.filter(item => item.id !== args.itemData.id);
   }
   onSelectUsername(args) {
     const data = args.itemData;
-    this.userIDList.push(data.ID);
-    this.userList.push({ mailingID: 0 , id: data.ID, email: data.Email});
+    this.userIDList.push(data.id);
+    this.userList.push({ mailingID: 0 , id: data.id, email: data.email});
   }
   update() {
     this.mailingService.update(this.mailing).subscribe(() => {
-      this.alertify.success('Add Mailing Successfully');
+      this.alertify.success('Add mailing Successfully');
       this.getAllMailing();
       this.mailing.name = '';
     });
   }
-  delete(id) {
-    this.alertify.confirm('Delete Mailing', 'Are you sure you want to delete this Mailing "' + id + '" ?', () => {
-      this.mailingService.delete(id).subscribe(() => {
+  delete(obj) {
+    this.alertify.confirm('Delete mailing', 'Are you sure you want to delete this mailings ?', () => {
+      this.mailingService.deleteRange(obj).subscribe(() => {
         this.getAllMailing();
-        this.alertify.success('The Mailing has been deleted');
+        this.alertify.success('The mailing has been deleted');
       }, error => {
-        this.alertify.error('Failed to delete the Mailing');
+        this.alertify.error('Failed to delete the mailing');
       });
     });
   }
   createRange(obj) {
     this.mailingService.createRange(obj).subscribe(() => {
-      this.alertify.success('Add Mailing Successfully');
+      this.alertify.success('Add mailing Successfully');
       this.getAllMailing();
-      this.mailing.name = '';
+      this.clearForm();
     }, err => {
         this.alertify.error(err);
         this.getAllMailing();
     });
   }
+  clearForm() {
+    this.reportItem = '';
+    this.frequencyItem = '';
+    this.timeSend = new Date();
+    this.datetimeSend = new Date();
+    this.mailing = {};
+  }
   updateRange(obj) {
     this.mailingService.updateRange(obj).subscribe(() => {
-      this.alertify.success('Add Mailing Successfully');
+      this.alertify.success('Add mailing Successfully');
       this.getAllMailing();
-      this.mailing.name = '';
+      this.clearForm();
     }, err => {
       this.alertify.error(err);
       this.getAllMailing();
@@ -147,9 +155,9 @@ export class MailingComponent implements OnInit {
 
   // grid event
   toolbarClick(args): void {
-    switch (args.item.text) {
+    switch (args.item.id) {
       /* tslint:disable */
-      case 'Excel Export':
+      case 'grid_excelexport':
         this.grid.excelExport();
         break;
       /* tslint:enable */
@@ -159,12 +167,6 @@ export class MailingComponent implements OnInit {
   }
   actionBegin(args) {
     if (args.requestType === 'beginEdit') {
-      if (args.requestType === 'add') {
-        this.reportItem = '';
-        this.frequencyItem = '';
-        this.timeSend = new Date();
-        this.datetimeSend = new Date();
-      }
       const data = args.rowData;
       this.userIDList = data.userIDList;
       this.reportItem = data.report;
@@ -172,7 +174,7 @@ export class MailingComponent implements OnInit {
       this.timeSend = data.timeSend;
       this.datetimeSend = data.timeSend;
       this.userIDList = data.userIDList;
-      this.userList = data.userList;
+      this.userList = data.userList || [];
       if (data.frequency === 'Daily') {
         this.timeSend = data.timeSend;
       } else {
@@ -181,12 +183,16 @@ export class MailingComponent implements OnInit {
     }
     if (args.requestType === 'save') {
       if (args.action === 'add') {
+        if (this.userList.length === 0) {
+          this.alertify.warning('Please select recipients', true);
+          args.cancel = true;
+        }
         const obj = [];
         for (const item of this.userList) {
           const data = {
             report: this.reportItem,
             frequency: this.frequencyItem,
-            timeSend: this.frequencyItem === 'Daily' ?
+            timeSend: this.frequencyItem === 'Daily' || this.frequencyItem === 'Monthly' ?
             this.datePipe.transform(this.timeSend, 'MM-dd-yyyy HH:mm') : this.datePipe.transform(this.datetimeSend, 'MM-dd-yyyy HH:mm'),
             userID: item.id,
             id: item.mailingID,
@@ -197,6 +203,7 @@ export class MailingComponent implements OnInit {
         this.createRange(obj);
       }
       if (args.action === 'edit') {
+        const itemData = args.data;
         const obj = [];
         for (const item of this.userList) {
           const data = {
@@ -206,16 +213,31 @@ export class MailingComponent implements OnInit {
               this.datePipe.transform(this.timeSend, 'MM-dd-yyyy HH:mm') : this.datePipe.transform(this.datetimeSend, 'MM-dd-yyyy HH:mm'),
             userID: item.id,
             id: item.mailingID,
-            email: item.email
+            email: item.email,
+            pathName: itemData.pathName
           };
           obj.push(data);
         }
         this.updateRange(obj);
       }
     }
-    // if (args.requestType === 'delete') {
-    //   this.delete(args.data[0].id);
-    // }
+    if (args.requestType === 'delete') {
+      const itemData = args.data[0];
+      const obj = [];
+      for (const item of itemData.userList) {
+        const data = {
+          report: itemData.reportItem,
+          frequency: itemData.frequencyItem,
+          timeSend: itemData.timeSend,
+          userID: item.id,
+          id: item.mailingID,
+          email: item.email,
+          pathName: itemData.pathName
+        };
+        obj.push(data);
+      }
+      this.delete(obj);
+    }
   }
   actionComplete(e: any): void {
     if (e.requestType === 'add') {

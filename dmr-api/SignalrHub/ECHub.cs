@@ -56,7 +56,7 @@ namespace DMR_API.SignalrHub
 
             var file = await _todoService.ExportExcelToDoListWholeBuilding();
             var subject = "Mixing Room Report";
-            var fileName = $"mixingRoomReport{DateTime.Now.ToString("MMddyyyy")}.xlsx";
+            var fileName = $"{DateTime.Now.ToString("MMddyyyy")}_mixingRoomReport.xlsx";
             var message = "Please refer to the Mixing Room Report";
             var mailList = new List<string>
             {

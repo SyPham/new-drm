@@ -196,15 +196,15 @@ namespace DMR_API._Services.Services
                    && x.GlueName.Contains(" + ")
                    && x.BuildingID == buildingID)
                .ToListAsync();
-            if (role.RoleID == (int)Enums.Role.Dispatcher)
+            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+            if (lines.Count > 0)
             {
-                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
                 model = model.Where(x => lines.Contains(x.LineID)).ToList();
             }
             else
             {
-                var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
-                model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                var allLines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                model = model.Where(x => allLines.Contains(x.LineID)).ToList();
             }
             // map dto
             var result = MapToTodolistDto(model);
@@ -226,50 +226,35 @@ namespace DMR_API._Services.Services
                                                 ).Count();
 
             // decentralization
-            //if (role.RoleID == (int)Enums.Role.Worker)
-            //{
-            //    var data = result.Where(x => x.PrintTime is null
-            //                                 && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay
-            //                             ).ToList();
-            //    var response = new ToDoListForReturnDto();
-            //    response.TodoDetail(data, doneTotal, todoTotal, delayTotal, total);
-            //    return response;
-            //}
-            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
-            {
-                var EVA_UVTotal = result.Where(x => x.IsEVA_UV).Count();
-                var response = new ToDoListForReturnDto();
-                var data = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
-                var dispatchListModel = await _repoDispatchList.FindAll(x =>
-                                                                x.IsDelete == false
-                                                                && x.EstimatedStartTime.Date == currentDate
-                                                                && x.EstimatedFinishTime.Date == currentDate
-                                                                && x.BuildingID == buildingID)
-                                                                 .ToListAsync();
-                //if (role.RoleID == (int)Enums.Role.Dispatcher)
-                //{
-                //    dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
-                //}
-                // map to dto
-                var dispatchList = MapToDispatchListDto(dispatchListModel);
-                if (value == morning)
-                    dispatchList = dispatchList.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-                var dispatchTotal = dispatchList.Count();
-                var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
-                var delayDispatchTotal = dispatchListResult.Count();
-                var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
+            var EVA_UVTotal = result.Where(x => x.IsEVA_UV).Count();
+            var response = new ToDoListForReturnDto();
+            var data = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
+            var dispatchListModel = await _repoDispatchList.FindAll(x =>
+                                                            x.IsDelete == false
+                                                            && x.EstimatedStartTime.Date == currentDate
+                                                            && x.EstimatedFinishTime.Date == currentDate
+                                                            && x.BuildingID == buildingID)
+                                                             .ToListAsync();
 
-                var todoDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-                var recaculatetotal = todoTotal + delayTotal + doneTotal + todoDispatchTotal + delayDispatchTotal + dispatchListDoneTotal;
+            // map to dto
+            var dispatchList = MapToDispatchListDto(dispatchListModel);
+            if (value == morning)
+                dispatchList = dispatchList.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-                doneTotal = doneTotal + dispatchListDoneTotal;
-                response.TodoDetail(data, doneTotal, todoTotal, delayTotal, recaculatetotal);
+            var dispatchTotal = dispatchList.Count();
+            var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
+            var delayDispatchTotal = dispatchListResult.Count();
+            var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
 
-                response.DispatcherDetail(data, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                return response;
-            }
-            return new ToDoListForReturnDto(result.Where(x => x.PrintTime is null).ToList(), doneTotal, todoTotal, delayTotal, total);
+            var todoDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
+            var recaculatetotal = todoTotal + delayTotal + doneTotal + todoDispatchTotal + delayDispatchTotal + dispatchListDoneTotal;
+
+            doneTotal = doneTotal + dispatchListDoneTotal;
+            response.TodoDetail(data, doneTotal, todoTotal, delayTotal, recaculatetotal);
+
+            response.DispatcherDetail(data, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+            return response;
         }
 
         public async Task<DispatchListForReturnDto> DispatchList(int buildingID)
@@ -290,15 +275,15 @@ namespace DMR_API._Services.Services
                        && x.EstimatedFinishTime.Date == currentDate
                        && x.BuildingID == buildingID)
                    .ToListAsync();
-                if (role.RoleID == (int)Enums.Role.Dispatcher)
+                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+                if (lines.Count > 0)
                 {
-                    var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
                     model = model.Where(x => lines.Contains(x.LineID)).ToList();
                 }
                 else
                 {
-                    var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
-                    model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                    var allLines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                    model = model.Where(x => allLines.Contains(x.LineID)).ToList();
                 }
                 // map to dto
                 var dispatchList = MapToDispatchListDto(model);
@@ -316,73 +301,38 @@ namespace DMR_API._Services.Services
                 var delayDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
                 var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
 
-                // decentralization
-                //if (role.RoleID == (int)Enums.Role.Dispatcher)
-                //{
-                //    var todoModel = await _repoToDoList.FindAll(x =>
-                //                                         x.IsDelete == false
-                //                                         && x.EstimatedStartTime.Date == currentDate
-                //                                         && x.EstimatedFinishTime.Date == currentDate
-                //                                         && x.GlueName.Contains(" + ")
-                //                                         && x.BuildingID == buildingID)
-                //                   .ToListAsync();
+                var EVA_UVTotal = dispatchListResult.Where(x => x.IsEVA_UV).Count();
+                var response = new DispatchListForReturnDto();
+                response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+                var todoModel = await _repoToDoList.FindAll(x =>
+                  x.IsDelete == false
+                  && x.EstimatedStartTime.Date == currentDate
+                  && x.EstimatedFinishTime.Date == currentDate
+                  && x.GlueName.Contains(" + ")
+                  && x.BuildingID == buildingID)
+              .ToListAsync();
 
-                //    // map dto
-                //    var todoResult = MapToTodolistDto(todoModel);
+                // map dto
+                var todoResult = MapToTodolistDto(todoModel);
 
-                //    // filter by Middle of the day
-                //    if (value == morning)
-                //        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
+                // filter by Middle of the day
+                if (value == morning)
+                    todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
-                //    // caculate doneTodolist
-                //    var total = todoResult.Count();
-                //    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                //    var todoTotal = data.Count();
-                //    var delayTotal = todoResult.Where(x => x.PrintTime is null
-                //                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                //    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
-
-                //    var response = new DispatchListForReturnDto();
-                //    response.DoneTotal = dispatchListDoneTotal;
-                //    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                //    return response;
-                //}
-                if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
-                {
-                    var EVA_UVTotal = dispatchListResult.Where(x => x.IsEVA_UV).Count();
-                    var response = new DispatchListForReturnDto();
-                    response.DispatcherDetail(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                    var todoModel = await _repoToDoList.FindAll(x =>
-                      x.IsDelete == false
-                      && x.EstimatedStartTime.Date == currentDate
-                      && x.EstimatedFinishTime.Date == currentDate
-                      && x.GlueName.Contains(" + ")
-                      && x.BuildingID == buildingID)
-                  .ToListAsync();
-
-                    // map dto
-                    var todoResult = MapToTodolistDto(todoModel);
-
-                    // filter by Middle of the day
-                    if (value == morning)
-                        todoResult = todoResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
-
-                    // caculate
-                    var total = todoResult.Count();
-                    var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
-                    var todoTotal = data.Count();
-                    var delayTotal = todoResult.Where(x => x.PrintTime is null
-                                                        && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+                // caculate
+                var total = todoResult.Count();
+                var data = todoResult.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).ToList();
+                var todoTotal = data.Count();
+                var delayTotal = todoResult.Where(x => x.PrintTime is null
+                                                    && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
 
 
-                    var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
-                    total = doneTotal + delayTotal + todoTotal + dispatchListDoneTotal + todoDispatchTotal + delayDispatchTotal;
-                    doneTotal = doneTotal + dispatchListDoneTotal;
-                    response.TodoDetail(dispatchListResult, doneTotal, todoTotal, delayTotal, total);
+                var doneTotal = todoResult.Where(x => x.PrintTime != null).Count();
+                total = doneTotal + delayTotal + todoTotal + dispatchListDoneTotal + todoDispatchTotal + delayDispatchTotal;
+                doneTotal = doneTotal + dispatchListDoneTotal;
+                response.TodoDetail(dispatchListResult, doneTotal, todoTotal, delayTotal, total);
 
-                    return response;
-                }
-                return new DispatchListForReturnDto(dispatchListResult, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+                return response;
 
             }
             catch (Exception)
@@ -422,15 +372,15 @@ namespace DMR_API._Services.Services
               && x.EstimatedFinishTime.Date == currentDate
               && x.BuildingID == buildingID)
            .ToListAsync();
-            if (role.RoleID == (int)Enums.Role.Dispatcher)
+            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+            if (lines.Count > 0)
             {
-                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
                 dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
             }
             else
             {
-                var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
-                dispatchListModel = dispatchListModel.Where(x => lines.Contains(x.LineID)).ToList();
+                var allLines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                dispatchListModel = dispatchListModel.Where(x => allLines.Contains(x.LineID)).ToList();
             }
             // map to dto
             var dispatchListResult = MapDispatchToToDoListDto(dispatchListModel);
@@ -440,58 +390,32 @@ namespace DMR_API._Services.Services
                 dispatchListResult = dispatchListResult.Where(x => x.EstimatedStartTime.TimeOfDay <= start.TimeOfDay).ToList();
 
             // decentralzation
-            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
-            {
-                var EVA_UVTotal = dispatchListResult.Where(x => x.IsEVA_UV).Count();
-                var dispatchTotal = dispatchListResult.Count();
-                var dispatchListDoneResult = dispatchListResult.Where(x => x.FinishDispatchingTime != null).ToList();
-                var delayDispatchTotal = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                var todoDispatchTotal = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-                var doneDispatchTotal = dispatchListDoneResult.Count();
 
-                var doneList = result.ToList();
+            var EVA_UVTotal = dispatchListResult.Where(x => x.IsEVA_UV).Count();
+            var dispatchTotal = dispatchListResult.Count();
+            var dispatchListDoneResult = dispatchListResult.Where(x => x.FinishDispatchingTime != null).ToList();
+            var delayDispatchTotal = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+            var todoDispatchTotal = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
+            var doneDispatchTotal = dispatchListDoneResult.Count();
 
-                // tinh tong ca 2 danh sach hoan thanh
-                var total = doneList.Count();
+            var doneList = result.ToList();
 
-                var todoTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-                var delayTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-                var doneTotal = result.Where(x => x.PrintTime != null).Count();
+            // tinh tong ca 2 danh sach hoan thanh
+            var total = doneList.Count();
 
-                var response = new ToDoListForReturnDto();
-                int jobTypeOfTodo = 1, jobTypeOfDispatch = 2;
-                var data = doneList.Concat(dispatchListResult).Where(x => x.PrintTime != null && x.JobType == jobTypeOfTodo || x.FinishDispatchingTime != null && x.JobType == jobTypeOfDispatch).ToList();
-                var recaculatetotal = todoTotal + delayTotal + doneTotal + todoDispatchTotal + delayDispatchTotal + doneDispatchTotal;
-                response.TodoDetail(data, doneTotal + doneDispatchTotal, todoTotal, delayTotal, recaculatetotal);
-                response.DispatcherDetail(data, 0, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+            var todoTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
+            var delayTotal = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
+            var doneTotal = result.Where(x => x.PrintTime != null).Count();
 
-                return response;
-            }
-            //if (role.RoleID == (int)Enums.Role.Worker)
-            //{
-            //    var doneListForWorker = result.Where(x => x.PrintTime != null).ToList();
-            //    var doneTotalForWorker = doneListForWorker.Count;
+            var response = new ToDoListForReturnDto();
+            int jobTypeOfTodo = 1, jobTypeOfDispatch = 2;
+            var data = doneList.Concat(dispatchListResult).Where(x => x.PrintTime != null && x.JobType == jobTypeOfTodo || x.FinishDispatchingTime != null && x.JobType == jobTypeOfDispatch).ToList();
+            var recaculatetotal = todoTotal + delayTotal + doneTotal + todoDispatchTotal + delayDispatchTotal + doneDispatchTotal;
+            response.TodoDetail(data, doneTotal + doneDispatchTotal, todoTotal, delayTotal, recaculatetotal);
+            response.DispatcherDetail(data, 0, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
 
-            //    var totalForWorker = result.Count();
-            //    var todoTotalForWorker = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay && x.GlueName.Contains(" + ")).Count();
-            //    var delayTotalForWorker = result.Where(x => x.PrintTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay && x.GlueName.Contains(" + ")).Count();
+            return response;
 
-            //    return new ToDoListForReturnDto(doneListForWorker, doneTotalForWorker, todoTotalForWorker, delayTotalForWorker, totalForWorker);
-            //}
-            //if (role.RoleID == (int)Enums.Role.Dispatcher)
-            //{
-            //    var doneListForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime != null).ToList();
-            //    var doneTotalForDispatcher = doneListForDispatcher.Count;
-
-            //    var totalForDispatcher = dispatchListResult.Count();
-            //    var todoTotalForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-            //    var delayTotalForDispatcher = dispatchListResult.Where(x => x.FinishDispatchingTime is null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).Count();
-            //    var resoponse = new ToDoListForReturnDto();
-            //    resoponse.DoneTotal = doneTotalForDispatcher;
-            //    resoponse.DispatcherDetail(doneListForDispatcher, doneTotalForDispatcher, todoTotalForDispatcher, delayTotalForDispatcher, totalForDispatcher);
-            //    return resoponse;
-            //}
-            return new ToDoListForReturnDto(null, 0, 0, 0, 0);
         }
 
         public async Task<ToDoListForReturnDto> EVA_UVList(int buildingID)
@@ -509,15 +433,15 @@ namespace DMR_API._Services.Services
                    && x.EstimatedFinishTime.Date == currentDate
                    && x.BuildingID == buildingID)
                .ToListAsync();
-            if (role.RoleID == (int)Enums.Role.Dispatcher)
+            var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
+            if (lines.Count > 0)
             {
-                var lines = await _repoBuildingUser.FindAll().Include(x => x.Building).Where(x => x.Building.ParentID == buildingID).Select(x => x.BuildingID).ToListAsync();
                 model = model.Where(x => lines.Contains(x.LineID)).ToList();
             }
             else
             {
-                var lines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
-                model = model.Where(x => lines.Contains(x.LineID)).ToList();
+                var allLines = await _repoBuilding.FindAll().Where(x => x.ParentID == buildingID).Select(x => x.ID).ToListAsync();
+                model = model.Where(x => allLines.Contains(x.LineID)).ToList();
             }
             // map dto
             var result = MapToTodolistEVA_UVDto(model);
@@ -534,35 +458,32 @@ namespace DMR_API._Services.Services
                                                 && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay
                                                 ).Count();
 
-            if (role.RoleID == (int)Enums.Role.Admin || role.RoleID == (int)Enums.Role.Supervisor || role.RoleID == (int)Enums.Role.Staff || role.RoleID == (int)Enums.Role.Worker || role.RoleID == (int)Enums.Role.Dispatcher)
-            {
-                var EVA_UVTotal = result.Where(x => x.IsEVA_UV).Count();
-                var response = new ToDoListForReturnDto();
-                var data = result.Where(x => x.PrintTime is null).ToList();
-                var dispatchListModel = await _repoDispatchList.FindAll(x =>
-                                                                x.IsDelete == false
-                                                                && x.EstimatedStartTime.Date == currentDate
-                                                                && x.EstimatedFinishTime.Date == currentDate
-                                                                && x.BuildingID == buildingID).ToListAsync();
 
-                // map to dto
-                var dispatchList = MapToDispatchListDto(dispatchListModel);
+            var EVA_UVTotal = result.Where(x => x.IsEVA_UV).Count();
+            var response = new ToDoListForReturnDto();
+            var data = result.Where(x => x.PrintTime is null).ToList();
+            var dispatchListModel = await _repoDispatchList.FindAll(x =>
+                                                            x.IsDelete == false
+                                                            && x.EstimatedStartTime.Date == currentDate
+                                                            && x.EstimatedFinishTime.Date == currentDate
+                                                            && x.BuildingID == buildingID).ToListAsync();
 
-                var dispatchTotal = dispatchList.Count();
-                var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
-                var delayDispatchTotal = dispatchListResult.Count();
-                var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
+            // map to dto
+            var dispatchList = MapToDispatchListDto(dispatchListModel);
 
-                var todoDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
-                var recaculatetotal = todoTotal + delayTotal + doneTotal + todoDispatchTotal + delayDispatchTotal + dispatchListDoneTotal;
+            var dispatchTotal = dispatchList.Count();
+            var dispatchListResult = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedFinishTime.TimeOfDay < currentTime.TimeOfDay).ToList();
+            var delayDispatchTotal = dispatchListResult.Count();
+            var dispatchListDoneTotal = dispatchList.Where(x => x.FinishDispatchingTime != null).Count();
 
-                doneTotal = doneTotal + dispatchListDoneTotal;
-                response.TodoDetail(data, doneTotal, todoTotal, delayTotal, recaculatetotal);
+            var todoDispatchTotal = dispatchList.Where(x => x.FinishDispatchingTime == null && x.EstimatedStartTime.TimeOfDay <= currentTime.TimeOfDay && x.EstimatedFinishTime.TimeOfDay >= currentTime.TimeOfDay).Count();
+            var recaculatetotal = todoTotal + delayTotal + doneTotal + todoDispatchTotal + delayDispatchTotal + dispatchListDoneTotal;
 
-                response.DispatcherDetail(data, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
-                return response;
-            }
-            return new ToDoListForReturnDto(result.Where(x => x.PrintTime is null).ToList(), doneTotal, todoTotal, delayTotal, total);
+            doneTotal = doneTotal + dispatchListDoneTotal;
+            response.TodoDetail(data, doneTotal, todoTotal, delayTotal, recaculatetotal);
+
+            response.DispatcherDetail(data, dispatchListDoneTotal, todoDispatchTotal, delayDispatchTotal, dispatchTotal);
+            return response;
         }
 
         private async Task<string> GenatateCode(string code)
@@ -715,7 +636,7 @@ namespace DMR_API._Services.Services
         public async Task<ResponseDetail<BottomFactoryForReturnDto>> ScanQRCodeV110(ScanQRCodeParams scanQRCodeParams)
         {
             var mixBy = _jwtService.GetUserID();
-            var ingredient = await _ingredientRepository.FindAll(x => x.PartNO== scanQRCodeParams.PartNO).FirstOrDefaultAsync();
+            var ingredient = await _ingredientRepository.FindAll(x => x.PartNO == scanQRCodeParams.PartNO).FirstOrDefaultAsync();
             if (ingredient == null) return new ResponseDetail<BottomFactoryForReturnDto>(new BottomFactoryForReturnDto(ingredient, null, 0), false, "Không tìm thấy hóa chất này! Vui lòng thử lại!");
             var glue = await _repoGlue.FindAll()
             .Include(x => x.GlueIngredients)
@@ -839,7 +760,7 @@ namespace DMR_API._Services.Services
             foreach (var todo in groupByDispatchListModel)
             {
                 var item = todo.FirstOrDefault();
-                var lineList = todo.Select(x => x.LineName).OrderBy(x => x).ToList();
+                var lineList = todo.Select(x => x.LineName).OrderBy(x => x).Distinct().ToList();
                 var deliveredAmount = todo.Sum(x => x.DeliveredAmount);
 
                 var itemDispatch = new ToDoListDto();

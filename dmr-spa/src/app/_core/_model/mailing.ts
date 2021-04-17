@@ -8,5 +8,6 @@ export interface IMailing {
     userNames: string[];
     userIDList: number[];
     userList: any[];
+    pathName: string;
     timeSend: Date;
 }

@@ -15,8 +15,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalrServer", "..\Signalr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScalingMachineService", "..\ScalingMachineService\ScalingMachineService.csproj", "{9DE05B9E-16EF-4FB9-98CA-17BF0EC3DE5A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSelfHost", "..\SignalRSelfHost\SignalRSelfHost.csproj", "{F28D3CB0-B679-4ADD-9D43-6B924B16236C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,10 +45,6 @@ Global
 		{9DE05B9E-16EF-4FB9-98CA-17BF0EC3DE5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9DE05B9E-16EF-4FB9-98CA-17BF0EC3DE5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9DE05B9E-16EF-4FB9-98CA-17BF0EC3DE5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F28D3CB0-B679-4ADD-9D43-6B924B16236C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F28D3CB0-B679-4ADD-9D43-6B924B16236C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F28D3CB0-B679-4ADD-9D43-6B924B16236C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F28D3CB0-B679-4ADD-9D43-6B924B16236C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

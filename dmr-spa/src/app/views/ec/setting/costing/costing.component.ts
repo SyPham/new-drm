@@ -28,9 +28,9 @@ export class CostingComponent implements OnInit {
     this.getIngredients();
   }
   toolbarClick(args): void {
-    switch (args.item.text) {
+    switch (args.item.id) {
       /* tslint:disable */
-      case 'Excel Export':
+      case 'grid_excelexport':
         this.ingredientGrid.excelExport();
         break;
       /* tslint:enable */

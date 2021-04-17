@@ -11,7 +11,7 @@
           </div> -->
 
           <ejs-grid #grid (actionBegin)="actionBegin($event)"
-          gridLines='Both'
+          gridLines='Both' id='grid'
           (actionComplete)="actionComplete($event)"
           [toolbar]='toolbarOptions'
           [dataSource]='data'

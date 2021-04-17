@@ -363,10 +363,12 @@
         <e-columns>
             <e-column field='jobType' headerText='Job Type' width='100' textAlign='Center'>
               <ng-template #headerTemplate>
-                {{ 'Job Type' }}
+                {{ 'Job Type' | translate }}
               </ng-template>
               <ng-template #template let-data>
-                {{data.jobType == 1 ? 'To Do' : 'Dispatch'}}
+                {{ (data.jobType == 1 ? 'Todo' : 'Dispatch') | translate}}
+                <span>{{data.abnormalStatus === true ? '- ' : ''}}</span>
+                <span>{{(data.abnormalStatus === true ? 'Addition' : '') | translate}}</span>
               </ng-template>
             </e-column>
           <e-column field='supplier' headerText='Supplier' width='100' textAlign='Center'>

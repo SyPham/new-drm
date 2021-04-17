@@ -161,7 +161,6 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     private router: Router,
     private datePipe: DatePipe,
     private authService: AuthService,
-    private authenticationService: AuthenticationService,
     private spinner: NgxSpinnerService,
     public todolistService: TodolistService
   ) {
@@ -181,6 +180,7 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
   ngOnInit() {
     this.focusDone = this.TODO;
     this.isShowTab = this.TODO;
+    this.onRouteChange();
     this.hasCloseScreen = false;
     this.IsAdmin = false;
     this.checkRole();
@@ -192,7 +192,6 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
         this.loadData();
       }
     }));
-    this.onRouteChange();
   }
   onEventHub() {
     if (signalr.CONNECTION_HUB.state === HubConnectionState.Connected) {
@@ -397,26 +396,6 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  isWorkerRole() {
-    if (this.role.id === WORKER) { return true; }
-    return false;
-  }
-  isDispatcherRole() {
-    if (this.role.id === DISPATCHER) { return true; }
-    return false;
-  }
-  isAdminRole() {
-    if (this.role.id === ADMIN) { return true; }
-    return false;
-  }
-  isStaffRole() {
-    if (this.role.id === STAFF) { return true; }
-    return false;
-  }
-  isSupervisorRole() {
-    if (this.role.id === SUPERVISOR) { return true; }
-    return false;
-  }
   checkRole(): void {
     const buildingId = +localStorage.getItem('buildingID');
     this.building = JSON.parse(localStorage.getItem('building'));
@@ -434,42 +413,6 @@ export class TodolistComponent implements OnInit, OnDestroy, AfterViewInit {
         this.dispatchAddition();
       });
     }
-    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
-    // switch (this.role.id) {
-    //   case ADMIN:
-    //   case SUPERVISOR:
-    //   case STAFF:
-    //   case WORKER: // Chỉ hiện todolist
-    //     this.IsAdmin = true;
-    //     const buildingId = +localStorage.getItem('buildingID');
-    //     this.building = JSON.parse(localStorage.getItem('building'));
-    //     if (buildingId === 0) {
-    //       this.getBuilding(() => {
-    //         this.alertify.message('Please select a building!', true);
-    //       });
-    //     } else {
-    //       this.getBuilding(() => {
-    //         this.buildingID = buildingId;
-    //         this.isShowTab = this.TODO;
-    //         this.focusDone = this.TODO;
-    //         this.loadData();
-    //         this.todoAddition();
-    //         this.dispatchAddition();
-    //       });
-    //     }
-    //     break;
-    //   case DISPATCHER: // Chỉ hiện dispatchlist
-    //     this.building = JSON.parse(localStorage.getItem('building'));
-    //     this.getBuilding(() => {
-    //       this.buildingID = this.building[0].id;
-    //       this.isShowTab = this.DISPATCH;
-    //       this.focusDone = this.DISPATCH;
-    //       this.loadData();
-    //       this.todoAddition();
-    //       this.dispatchAddition();
-    //     });
-    //     break;
-    // }
   }
   EVA_UVList() {
     this.bottomFactoryService.EVAUVList(this.buildingID).subscribe((res: any) => {

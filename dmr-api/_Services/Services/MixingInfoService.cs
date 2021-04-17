@@ -329,7 +329,6 @@ namespace DMR_API._Services.Services
                         MixBy = mixing.MixBy,
                         EstimatedFinishTime = mixing.EstimatedFinishTime,
                         EstimatedStartTime = mixing.EstimatedStartTime
-
                     };
                     var glue = _repoGlue.FindAll(x => x.ID == mixing.GlueID)
                         .Include(x => x.GlueIngredients)
@@ -375,6 +374,7 @@ namespace DMR_API._Services.Services
                         MixingInfoID = mixingInfo.ID,
                         EstimatedFinishTime = mixing.EstimatedFinishTime,
                         EstimatedStartTime = mixing.EstimatedStartTime,
+                        BuildingID = mixing.BuildingID,
                         Amount = details.Sum(x => x.Amount)
                     };
                     _toDoListService.UpdateMixingTimeRange(todo);

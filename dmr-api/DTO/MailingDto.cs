@@ -13,6 +13,7 @@ namespace DMR_API.DTO
         public List<UserList> UserList { get; set; }
         public string Email { get; set; }
         public string UserName { get; set; }
+        public string PathName { get; set; }
         public int UserID { get; set; }
         public string Frequency { get; set; }
         public string Report { get; set; }

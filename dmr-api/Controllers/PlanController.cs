@@ -19,10 +19,17 @@ namespace DMR_API.Controllers
     {
         private readonly IPlanService _planService;
         private readonly IHubContext<ECHub> _hubContext;
-        public PlanController(IPlanService planService, IHubContext<ECHub> hubContext)
+        private readonly IMailExtension _mailingService;
+
+        public PlanController(
+            IPlanService planService,
+            IHubContext<ECHub> hubContext,
+             IMailExtension mailingService
+            )
         {
             _planService = planService;
             _hubContext = hubContext;
+            _mailingService = mailingService;
         }
         [HttpPost]
         public async Task<IActionResult> GetBPFCByGlue([FromBody] TooltipParams tooltip)
@@ -305,7 +312,35 @@ namespace DMR_API.Controllers
             var bin = await _planService.Report(startDate, endDate);
             return File(bin, "application/octet-stream", "report.xlsx");
         }
+        [HttpGet]
+        public async Task<IActionResult> AchievementRateExcelExport([FromQuery]List<string> emails)
+        {
+            var res = await _planService.AchievementRateExcelExport();
 
+            var subject = "Mixing Room Report";
+            var fileName = $"{DateTime.Now.ToString("MMddyyyy")}_AchievementRateReport.xlsx";
+            var message = "Please refer to the Mixing Room Report";
+            var mailList = new List<string>
+            {
+                //"mel.kuo@shc.ssbshoes.com",
+                //"maithoa.tran@shc.ssbshoes.com",
+                //"andy.wu@shc.ssbshoes.com",
+                //"sin.chen@shc.ssbshoes.com",
+                //"leo.doan@shc.ssbshoes.com",
+                //"heidy.amos@shc.ssbshoes.com",
+                //"bonding.team@shc.ssbshoes.com",
+                //"Ian.Ho@shc.ssbshoes.com",
+               // "swook.lu@shc.ssbshoes.com",
+                //"damaris.li@shc.ssbshoes.com",
+                //"peter.tran@shc.ssbshoes.com"
+            };
+            if (res.Data != null || res.Data.Length > 0)
+            {
+                await _mailingService.SendEmailWithAttactExcelFileAsync(emails, subject, message, fileName, res.Data);
+            }
+
+            return File(res.Data, "application/octet-stream", "AchievementRateExcelExport.xlsx");
+        }
         [HttpPost]
         public async Task<IActionResult> ReportConsumptionCase1(ReportParams reportParams)
         {

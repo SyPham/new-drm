@@ -9,5 +9,6 @@ namespace TodolistScheduleService
     {
         public string DefaultConnection { get; set; }
         public string SignalRConnection { get; set; }
+        public string API_URL { get; set; }
     }
 }

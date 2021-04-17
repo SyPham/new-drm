@@ -40,8 +40,8 @@ namespace TodolistScheduleService
                     HubConnection _connection = new HubConnectionBuilder()
                    .WithUrl(appsettings.SignalRConnection)
                    .Build();
-                    Console.WriteLine(appsettings.SignalRConnection);
                     services.AddSingleton<HubConnection>(_connection);
+                    services.AddSingleton<Appsettings>(appsettings);
                     //var _builder = new DbContextOptionsBuilder<DataContext>()
                     //.UseSqlServer(appsettings.DefaultConnection);
                     //var _context = new DataContext(_builder.Options);

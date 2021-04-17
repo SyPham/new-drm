@@ -64,6 +64,8 @@ namespace DMR_API._Services.Services
             await _hubContext.Clients.Group("Mailing").SendAsync("ReceiveMailing", mailingList);
             return res;
         }
+
+
         public async Task<bool> UpdateRange(List<MailingDto> model)
         {
             using var transaction = new TransactionScopeAsync().Create();
@@ -145,10 +147,11 @@ namespace DMR_API._Services.Services
                              UserName = a.Username,
                              Report = b.Report,
                              Email = b.Email,
+                             PathName = b.PathName,
                              TimeSend = b.TimeSend,
                              Frequency = b.Frequency
                          };
-            var groupBy = result.ToList().GroupBy(x => x.Frequency);
+            var groupBy = result.ToList().GroupBy(x => new { x.Frequency, x.Report });
             var list = new List<MailingDto>();
             foreach (var item in groupBy)
             {
@@ -158,9 +161,10 @@ namespace DMR_API._Services.Services
                     UserIDList = item.Select(x => x.UserID).ToList(),
                     UserList = item.Select(x => new UserList { MailingID = x.ID, ID = x.UserID, Email = x.Email}).ToList(),
                     TimeSend = item.First().TimeSend,
-                    Frequency = item.Key,
-                    Report = item.First().Report,
+                    Frequency = item.Key.Frequency,
+                    Report = item.Key.Report,
                     Email = item.First().Email,
+                    PathName = item.First().PathName,
                 });
             }
 
@@ -214,10 +218,11 @@ namespace DMR_API._Services.Services
                              UserName = a.Username,
                              Report = b.Report,
                              Email = b.Email,
+                             PathName = b.PathName,
                              TimeSend = b.TimeSend,
                              Frequency = b.Frequency
                          };
-            var groupBy = result.ToList().GroupBy(x => x.Frequency);
+            var groupBy = result.ToList().GroupBy(x => new { x.Frequency, x.Report });
             var list = new List<MailingDto>();
             foreach (var item in groupBy)
             {
@@ -227,13 +232,35 @@ namespace DMR_API._Services.Services
                     UserIDList = item.Select(x => x.UserID).ToList(),
                     UserList = item.Select(x => new UserList { MailingID = x.ID, ID = x.UserID, Email = x.Email }).ToList(),
                     TimeSend = item.First().TimeSend,
-                    Frequency = item.Key,
-                    Report = item.First().Report,
+                    Frequency = item.Key.Frequency,
+                    Report = item.Key.Report,
+                    PathName = item.First().PathName,
                     Email = item.First().Email,
                 });
             }
 
             return list;
+        }
+
+        public async Task<bool> DeleteRange(List<MailingDto> model)
+        {
+            var groupBy = model.GroupBy(x => new { x.Frequency, x.Report }).ToList();
+            var listID = new List<int>();
+            foreach (var item in groupBy)
+            {
+                listID.Add(item.First().ID);
+            }
+            var removeList = await _repoMailing.FindAll(x => listID.Contains(x.ID)).ToListAsync();
+            if (removeList.Count > 0)
+            {
+                var mailingList = await GetAllByFrequencyAndReport(removeList.First().Frequency, removeList.First().Report);
+                _repoMailing.RemoveMultiple(removeList);
+                var res = await _repoMailing.SaveAll();
+                await _hubContext.Clients.Group("Mailing").SendAsync("KillScheduler", mailingList);
+                return res;
+            }
+         
+            return false;
         }
     }
 }

@@ -119,8 +119,8 @@ export class AccountComponent extends BaseComponent implements OnInit {
     }
   }
   toolbarClick(args) {
-    switch (args.item.text) {
-      case 'Excel Export':
+    switch (args.item.id) {
+      case 'grid_excelexport':
         this.grid.excelExport({ hierarchyExportMode: 'All' });
         break;
       default:

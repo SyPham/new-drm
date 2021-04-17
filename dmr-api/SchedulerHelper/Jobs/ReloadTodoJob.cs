@@ -11,16 +11,14 @@ namespace DMR_API.SchedulerHelper.Jobs
     {
         HubConnection _connection;
 
-        public ReloadTodoJob()
-        {
-            _connection = new HubConnectionBuilder()
-             .WithUrl("http://10.4.0.76:1009/ec-hub")
-             .Build();
-        }
-
-
         public async Task Execute(IJobExecutionContext context)
         {
+            JobDataMap dataMap = context.JobDetail.JobDataMap;
+            string Signalr_URL = dataMap.GetString("Signalr_URL");
+
+            _connection = new HubConnectionBuilder()
+            .WithUrl(Signalr_URL)
+            .Build();
             // Loop is here to wait until the server is running
             while (true)
             {

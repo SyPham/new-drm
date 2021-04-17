@@ -18,4 +18,8 @@
   <ItemGroup>
     <ProjectReference Include="..\dmr-api\dmr-api.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Logs\" />
+  </ItemGroup>
 </Project>

@@ -10,6 +10,7 @@ namespace DMR_API._Services.Interface
     {
         Task<bool> AddRange(List<MailingDto> model);
         Task<bool> UpdateRange(List<MailingDto> model);
+        Task<bool> DeleteRange(List<MailingDto> model);
         Task<List<MailingDto>> GetAllByFrequencyAndReport(string frequency, string report);
         Task<bool> CheckExists(string frequency, string report);
     }

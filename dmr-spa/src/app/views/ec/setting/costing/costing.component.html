@@ -3,21 +3,22 @@
     <h3>Chemical List</h3>
   </div>
   <div class="card-body">
-    <ejs-grid #ingredientGrid 
-        rowHeight='38' 
-        [dataSource]='data' 
-        [allowSelection]='true' 
+    <ejs-grid #ingredientGrid
+        id='grid'
+        rowHeight='38'
+        [dataSource]='data'
+        [allowSelection]='true'
         [allowSorting]='true'
         [allowExcelExport]='true'
-        [allowSorting]='true' 
-        allowFiltering='true' 
+        [allowSorting]='true'
+        allowFiltering='true'
         [filterSettings]='filterSettings'
-        [toolbar]='toolbarOptions' 
-        showColumnMenu='true' 
-        [pageSettings]='pageSettings' 
-        allowPaging="true" 
+        [toolbar]='toolbarOptions'
+        showColumnMenu='true'
+        [pageSettings]='pageSettings'
+        allowPaging="true"
         allowResizing='true'
-        gridLines='Both' 
+        gridLines='Both'
         (recordDoubleClick)='onDoubleClick($event)'
         [editSettings]='editSettings'
         (actionBegin)="actionBegin($event)"

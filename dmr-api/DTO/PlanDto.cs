@@ -73,18 +73,6 @@ namespace DMR_API.DTO
         public DateTime DueDate { get; set; }
         public DateTime CreatedDate { get; set; }
     }
-    public class TimeDto
-    {
-        public TimeDto(DateTime dt)
-        {
-            var dateTime = dt;
-            Hour = dateTime.ToString("HH").ToInt();
-            Minute = dateTime.ToString("mm").ToInt();
-        }
-
-        public int Hour { get; set; }
-        public int Minute { get; set; }
-    }
     public class ConsumtionDto
     {
         public int ID { get; set; }
@@ -103,6 +91,27 @@ namespace DMR_API.DTO
         public float Percentage { get; set; }
         public DateTime DueDate { get; set; }
         public DateTime MixingDate { get; set; }
+
+    }
+    public class TimeDto
+    {
+        public TimeDto(DateTime dt)
+        {
+            var dateTime = dt;
+            Hour = dateTime.ToString("HH").ToInt();
+            Minute = dateTime.ToString("mm").ToInt();
+        }
+
+        public int Hour { get; set; }
+        public int Minute { get; set; }
+    }
+    public class AchievementDto
+    {
+        public string Building { get; set; }
+        public double UpdateOnTime { get; set; }
+        public double Total { get; set; }
+        public double AchievementRate { get; set; }
+      
 
     }
     public class TodolistDto

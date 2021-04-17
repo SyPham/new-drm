@@ -92,5 +92,12 @@ namespace DMR_API.Controllers
                 return NoContent();
             throw new Exception("Error deleting the Mailing");
         }
+        [HttpPost]
+        public async Task<IActionResult> DeleteRange(List<MailingDto> delete)
+        {
+            if (await _mailingService.DeleteRange(delete))
+                return NoContent();
+            throw new Exception("Error deleting the Mailing");
+        }
     }
 }

@@ -93,7 +93,7 @@
     "COUNT": "Count",
     "TOTAL_COMSUMPTION": "Total Consumption",
     "CHEMICAL": "Chemical",
-    "Chemical": "Hóa Chất",
+    "Chemical": "Chemical",
     "STANDARD": "Std.Con.",
     "STIR": "Stir",
     "Stir": "Stir",
@@ -282,5 +282,6 @@
     "Building Name": "Building Name",
     "Building List": "Building List",
     "Level": "Level",
-    "Type": "Type"
+    "Type": "Type",
+    "Job Type": "Job Type"
 }

@@ -11,6 +11,7 @@ namespace DMR_API._Services.Interface
 {
     public interface IPlanService : IECService<PlanDto>
     {
+        Task<ResponseDetail<Byte[]>> AchievementRateExcelExport();
         Task<object> GetAllPlanByDefaultRange();
         Task<object> GetAllPlanByRange(int building, DateTime min, DateTime max);
         Task<object> GetAllPlansByDate(string from, string to);

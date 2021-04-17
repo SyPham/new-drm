@@ -66,9 +66,9 @@ export class MaterialComponent extends BaseComponent implements OnInit {
 
   // grid event
   toolbarClick(args): void {
-    switch (args.item.text) {
+    switch (args.item.id) {
       /* tslint:disable */
-      case 'Excel Export':
+      case 'grid_excelexport':
         this.grid.excelExport();
         break;
       /* tslint:enable */
