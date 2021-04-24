@@ -186,7 +186,7 @@
               <ng-template #template let-data>
                 <ejs-switch *ngIf="data.isGenerate" cssClass="custom-stop-line" #switch  appPermission appFunction="Work Plan" appAction="STOP_LINE"
                   onLabel="{{'Inactive' | translate}}" (change)='changeStopLine($event, data)'
-                  offLabel="{{'' | translate}}" [checked]="data.isOffline" [disabled]="data.isOffline"
+                  offLabel="{{'' | translate}}" [checked]="data.isOffline"
                   style="width: 80px; "></ejs-switch>
               </ng-template>
               <ng-template #editTemplate let-data>

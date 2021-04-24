@@ -48,6 +48,7 @@ import { SwitchComponent } from '@syncfusion/ej2-angular-buttons';
 import { DataService } from 'src/app/_core/_service/data.service';
 import { IRole } from 'src/app/_core/_model/role';
 import { IngredientModalComponent } from '../../setting/ingredient/ingredient-modal/ingredient-modal.component';
+import { nullSafeIsEquivalent } from '@angular/compiler/src/output/output_ast';
 
 declare const $: any;
 const LEVEL_1 = 3;
@@ -60,7 +61,8 @@ const LEVEL_1 = 3;
 })
 export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
   modalReference: NgbModalRef;
-  @ViewChild('switch') public switch: SwitchComponent;
+  @ViewChild('doneSwitch') public doneSwitch: SwitchComponent;
+  @ViewChild('approvalSwitch') public approvalSwitch: SwitchComponent;
   data: IGlue[];
   modelNameData: any;
   modelNoData: any;
@@ -1940,6 +1942,17 @@ export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
     let flagConsumption = false;
     if (glueData) {
       for (const glue of glueData) {
+        if (this.artProcessDetail === 'STF' && glue.kindID === null) {
+          this.alertify.warning(
+            `Please maintain the kind!<br>
+             Vui lòng cài đặt kind!<br>
+          <br>
+              `,
+            true
+          );
+          this.approvalStatus = !this.approvalStatus;
+          return;
+        }
         if (glue.glueIngredients.length > 0) {
           const glueIngredients = glue.glueIngredients.filter(
             (x) => x.position !== 'A'
@@ -2011,6 +2024,17 @@ export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
     let flagConsumption = false;
     if (glueData) {
       for (const glue of glueData) {
+        if (this.artProcessDetail === 'STF' && glue.kindID === null) {
+          this.alertify.warning(
+            `Please maintain the kind for each glue <br>
+             Vui lòng cài đặt kind cho mỗi loại keo!<br>
+          <br>
+              `,
+            true
+          );
+          this.createdStatus = !this.createdStatus;
+          return;
+        }
         if (glue.glueIngredients.length > 0) {
           const glueIngredients = glue.glueIngredients.filter(
             (x) => x.position !== 'A'

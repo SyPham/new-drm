@@ -105,6 +105,8 @@ export class DeliveredHistoryComponent extends BaseComponent implements OnInit {
            createdDate: new Date(item.createdDate)
          };
        });
+      }, () => {
+        console.log('500 (Internal Server Error)')
       });
   }
   NO(index) {

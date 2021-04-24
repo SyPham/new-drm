@@ -15,6 +15,7 @@ namespace DMR_API.DTO
         public int ID { get; set; }
         public int MachineID { get; set; }
         public string GlueName { get; set; }
+        public int BuildingID { get; set; }
         public int? SettingID { get; set; }
         public int MixingInfoID { get; set; }
         public double TotalMinutes { get; set; }

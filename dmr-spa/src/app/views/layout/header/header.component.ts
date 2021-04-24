@@ -19,6 +19,7 @@ import { L10n, loadCldr, setCulture, Ajax } from '@syncfusion/ej2-base';
 import { DataService } from 'src/app/_core/_service/data.service';
 import { PermissionService } from 'src/app/_core/_service/permission.service';
 import { AuthenticationService } from 'src/app/_core/_service/authentication.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 declare var require: any;
 
 @Component({
@@ -67,6 +68,7 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     private sanitizer: DomSanitizer,
     private router: Router,
     private dataService: DataService,
+    private spinner: NgxSpinnerService,
     private cookieService: CookieService,
     private modalService: NgbModal,
     public translate: TranslateService
@@ -116,9 +118,13 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   }
 
   getMenu() {
+    this.spinner.show();
     this.permissionService.getMenuByUserPermission(this.userid).subscribe((menus: []) => {
       this.menus = menus;
+      this.spinner.hide();
       localStorage.setItem('menus', JSON.stringify(menus));
+    }, (err) => {
+      this.spinner.hide();
     });
   }
   areOtherRoles() {

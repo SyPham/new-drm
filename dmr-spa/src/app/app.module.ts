@@ -20,7 +20,7 @@ import { P500Component } from './views/p500/p500.component';
 import { AlertifyService } from './_core/_service/alertify.service';
 import { AuthService } from './_core/_service/auth.service';
 import { AuthGuard } from './_core/_guards/auth.guard';
-import { NgxSpinnerService } from 'ngx-spinner';
+import { NgxSpinnerService, NgxSpinnerModule } from 'ngx-spinner';
 // handle err
 import { ErrorInterceptorProvider } from './_core/_service/error.interceptor';
 
@@ -57,12 +57,10 @@ import {TranslateModule, TranslateLoader} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import { GridAllModule } from '@syncfusion/ej2-angular-grids';
 import { CoreModule } from './_core/core.module';
-
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
-
 @NgModule({
   declarations: [
     AppComponent,
@@ -74,7 +72,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     P404Component,
     P500Component,
     AvatarModalComponent,
-    PreviewModalComponent,
+    PreviewModalComponent
   ],
   imports: [
     BrowserModule,
@@ -94,6 +92,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     ImageCropperModule,
     UploaderModule,
     CoreModule,
+    NgxSpinnerModule,
     TranslateModule.forRoot({
       loader: {
         provide: TranslateLoader,

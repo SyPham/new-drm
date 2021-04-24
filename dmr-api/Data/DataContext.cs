@@ -70,6 +70,7 @@ namespace DMR_API.Data
         public DbSet<Models.Action> Actions { get; set; }
         public DbSet<Models.Version> Versions { get; set; }
         public DbSet<Models.Module> Modules { get; set; }
+        public DbSet<Models.StirRawData> StirRawData { get; set; }
 
         public DbSet<ActionInFunctionSystem> ActionInFunctionSystem { get; set; }
 

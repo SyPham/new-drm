@@ -233,7 +233,7 @@
     "Mailing": "Mail",
     "Subpackage": "Chia nhỏ hóa chất",
     "Mother Can": "Can gốc",
-    "Daughter cans": "Can phụ",
+    "Daughter cans": "Can nhỏ",
     "Glue Name": "Hóa chất",
     "Remaining Amount": "Khối lượng còn lại",
     "Delivery": "Khối lượng đã giao",
@@ -283,6 +283,11 @@
     "Building List": "Danh sách tòa nhà",
     "Level": "Cấp",
     "Type": "Loại",
-    "Job Type": "Loại công việc"
+    "Job Type": "Loại công việc",
+    "Subpackage Btn": "Chia",
+    "Scan QRCode": "Quét mã QR",
+    "Number of can": "Nhập số lượng",
+    "Kilogram": "Kilôgam"
+
 
 }

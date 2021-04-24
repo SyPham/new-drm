@@ -16,8 +16,8 @@
 
             <div class="font-weight-bold pr-3">{{'Building' | translate}}:</div>
 
-            <ejs-dropdownlist class="pr-3" [dataSource]='buildings' [fields]='fieldsBuildings' [allowFiltering]='true' [(ngModel)]="buildingID"
-              (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)' (select)='onSelectBuilding($event)'
+            <ejs-dropdownlist class="pr-3" [dataSource]='buildings' [fields]='fieldsBuildings' [allowFiltering]='true' [value]="buildingID"
+              (filtering)='onFilteringBuilding($event)' (change)='onChangeBuilding($event)'
               placeholder="Select a building">
             </ejs-dropdownlist>
 
@@ -53,7 +53,7 @@
                 </ejs-tooltip>
               </ng-template>
             </e-column>
-           
+
             <e-column field='quantity' headerText='Quantity' width='170' textAlign='Center'>
               <ng-template #headerTemplate let-data>
                 {{'OUTPUT_QUANTITY' | translate}}

@@ -15,6 +15,7 @@ import { Subject, Subscription } from 'rxjs';
 import { IScanner } from 'src/app/_core/_model/IToDoList';
 import { ActivatedRoute } from '@angular/router';
 import { ActionConstant } from 'src/app/_core/_constants';
+import { AuthService } from 'src/app/_core/_service/auth.service';
 const ADMIN = 1;
 const SUPERVISER = 2;
 const BUILDING_LEVEL = 2;
@@ -51,6 +52,8 @@ export class InventoryComponent extends BaseComponent implements OnInit {
     public modalService: NgbModal,
     public ingredientService: IngredientService,
     private buildingService: BuildingService,
+    private authService: AuthService,
+    private alertify: AlertifyService,
     private route: ActivatedRoute,
   ) {
     super();
@@ -58,16 +61,32 @@ export class InventoryComponent extends BaseComponent implements OnInit {
 
   ngOnInit() {
     this.Permission(this.route);
-    const ROLES = [ADMIN, SUPERVISER];
-    if (ROLES.includes(this.role.id)) {
-      // load all building
-      this.IsAdmin = true;
-      this.getBuilding();
+    this.checkRole();
+  }
+  checkRole(): void {
+    const buildingId = +localStorage.getItem('buildingID');
+    if (buildingId === 0) {
+      this.getBuilding(() => {
+        this.alertify.message('Please select a building! <br> Vui lòng chọn 1 tòa nhà!', true);
+      });
     } else {
-      this.buildingName = this.building.name;
+      this.getBuilding(() => {
+        this.buildingID = buildingId;
+        // this.getAll();
+        // this.getStartTimeFromPeriod();
+      });
     }
-    // this.getIngredientInfoReport();
-    // this.getIngredientInfoReportByBuilding();
+  }
+  getBuilding(callback): void {
+    const userID = +JSON.parse(localStorage.getItem('user')).user.id;
+    this.authService.getBuildingUserByUserID(userID).subscribe((res) => {
+      this.buildings = res.data;
+      callback();
+    });
+    // this.buildingService.getBuildings().subscribe(async (buildingData) => {
+    //   this.buildings = buildingData.filter(item => item.level === SystemConstant.BUILDING_LEVEL);
+    //   callback();
+    // });
   }
   Permission(route: ActivatedRoute) {
     const functionCode = route.snapshot.data.functionCode;
@@ -110,11 +129,11 @@ export class InventoryComponent extends BaseComponent implements OnInit {
     this.searchWithBuilding(this.startDate, this.endDate);
   }
 
-  private getBuilding(): void {
-    this.buildingService.getBuildings().subscribe(async (buildingData) => {
-      this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
-    });
-  }
+  // private getBuilding(): void {
+  //   this.buildingService.getBuildings().subscribe(async (buildingData) => {
+  //     this.buildings = buildingData.filter(item => item.level === BUILDING_LEVEL);
+  //   });
+  // }
   resetSearch() {
     this.searchText = null ;
   }

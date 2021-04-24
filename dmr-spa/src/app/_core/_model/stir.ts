@@ -22,6 +22,7 @@ export interface IStirForAdd {
     id: number;
     glueName: string;
     settingID: number;
+    buildingID: number;
     mixingInfoID: number;
     startScanTime: any;
     startStiringTime: any;
@@ -34,5 +35,6 @@ export interface IStirForUpdate {
     mixingInfoID: number;
     glueType: IGlueType;
     startScanTime: any;
+    buildingID: number;
     finishStiringTime: any;
 }

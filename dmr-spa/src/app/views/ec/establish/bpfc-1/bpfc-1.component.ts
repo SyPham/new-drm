@@ -286,6 +286,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
   materialID: any;
   partID: any;
   kindID: any;
+  artProcess: any;
   constructor(
     private glueIngredientService: GlueIngredientService,
     private modalNameService: ModalNameService,
@@ -1834,6 +1835,17 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     let flagConsumption = false;
     if (glueData) {
       for (const glue of glueData) {
+        if (this.artProcess === 'STF' && glue.kindID === null) {
+          this.alertify.warning(
+            `Please maintain the kind for each glue <br>
+             Vui lòng cài đặt kind cho mỗi loại keo!<br>
+          <br>
+              `,
+            true
+          );
+          this.approvalStatus = !this.approvalStatus;
+          return;
+        }
         if (glue.glueIngredients.length > 0) {
           const glueIngredients = glue.glueIngredients.filter(
             (x) => x.position !== 'A'
@@ -1905,6 +1917,17 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
     let flagConsumption = false;
     if (glueData) {
       for (const glue of glueData) {
+        if (this.artProcess === 'STF' && glue.kindID === null) {
+          this.alertify.warning(
+            `Please maintain the kind for each glue <br>
+             Vui lòng cài đặt kind cho mỗi loại keo!<br>
+          <br>
+              `,
+            true
+          );
+          this.createdStatus = !this.createdStatus;
+          return;
+        }
         if (glue.glueIngredients.length > 0) {
           const glueIngredients = glue.glueIngredients.filter(x => x.position !== 'A');
           for (const item of glueIngredients) {
@@ -2048,6 +2071,7 @@ export class Bpfc1Component implements OnInit, AfterViewInit {
       this.BPFCID = bpfc?.id;
       this.approvalStatus = bpfc.approvalStatus;
       this.createdStatus = bpfc.finishedStatus;
+      this.artProcess = bpfc.artProcess;
       this.glue.BPFCEstablishID = this.BPFCID;
       this.getAllGluesByBPFCID(this.BPFCID);
       this.getAllPart();

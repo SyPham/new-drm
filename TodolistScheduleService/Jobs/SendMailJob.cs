@@ -18,7 +18,7 @@ namespace TodolistScheduleService.Jobs
         {
             var loggerFactory = (ILoggerFactory)new LoggerFactory();
             var path = Directory.GetCurrentDirectory();
-            loggerFactory.AddFile($"{path}\\Logs\\Log.txt");
+            loggerFactory.AddFile($"{path}\\Logs\\LogJobDaily.txt");
             var logger = loggerFactory.CreateLogger(nameof(SendMailJob));
             var dataMap = context.JobDetail.JobDataMap;
             var json = dataMap.GetString("Data");

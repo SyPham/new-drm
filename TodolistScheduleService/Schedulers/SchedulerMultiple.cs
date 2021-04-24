@@ -16,7 +16,8 @@ namespace TodolistScheduleService.Schedulers
     {
         IScheduler _scheduler;
         private readonly ILogger<Todo> _logger;
-
+        private readonly List<TriggerKey> _triggerKeys = new List<TriggerKey>();
+        private readonly List<JobKey> _jobKeys = new List<JobKey>();
         public SchedulerMultiple(ILogger<Todo> logger)
         {
             _logger = logger;
@@ -43,8 +44,8 @@ namespace TodolistScheduleService.Schedulers
         {
             var json = map["Data"].ToString();
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
-            var triggerKey = new TriggerKey(data.Report, data.Frequency);
-            var jobKey = new JobKey(data.Report, data.Frequency);
+            var triggerKey = new TriggerKey(data.Name, data.Group);
+            var jobKey = new JobKey(data.Name, data.Group);
 
             var jobDaily = JobBuilder.Create<SendMailJob>()
                                 .WithIdentity(jobKey)
@@ -62,10 +63,12 @@ namespace TodolistScheduleService.Schedulers
 
                  .Build();
             await _scheduler.ScheduleJob(jobDaily, triggerDaily);
+            _triggerKeys.Add(triggerKey);
+            _jobKeys.Add(jobKey);
             _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
             _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} everyday.");
 
-           
+
         }
 
         /// <summary>
@@ -80,8 +83,8 @@ namespace TodolistScheduleService.Schedulers
         {
             var json = map["Data"].ToString();
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
-            var triggerKey = new TriggerKey(data.Report, data.Frequency);
-            var jobKey = new JobKey(data.Report, data.Frequency);
+            var triggerKey = new TriggerKey(data.Name, data.Group);
+            var jobKey = new JobKey(data.Name, data.Group);
             var jobWeekly = JobBuilder.Create<SendMailWeeklyJob>()
                 .WithIdentity(jobKey)
                             .SetJobData(new JobDataMap(map))
@@ -93,6 +96,8 @@ namespace TodolistScheduleService.Schedulers
                 .Build();
 
             await _scheduler.ScheduleJob(jobWeekly, triggerWeekly);
+            _triggerKeys.Add(triggerKey);
+            _jobKeys.Add(jobKey);
             _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
             _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} every week.");
 
@@ -109,8 +114,8 @@ namespace TodolistScheduleService.Schedulers
         {
             var json = map["Data"].ToString();
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
-            var triggerKey = new TriggerKey(data.Report, data.Frequency);
-            var jobKey = new JobKey(data.Report, data.Frequency);
+            var triggerKey = new TriggerKey(data.Name, data.Group);
+            var jobKey = new JobKey(data.Name, data.Group);
             var jobMonthly = JobBuilder.Create<SendMailMonthlyJob>()
                 .WithIdentity(jobKey)
                 .SetJobData(new JobDataMap(map))
@@ -123,6 +128,8 @@ namespace TodolistScheduleService.Schedulers
                 .ForJob(jobMonthly.Key)
                 .Build();
             await _scheduler.ScheduleJob(jobMonthly, triggerMonthly);
+            _triggerKeys.Add(triggerKey);
+            _jobKeys.Add(jobKey);
             _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
             _logger.LogInformation($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} on the last day of every month.");
 
@@ -157,10 +164,10 @@ namespace TodolistScheduleService.Schedulers
         }
 
 
-      /// <summary>
-      /// Kiểm tra đã bắt đầu lập lịch
-      /// </summary>
-      /// <returns></returns>
+        /// <summary>
+        /// Kiểm tra đã bắt đầu lập lịch
+        /// </summary>
+        /// <returns></returns>
         public async Task<bool> checkScheduleStart()
         {
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
@@ -172,9 +179,9 @@ namespace TodolistScheduleService.Schedulers
         {
             var json = map["Data"].ToString();
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
-            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+            var triggerKey = new TriggerKey(data.Name, data.Group);
 
-            var jobKey = new JobKey(data.Report, data.Frequency);
+            var jobKey = new JobKey(data.Name, data.Group);
             var trigger = await _scheduler.GetTrigger(triggerKey);
 
 
@@ -217,9 +224,9 @@ namespace TodolistScheduleService.Schedulers
         {
             var json = map["Data"].ToString();
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
-            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+            var triggerKey = new TriggerKey(data.Name, data.Group);
 
-            var jobKey = new JobKey(data.Report, data.Frequency);
+            var jobKey = new JobKey(data.Name, data.Group);
             var trigger = await _scheduler.GetTrigger(triggerKey);
             var job = await _scheduler.GetJobDetail(jobKey);
             var checkExists = await _scheduler.CheckExists(jobKey);
@@ -256,9 +263,9 @@ namespace TodolistScheduleService.Schedulers
         {
             var json = map["Data"].ToString();
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
-            var triggerKey = new TriggerKey(data.Report, data.Frequency);
+            var triggerKey = new TriggerKey(data.Name, data.Group);
 
-            var jobKey = new JobKey(data.Report, data.Frequency);
+            var jobKey = new JobKey(data.Name, data.Group);
             var trigger = await _scheduler.GetTrigger(triggerKey);
             var job = await _scheduler.GetJobDetail(jobKey);
             var checkExists = await _scheduler.CheckExists(jobKey);
@@ -297,9 +304,12 @@ namespace TodolistScheduleService.Schedulers
         public async Task UnscheduleJob(TriggerKey triggerKey)
         {
             var trigger = await _scheduler.GetTrigger(triggerKey);
+            var jobKey = new JobKey(triggerKey.Name, triggerKey.Group);
             if (trigger != null)
             {
                 await _scheduler.UnscheduleJob(trigger.Key);
+                _triggerKeys.Remove(triggerKey);
+                _jobKeys.Remove(jobKey);
                 _logger.LogInformation($"UnscheduleJob {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
             }
             await Task.CompletedTask;
@@ -311,5 +321,32 @@ namespace TodolistScheduleService.Schedulers
                 await _scheduler.Shutdown();
             }
         }
+        public async Task Clear()
+        {
+            await _scheduler.Clear();
+        }
+        public async Task<List<TriggerKey>> GetAllTriggerKey()
+        {
+            var result = new List<TriggerKey>();
+            foreach (var item in _triggerKeys)
+            {
+                var trigger = await _scheduler.GetTrigger(item);
+                if (trigger != null)
+                    result.Add(trigger.Key);
+            }
+            return result;
+        }
+        public async Task<List<JobKey>> GetAllJobKeyAsync()
+        {
+            var result = new List<JobKey>();
+            foreach (var item in _jobKeys)
+            {
+                var job = await _scheduler.GetJobDetail(item);
+                if (job != null)
+                    result.Add(job.Key);
+            }
+            return result;
+        }
+
     }
 }

@@ -458,7 +458,7 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
   }
 
   dataBound(args) {
-    console.log('databound', args);
+    // console.log('databound', args);
     // (this.gridObj.columns[0] as any).isPrimaryKey = 'true';
     //  this.gridObj.autoFitColumns();
   }

@@ -292,7 +292,6 @@ namespace DMR_API.Controllers
         {
             var status = await _toDoList.AddOvertime(plans);
             return Ok(status);
-
         }
 
         [HttpPost]

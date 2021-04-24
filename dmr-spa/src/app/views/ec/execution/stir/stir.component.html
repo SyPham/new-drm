@@ -2,7 +2,7 @@
   <div class="card-header">
     <h3>{{ 'EXECUTION' | translate }} - {{ 'STIR' | translate }}</h3>
   <div class="card-tools">
-    <button type="button" 
+    <button type="button"
     (click)="goToTodolist()"
      class="btn btn-sm btn-primary" data-card-widget="collapse">
       <i class="fas fa-reply"></i> {{ 'BACK' | translate }}
@@ -23,7 +23,7 @@
               <input class="form-control" name="qrcode" autofocusSearch [ngModel]="qrCode"
                 (ngModelChange)='onNgModelChangeScanQRCode($event)' type="text">
             </div>
-          
+
           </div>
         </form>
       </div>
@@ -38,7 +38,7 @@
     </div>
     <ejs-grid [dataSource]='stirData' #grid gridLines='Both' [allowSorting]='true' [allowExcelExport]='true'
       allowFiltering='true' [filterSettings]='filterSettings' [pageSettings]='pageSettings' allowPaging="true"
-      [toolbar]='toolbarOptions' allowResizing='true' [rowHeight]='60' (dataBound)='dataBound()' showColumnMenu='true'
+      [toolbar]='toolbarOptions' allowResizing='true' [rowHeight]='60' showColumnMenu='true'
       (toolbarClick)='toolbarClick($event)'>
       <e-columns>
         <e-column field='Seq.' textAlign='Center' headerText='Seq.' width='60'>
@@ -88,7 +88,7 @@
             {{ 'STATUS_LABEL_STIR' | translate }}
           </ng-template>
           <ng-template #template let-data>
-            <span 
+            <span
               [class]="data.status === true ? 'badge badge-success' : 'badge badge-danger'">{{data.status === true ? 'Pass' : 'fail'}}</span>
           </ng-template>
         </e-column>

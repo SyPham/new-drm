@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using DMR_API.DTO;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Quartz;
 using TodolistScheduleService.Dto;
+using TodolistScheduleService.Extension;
 using TodolistScheduleService.Schedulers;
 namespace TodolistScheduleService.Services
 {
@@ -35,40 +36,33 @@ namespace TodolistScheduleService.Services
         {
             await _connection.DisposeAsync();
         }
+      
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
             _scheduler = new SchedulerMultiple(_logger);
             await _scheduler.StartAllJob();
-            Console.WriteLine("StartAllJob");
+            Console.WriteLine("Start scheduler");
+            _connection.Reconnecting += async (error) =>
+            {
+                _logger.LogInformation("Reconnecting" + DateTime.Now.ToString());
+
+                await _scheduler.Clear();
+
+                var job = await _scheduler.GetAllJobKeyAsync();
+                var trigger = await _scheduler.GetAllTriggerKey();
+            };
             _connection.Closed += async (error) =>
             {
-                while (true)
-                {
-                    try
-                    {
-                        await _connection.StartAsync();
-                        await _connection.InvokeAsync("Mailing");
-                        await _connection.InvokeAsync("AskMailing");
+                _logger.LogInformation("Closed" + DateTime.Now.ToString());
 
-                        await Console.Out.WriteLineAsync($"Hub: {_connection.State}");
-                        break;
-                    }
-                    catch
-                    {
-                        await Task.Delay(1000);
-                    }
-                }
+                await _connection.ConnectWithRetryAsync(stoppingToken);
             };
             _connection.Reconnected += async (error) =>
             {
-                await ScheduleJob();
+                await _connection.InvokeAsync("Mailing");
+                await _connection.InvokeAsync("AskMailing");
             };
-            // Ket noi thanh cong den hub
-
-            // Hoi thoi gian gui mail
-
-            // Lang nghe tg gui mail khoi tao schedule 
+         
             _connection.On<List<MailingDto>>("ReceiveMailing", async (data) =>
            {
                _mailingDtos = data;
@@ -86,28 +80,10 @@ namespace TodolistScheduleService.Services
                 _mailingDtos = data;
                 await UnscheduleAllJob();
             });
-
             // Loop is here to wait until the server is running
-            while (true)
-            {
-                try
-                {
-                    await _connection.StartAsync();
-                    if (_mailingDtos == null)
-                    {
-                        await _connection.InvokeAsync("Mailing");
-                    }
-                    break;
-                }
-                catch
-                {
-                    await Task.Delay(1000);
-                }
-            }
-            await Console.Out.WriteLineAsync($"Hub: {_connection.State}");
-
-
+            await _connection.ConnectWithRetryAsync(stoppingToken);
         }
+
         /// <summary>
         /// Lập lịch
         /// </summary>
@@ -126,28 +102,28 @@ namespace TodolistScheduleService.Services
                         var mailList = frequencycItem.SelectMany(x => x.UserList.Select(x => x.Email)).ToList();
                         var time = frequencycItem.First().TimeSend;
 
-                        if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Daily)
+                        if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Daily)
                         {
                             IDictionary<string, object> maps = new Dictionary<string, object>();
                             foreach (var jobMap in frequencycItem.ToList())
                             {
                                 var p = new SendMailParams();
                                 p.IdentityParams(jobMap.Report, jobMap.Frequency);
-                                p.APIInfo(_appsettings.API_URL, jobMap.Report, jobMap.PathName, mailList);
+                                p.APIInfo(_appsettings.API_URL, jobMap.PathName, mailList);
                                 var jobMapValue = JsonConvert.SerializeObject(p);
 
                                 maps.Add("Data", jobMapValue);
                             }
                             await _scheduler.StartDaily(time.Hour, time.Minute, maps);
                         }
-                        else if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Weekly)
+                        else if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Weekly)
                         {
                             IDictionary<string, object> maps = new Dictionary<string, object>();
                             foreach (var jobMap in frequencycItem.ToList())
                             {
                                 var p = new SendMailParams();
                                 p.IdentityParams(jobMap.Report, jobMap.Frequency);
-                                p.APIInfo(_appsettings.API_URL, jobMap.Report, jobMap.PathName, mailList);
+                                p.APIInfo(_appsettings.API_URL, jobMap.PathName, mailList);
                                 var jobMapValue = JsonConvert.SerializeObject(p);
 
                                 maps.Add("Data", jobMapValue);
@@ -155,14 +131,14 @@ namespace TodolistScheduleService.Services
 
                             await _scheduler.StartWeekly(time.DayOfWeek, time.Hour, time.Minute, maps);
                         }
-                        else if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Monthly)
+                        else if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Monthly)
                         {
                             IDictionary<string, object> maps = new Dictionary<string, object>();
                             foreach (var jobMap in frequencycItem.ToList())
                             {
                                 var p = new SendMailParams();
                                 p.IdentityParams(jobMap.Report, jobMap.Frequency);
-                                p.APIInfo(_appsettings.API_URL, jobMap.Report, jobMap.PathName, mailList);
+                                p.APIInfo(_appsettings.API_URL,jobMap.PathName, mailList);
                                 var jobMapValue = JsonConvert.SerializeObject(p);
                                 maps.Add("Data", jobMapValue);
                             }
@@ -190,14 +166,14 @@ namespace TodolistScheduleService.Services
                     {
                         var mailList = frequencycItem.SelectMany(x => x.UserList.Select(x => x.Email)).ToList();
                         var time = frequencycItem.First().TimeSend;
-                        if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Daily)
+                        if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Daily)
                         {
                             IDictionary<string, object> maps = new Dictionary<string, object>();
                             foreach (var jobMap in frequencycItem.ToList())
                             {
                                 var p = new SendMailParams();
                                 p.IdentityParams(jobMap.Report, jobMap.Frequency);
-                                p.APIInfo(_appsettings.API_URL, jobMap.Report, jobMap.PathName, mailList);
+                                p.APIInfo(_appsettings.API_URL,jobMap.PathName, mailList);
                             
                                 var jobMapValue = JsonConvert.SerializeObject(p);
 
@@ -205,21 +181,21 @@ namespace TodolistScheduleService.Services
                             }
                             await _scheduler.UpdateDailyTrigger(time.Hour, time.Minute, maps);
                         }
-                        else if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Weekly)
+                        else if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Weekly)
                         {
                             IDictionary<string, object> maps = new Dictionary<string, object>();
                             foreach (var jobMap in frequencycItem.ToList())
                             {
                                 var p = new SendMailParams();
                                 p.IdentityParams(jobMap.Report, jobMap.Frequency);
-                                p.APIInfo(_appsettings.API_URL, jobMap.Report, jobMap.PathName, mailList);
+                                p.APIInfo(_appsettings.API_URL, jobMap.PathName, mailList);
                                 var jobMapValue = JsonConvert.SerializeObject(p);
 
                                 maps.Add("Data", jobMapValue);
                             }
                             await _scheduler.UpdateWeeklyTrigger(time.DayOfWeek, time.Hour, time.Minute, maps);
                         }
-                        else if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Monthly)
+                        else if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Monthly)
                         {
 
                             IDictionary<string, object> maps = new Dictionary<string, object>();
@@ -227,7 +203,7 @@ namespace TodolistScheduleService.Services
                             {
                                 var p = new SendMailParams();
                                 p.IdentityParams(jobMap.Report, jobMap.Frequency);
-                                p.APIInfo(_appsettings.API_URL, jobMap.Report, jobMap.PathName, mailList);
+                                p.APIInfo(_appsettings.API_URL, jobMap.PathName, mailList);
                                 var jobMapValue = JsonConvert.SerializeObject(p);
 
                                 maps.Add("Data", jobMapValue);
@@ -258,7 +234,7 @@ namespace TodolistScheduleService.Services
                     {
                         var mailList = frequencycItem.SelectMany(x => x.UserList.Select(x => x.Email)).ToList();
                         var time = frequencycItem.First().TimeSend;
-                        if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Daily)
+                        if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Daily)
                         {
                             foreach (var jobMap in frequencycItem.ToList())
                             {
@@ -266,7 +242,7 @@ namespace TodolistScheduleService.Services
                                 await _scheduler.UnscheduleJob(triggerKey);
                             }
                         }
-                        else if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Weekly)
+                        else if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Weekly)
                         {
                             foreach (var jobMap in frequencycItem.ToList())
                             {
@@ -274,7 +250,7 @@ namespace TodolistScheduleService.Services
                                 await _scheduler.UnscheduleJob(triggerKey);
                             }
                         }
-                        else if (frequencycItem.Key.Frequency == DMR_API.Constants.FrequencyOption.Monthly)
+                        else if (frequencycItem.Key.Frequency == Constants.FrequencyOption.Monthly)
                         {
                             foreach (var jobMap in frequencycItem.ToList())
                             {

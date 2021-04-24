@@ -128,7 +128,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
       return this.elem.value;
     },
     write: (args: { rowData: object, column: Column }) => { // to create input element
-      // console.log(args.rowData);
+      // // console.log(args.rowData);
       // this.elem.value = args.rowData[args.column.field] || 120 ;
     },
     params: { value: 120, format: '####' }
@@ -179,7 +179,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
     this.clearForm();
   }
   onTimeChange(agrs) {
-    // console.log(agrs);
+    // // console.log(agrs);
     // this.endTime = {hour: +value.hour, minute: +value.minute};
   }
   public onFiltering: EmitType<FilteringEventArgs> = (
@@ -259,14 +259,14 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
     e.updateData(this.buildings as any, query);
   }
   onChangeBuilding(args) {
-    console.clear();
+    // console.clear();
     this.buildingID = args.itemData.id;
     this.buildingName = args.itemData.name;
     this.isSTF = args.itemData.isSTF as boolean;
     localStorage.setItem('buildingID', args.itemData.id);
     localStorage.setItem('isSTF', args.itemData.isSTF);
-    console.log('- Chon tòa nhà: ', this.buildingName);
-    console.log(`Đây là: ${this.isSTF === true ? 'Xưởng đế' : 'Thành hình'}`);
+    // console.log('- Chon tòa nhà: ', this.buildingName);
+    // console.log(`Đây là: ${this.isSTF === true ? 'Xưởng đế' : 'Thành hình'}`);
     this.getAll();
     this.achievementRate();
     this.getStartTimeFromPeriod();
@@ -360,7 +360,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
   getAllLine(buildingID) {
     this.planService.getLines(buildingID).subscribe((res: any) => {
       this.lines = res;
-      console.log('Lấy tất cả các chuyền theo tòa nhà: ', this.buildingName);
+      // console.log('Lấy tất cả các chuyền theo tòa nhà: ', this.buildingName);
     });
   }
   onChangeLine(args, data) {
@@ -514,8 +514,8 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
           this.getAll();
           this.clearForm();
         });
-        console.clear();
-        console.log('Đã chỉnh sửa thành công kế hoạch làm việc!');
+        // console.clear();
+        // console.log('Đã chỉnh sửa thành công kế hoạch làm việc!');
       }
       if (args.action === 'add') {
         args.data.hourlyOutput = 120;
@@ -552,8 +552,8 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
           this.getAll();
           this.clearForm();
         });
-        console.clear();
-        console.log('Đã thêm mới thành công kế hoạch làm việc!');
+        // console.clear();
+        // console.log('Đã thêm mới thành công kế hoạch làm việc!');
       }
     }
   }
@@ -612,12 +612,12 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
     this.modalReference = this.modalService.open(addModalPlan);
   }
   actionFailure(e: any): void {
-    console.log(e.error);
+    // console.log(e.error);
   }
 
   getAllBPFC() {
     this.bPFCEstablishService.filterByApprovedStatus().subscribe((res: any) => {
-      console.log('Nếu là thành hình thì chỉ lấy những mẫu giầy của thành hình, ngược lại lấy của xưởng đế!');
+      // console.log('Nếu là thành hình thì chỉ lấy những mẫu giầy của thành hình, ngược lại lấy của xưởng đế!');
       this.bpfcDataSource = res.map((item) => {
         return {
           id: item.id,
@@ -653,7 +653,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
         this.BPFCs = Object.assign([], bpfcList);
         this.BPFCsForChangeModal = Object.assign([], bpfcList);
       }
-      console.log('Lấy danh sách mẫu giày: ', this.BPFCs.length);
+      // console.log('Lấy danh sách mẫu giày: ', this.BPFCs.length);
     });
   }
 
@@ -661,8 +661,8 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
     this.planService.getStartTimeFromPeriod(this.buildingID).subscribe(res => {
       if (res.status === true) {
         this.period = res.data;
-        console.log('Những dữ liệu cần thiết cho việc tạo kế hoạch làm việc: ');
-        console.log('Lấy thời gian bắt đầu trộn keo đầu tiên trong ngày!');
+        // console.log('Những dữ liệu cần thiết cho việc tạo kế hoạch làm việc: ');
+        // console.log('Lấy thời gian bắt đầu trộn keo đầu tiên trong ngày!');
 
       } else {
         this.alertify.warning(res.message);
@@ -698,7 +698,7 @@ export class PlanComponent extends BaseComponent implements OnInit, OnDestroy {
           isShowOvertimeOption: item.isShowOvertimeOption
         };
       });
-      console.log('Lấy tất cả kế hoạch làm việc của tòa nhà : ', this.buildingName);
+      // console.log('Lấy tất cả kế hoạch làm việc của tòa nhà : ', this.buildingName);
 
     });
   }

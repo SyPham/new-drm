@@ -44,4 +44,10 @@ export class AutoSelectDirective implements AfterViewInit, OnInit, OnDestroy {
     event.preventDefault();
     this.host.nativeElement.value = this.host.nativeElement.value + '    ';
   }
+
+  @HostListener('document:keydown', ['$event']) keyDown(event: KeyboardEvent) {
+    if ( event.ctrlKey && (event.keyCode === 13 || event.keyCode === 17 || event.keyCode === 74)) {
+      event.preventDefault();
+    }
+  }
 }

@@ -8,7 +8,7 @@
             <label>Model Name: </label>
           </div>
           <div class="col-md-8 mt-2">
-            <input type="text" name="" disabled  class="form-control" [value]="modelNameDetail" title="">
+            <input type="text" name="" disabled class="form-control" [value]="modelNameDetail" title="">
           </div>
 
           <!-- <div class="col-md-1 mt-2">
@@ -21,7 +21,7 @@
             <label>Model NO: </label>
           </div>
           <div class="col-md-8 mt-2">
-            <input type="text" name="" disabled  class="form-control" [value]="modelNoDetail" title="">
+            <input type="text" name="" disabled class="form-control" [value]="modelNoDetail" title="">
           </div>
 
         </div>
@@ -30,7 +30,7 @@
             <label>Article NO: </label>
           </div>
           <div class="col-md-8 mt-2">
-            <input type="text" name="" disabled  class="form-control" [value]="articleNoDetail" title="">
+            <input type="text" name="" disabled class="form-control" [value]="articleNoDetail" title="">
           </div>
           <div class="col-md-1 mt-2">
           </div>
@@ -76,7 +76,8 @@
                   {{'CONSUMPTION' | translate}}
                 </ng-template>
                 <ng-template #template let-data>
-                  <span [class]="changeConsumptionColor(data)">{{data.consumption === '' ? '0' : data.consumption}}</span>
+                  <span [class]="changeConsumptionColor(data)">{{data.consumption === '' ? '0' :
+                    data.consumption}}</span>
                 </ng-template>
               </e-column>
               <e-column field='expiredTime' headerText='Expired Time' isPrimaryKey="true" textAlign='Center'
@@ -137,22 +138,18 @@
 
           <button type="button" class="btn btn-danger btn-sm mr-2 d-none"><i class="fas fa-undo"></i> Reset
           </button>
-          <ejs-switch #switch onLabel="{{'DONE' | translate}}" offLabel="{{'UNDONE' | translate}}"
+          <ejs-switch #doneSwitch onLabel="{{'DONE' | translate}}" offLabel="{{'UNDONE' | translate}}"
             [disabled]='approvalStatus' style="width: 100px; margin-right: 10px;" (click)='done()'
-            *ngIf='modelNameID > 0' [(ngModel)]="createdStatus" [checked]="createdStatus"></ejs-switch>
-          <ng-container *ngIf="(level !== 3 && level !== 4)">
-            <ejs-switch onLabel="Approved" offLabel="{{'NOT_APPROVED' | translate}}" style="width: 120px;"
-              (click)='approval()' *ngIf='modelNameID > 0' [(ngModel)]="approvalStatus" [checked]="approvalStatus">
-            </ejs-switch>
-          </ng-container>
-          <!-- <button type="button" (click)='save()' ejs-button cssClass="e-small e-warning ml-2"><i
-                class="fas fa-save"></i> {{ 'SAVE' | translate}}
-            </button> -->
-          <button type="button" (click)='finished()' *ngIf='modelNameID > 0' ejs-button
-            cssClass="e-small e-success ml-2"><i class="fas fa-save"></i> {{ 'FINISHED' | translate}}
+            [(checked)]="createdStatus"></ejs-switch>
+          <ejs-switch #approvalSwitch onLabel="Approved" offLabel="{{'NOT_APPROVED' | translate}}" style="width: 120px;"
+            (click)='approval()' [(checked)]="approvalStatus">
+          </ejs-switch>
+
+          <button type="button" (click)='finished()' ejs-button cssClass="e-small e-success ml-2"><i
+              class="fas fa-save"></i> {{ 'FINISHED' | translate}}
           </button>
-          <button type="button" (click)='openModalHistory(HistoryModal)' *ngIf='modelNameID > 0' ejs-button
-            cssClass="e-small e-default ml-2"><i class="fas fa-history"></i> History</button>
+          <button type="button" (click)='openModalHistory(HistoryModal)' ejs-button cssClass="e-small e-default ml-2"><i
+              class="fas fa-history"></i> History</button>
         </div>
       </div>
       <div class="card-body" *ngIf="existGlue">
@@ -163,7 +160,8 @@
             <ul>
               <li style="list-style: none;" *ngFor="let item of renderchemical(); let i=index">
                 <a>
-                  {{item.position}}. {{item.ingredientName}} <span class="font-weight-bold text-danger">({{item.percentage}}%)</span>
+                  {{item.position}}. {{item.ingredientName}} <span
+                    class="font-weight-bold text-danger">({{item.percentage}}%)</span>
                 </a>
               </li>
             </ul>
@@ -349,32 +347,28 @@
         <div class="form-group">
           <label for="Name">Model Name</label>
           <span style="color:red">(*)</span>
-          <input type="text" name="" disabled  class="form-control" [value]="modelNameLeo"
-            title="">
+          <input type="text" name="" disabled class="form-control" [value]="modelNameLeo" title="">
         </div>
       </div>
       <div class="col-md-12">
         <div class="form-group">
           <label for="Name">Model NO</label>
           <span style="color:red">(*)</span>
-          <input type="text" name="" disabled class="form-control" [value]="modelNoLeo"
-            title="">
+          <input type="text" name="" disabled class="form-control" [value]="modelNoLeo" title="">
         </div>
       </div>
       <div class="col-md-12">
         <div class="form-group">
           <label for="Name">Article NO</label>
           <span style="color:red">(*)</span>
-          <input type="text" name="" class="form-control" [(ngModel)]="articleNoNewLeo" [value]="articleNoLeo"
-             title="">
+          <input type="text" name="" class="form-control" [(ngModel)]="articleNoNewLeo" [value]="articleNoLeo" title="">
         </div>
       </div>
       <div class="col-md-12">
         <div class="form-group">
           <label for="Name">Process</label>
           <span style="color:red">(*)</span>
-          <input type="text" name="" disabled  class="form-control" [value]="artProcessLeo"
-            title="">
+          <input type="text" name="" disabled class="form-control" [value]="artProcessLeo" title="">
         </div>
       </div>
 

@@ -3224,7 +3224,6 @@ namespace DMR_API._Services.Services
         }
         public async Task<ResponseDetail<Byte[]>> AchievementRateExcelExport()
         {
-
             var today = DateTime.Now.Date;
             var tomorrow = DateTime.Now.AddDays(1).Date;
             var buildings = await _repoBuilding.FindAll(x => x.Level == 2).ToListAsync();

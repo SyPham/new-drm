@@ -27,7 +27,6 @@ export class UnauthorizedInterceptor implements HttpInterceptor {
                         queryParams: { returnUrl: this.router.routerState.snapshot.url },
                     });
                 }
-
                 if (!environment.production) {
                     console.error(err);
                 }

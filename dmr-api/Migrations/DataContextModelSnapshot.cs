@@ -1504,9 +1504,6 @@ namespace DMR_API.Migrations
                     b.Property<string>("GlueName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("MachineID")
-                        .HasColumnType("int");
-
                     b.Property<int>("MixingInfoID")
                         .HasColumnType("int");
 
@@ -1541,6 +1538,39 @@ namespace DMR_API.Migrations
                     b.HasIndex("SettingID");
 
                     b.ToTable("Stirs");
+                });
+
+            modelBuilder.Entity("DMR_API.Models.StirRawData", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Building")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("BuildingID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MachineID")
+                        .HasColumnType("int");
+
+                    b.Property<double>("RPM")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Sequence")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("StirRawData");
                 });
 
             modelBuilder.Entity("DMR_API.Models.Subpackage", b =>

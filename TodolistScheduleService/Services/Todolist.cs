@@ -1,10 +1,4 @@
-﻿using DMR_API._Services.Interface;
-using DMR_API.Data;
-using DMR_API.DTO;
-using DMR_API.Helpers;
-using DMR_API.Models;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
@@ -34,10 +28,10 @@ namespace TodolistScheduleService.Services
             Console.WriteLine($"Hub State: {_connection.State}");
             _logger = logger;
         }
-        public override Task StopAsync(CancellationToken cancellationToken)
+        public override async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogError($"Todolist Service StopAsync at: { DateTimeOffset.Now}");
-            return _connection.DisposeAsync();
+            await _connection.DisposeAsync();
         }
         protected async override Task ExecuteAsync(CancellationToken stoppingToken)
         {

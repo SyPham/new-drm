@@ -1,6 +1,6 @@
-import { Directive, AfterViewInit, ElementRef, Input, OnChanges, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Directive, AfterViewInit, ElementRef, Input, OnChanges, HostListener, OnInit, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
-import { debounceTime } from 'rxjs/operators';
+import { debounceTime, finalize } from 'rxjs/operators';
 
 @Directive({
   // tslint:disable-next-line:directive-selector
@@ -10,11 +10,12 @@ export class SearchDirective implements AfterViewInit, OnInit, OnDestroy {
   subject = new Subject<string>();
   subscription: Subscription[] = [];
   regexStr = '^[a-zA-Z0-9_]*$';
-
+  isShow: boolean;
+  @Output() messageEvent = new EventEmitter<boolean>();
   @HostListener('focus') onFocus() {
     setTimeout(() => {
       this.host.nativeElement.select();
-    }, 2000);
+    }, 300);
   }
   @HostListener('focusout') onFocusout() {
     setTimeout(() => {
@@ -22,19 +23,36 @@ export class SearchDirective implements AfterViewInit, OnInit, OnDestroy {
     }, 5000);
   }
   @HostListener('ngModelChange', ['$event']) onChange(value) {
-    // this.subject.next(value);
+    this.isShow = true;
+    this.messageEvent.emit(true);
+    this.subject.next(value);
+  }
+  @HostListener('document:keydown', ['$event']) onKeyDown(event: KeyboardEvent) {
+    if (event.keyCode === 13 || event.keyCode === 17 || event.keyCode === 74) {
+      event.preventDefault();
+    }
   }
   constructor(private host: ElementRef) { }
   ngAfterViewInit() {
+    // document.addEventListener('keydown', (event) => {
+    //   if (event.keyCode === 13 || event.keyCode === 17 || event.keyCode === 74) {
+    //     event.preventDefault();
+    //   }
+    // });
     setTimeout(() => {
       this.host.nativeElement.focus();
     }, 500);
   }
   ngOnInit() {
     this.subscription.push(this.subject
-    .pipe(debounceTime(300))
-    .subscribe(async (arg) => {
+    .pipe(
+      debounceTime(50)
+      )
+      .subscribe(async (args) => {
       this.host.nativeElement.select();
+      console.log(args);
+      this.messageEvent.emit(false);
+      this.isShow = false;
     }));
   }
   ngOnDestroy() {
@@ -44,9 +62,6 @@ export class SearchDirective implements AfterViewInit, OnInit, OnDestroy {
   onKeydownHandler(event: KeyboardEvent) {
     event.preventDefault();
     this.host.nativeElement.value = this.host.nativeElement.value + '    ';
-    // const input = this.host.nativeElement.value + '    '.split(' ') || [];
-    // this.host.nativeElement.value = input[20]
-    // this.host.nativeElement.value = this.host.nativeElement.value.replace('    ', '');
   }
 
   @HostListener('document:keydown.tab', ['$event'])

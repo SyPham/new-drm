@@ -19,7 +19,32 @@ export class AlertifyService {
       toast.addEventListener('mouseleave', Swal.resumeTimer);
     }
   });
-
+  showLoading(timer = 2000) {
+    {
+      Swal({
+        title: 'Now loading',
+        allowEscapeKey: false,
+        allowOutsideClick: false,
+        timer,
+        onOpen: () => {
+          Swal.showLoading();
+        }
+      }).then(
+        () => { },
+        (dismiss) => {
+          if (dismiss === 'timer') {
+            console.log('closed by timer!!!!');
+            Swal({
+              title: 'Finished!',
+              type: 'success',
+              timer: 2000,
+              showConfirmButton: false
+            });
+          }
+        }
+      );
+    }
+  }
   confirm(title: string, message: string, okCallback: () => void) {
     Swal.fire({
       title,

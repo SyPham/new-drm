@@ -1,29 +1,46 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Quartz;
 using Quartz.Impl;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
+using TodolistScheduleService.Constants;
 using TodolistScheduleService.Dto;
-using TodolistScheduleService.Jobs;
 
 namespace TodolistScheduleService.Schedulers
 {
-
-    public abstract class KeyType
+    public interface ISchedulerBase<TClass, TJobMap>
+    {
+        Task StartAllJob();
+        Task StartDaily(int hour, int minute, IDictionary<string, object> map);
+        Task StartWeekly(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map);
+        Task StartMonthly(int hour, int minute, IDictionary<string, object> map);
+        Task StartDisaptch(int repeatMinute, TimeSpan startHourAt, TimeSpan endHourAt);
+        Task StartTodo(int repeatMinute, TimeSpan startHourAt, TimeSpan endHourAt);
+        Task UpdateDailyTrigger(int hour, int minute, IDictionary<string, object> map);
+        Task UpdateWeeklyTrigger(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map);
+        Task UpdateMonthlyTrigger(int hour, int minute, IDictionary<string, object> map);
+        Task UnscheduleJob(TriggerKey triggerKey);
+        Task Stop();
+        Task Clear();
+        Task<List<TriggerKey>> GetAllTriggerKey();
+        Task<List<JobKey>> GetAllJobKeyAsync();
+        Task<bool> checkScheduleStart();
+    }
+   
+        public abstract class KeyType
     {
         public string Name { get; set; }
         public string Group { get; set; }
     }
-    public class SchedulerBase<TClass> where TClass : IJob
+    public class SchedulerBaseTest<TClass, TJobMap> : ISchedulerBase<TClass, TJobMap> where TClass : IJob where TJobMap : QuartzExtention.Jobs.IJobMap
     {
         IScheduler _scheduler;
+        private readonly List<TriggerKey> _triggerKeys = new List<TriggerKey>();
+        private readonly List<JobKey> _jobKeys = new List<JobKey>();
+        public SchedulerBaseTest()
+        {
+        }
 
         /// <summary>
         /// Bắt đầu lập lịch
@@ -33,55 +50,6 @@ namespace TodolistScheduleService.Schedulers
         {
             _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
             await _scheduler.Start();
-        }
-        public async Task Start(IntervalUnit intervalUnit, int hour, int minute)
-        {
-
-            _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
-            await _scheduler.Start();
-            var _job = JobBuilder.Create<TClass>().Build();
-
-            var _trigger = TriggerBuilder.Create()
-                 .WithDailyTimeIntervalSchedule
-                   (s =>
-                     s.WithInterval(1, intervalUnit)
-                     .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                   )
-                 .Build();
-            await _scheduler.ScheduleJob(_job, _trigger);
-        }
-        public async Task Start(IntervalUnit intervalUnit, DayOfWeek dayofWeek, int hour, int minute)
-        {
-
-            _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
-            await _scheduler.Start();
-            var _job = JobBuilder.Create<TClass>().Build();
-
-            var _trigger = TriggerBuilder.Create()
-                 .WithDailyTimeIntervalSchedule
-                   (s =>
-                     s.WithInterval(1, intervalUnit)
-                     .OnDaysOfTheWeek(dayofWeek)
-                     .StartingDailyAt(TimeOfDay.HourAndMinuteOfDay(hour, minute))
-                   )
-                 .Build();
-            await _scheduler.ScheduleJob(_job, _trigger);
-        }
-        public async Task Start(int repeatMinute, TimeSpan startHourAt, TimeSpan endHourAt)
-        {
-            _scheduler = await StdSchedulerFactory.GetDefaultScheduler();
-            await _scheduler.Start();
-
-            var _job = JobBuilder.Create<TClass>()
-                .Build();
-            var st = DateTime.Now.Date.Add(startHourAt);
-            var end = DateTimeOffset.Now.Date.Add(endHourAt);
-            var _trigger = TriggerBuilder.Create()
-                        .StartAt(st)
-                        .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
-                        .EndAt(end)
-                        .Build();
-            await _scheduler.ScheduleJob(_job, _trigger);
         }
 
         /// <summary>
@@ -93,11 +61,11 @@ namespace TodolistScheduleService.Schedulers
         /// <returns></returns>
         public async Task StartDaily(int hour, int minute, IDictionary<string, object> map)
         {
-            var json = map["Data"].ToString();
-            KeyType data = JsonConvert.DeserializeObject<KeyType>(json);
+
+            var json = map[JobData.Data].ToString();
+            TJobMap data = JsonConvert.DeserializeObject<TJobMap>(json);
             var triggerKey = new TriggerKey(data.Name, data.Group);
             var jobKey = new JobKey(data.Name, data.Group);
-
             var jobDaily = JobBuilder.Create<TClass>()
                                 .WithIdentity(jobKey)
                                 .SetJobData(new JobDataMap(map))
@@ -114,7 +82,10 @@ namespace TodolistScheduleService.Schedulers
 
                  .Build();
             await _scheduler.ScheduleJob(jobDaily, triggerDaily);
-            Console.WriteLine($"Add {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            _triggerKeys.Add(triggerKey);
+            _jobKeys.Add(jobKey);
+            Console.WriteLine($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} everyday.");
+
 
         }
 
@@ -128,8 +99,8 @@ namespace TodolistScheduleService.Schedulers
         /// <returns></returns>
         public async Task StartWeekly(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map)
         {
-            var json = map["Data"].ToString();
-            KeyType data = JsonConvert.DeserializeObject<KeyType>(json);
+            var json = map[JobData.Data].ToString();
+            TJobMap data = JsonConvert.DeserializeObject<TJobMap>(json);
             var triggerKey = new TriggerKey(data.Name, data.Group);
             var jobKey = new JobKey(data.Name, data.Group);
             var jobWeekly = JobBuilder.Create<TClass>()
@@ -143,7 +114,10 @@ namespace TodolistScheduleService.Schedulers
                 .Build();
 
             await _scheduler.ScheduleJob(jobWeekly, triggerWeekly);
-            Console.WriteLine($"Add {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            _triggerKeys.Add(triggerKey);
+            _jobKeys.Add(jobKey);
+            Console.WriteLine($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} every week.");
+
 
         }
         /// <summary>
@@ -155,8 +129,8 @@ namespace TodolistScheduleService.Schedulers
         /// <returns></returns>
         public async Task StartMonthly(int hour, int minute, IDictionary<string, object> map)
         {
-            var json = map["Data"].ToString();
-            KeyType data = JsonConvert.DeserializeObject<KeyType>(json);
+            var json = map[JobData.Data].ToString();
+            TJobMap data = JsonConvert.DeserializeObject<TJobMap>(json);
             var triggerKey = new TriggerKey(data.Name, data.Group);
             var jobKey = new JobKey(data.Name, data.Group);
             var jobMonthly = JobBuilder.Create<TClass>()
@@ -171,7 +145,10 @@ namespace TodolistScheduleService.Schedulers
                 .ForJob(jobMonthly.Key)
                 .Build();
             await _scheduler.ScheduleJob(jobMonthly, triggerMonthly);
-            Console.WriteLine($"Add {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+            _triggerKeys.Add(triggerKey);
+            _jobKeys.Add(jobKey);
+            Console.WriteLine($"Add {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} on the last day of every month.");
+
 
         }
 
@@ -181,7 +158,6 @@ namespace TodolistScheduleService.Schedulers
             var jobDispatch = JobBuilder.Create<TClass>().Build();
             var st = DateTime.Now.Date.Add(startHourAt);
             var end = DateTimeOffset.Now.Date.Add(endHourAt);
-            Console.WriteLine(st);
             var triggerDisaptch = TriggerBuilder.Create()
                          .StartAt(st)
                          .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
@@ -195,7 +171,6 @@ namespace TodolistScheduleService.Schedulers
             var jobTodo = JobBuilder.Create<TClass>().Build();
             var st = DateTime.Now.Date.Add(startHourAt);
             var end = DateTimeOffset.Now.Date.Add(endHourAt);
-            Console.WriteLine(st);
             var triggerTodo = TriggerBuilder.Create()
                          .StartAt(st)
                          .WithSchedule(SimpleScheduleBuilder.RepeatMinutelyForever(repeatMinute))
@@ -218,8 +193,8 @@ namespace TodolistScheduleService.Schedulers
         //You can only re-schedule it (with any changes you might want to make) or delete it and create a new one.
         public async Task UpdateDailyTrigger(int hour, int minute, IDictionary<string, object> map)
         {
-            var json = map["Data"].ToString();
-            KeyType data = JsonConvert.DeserializeObject<KeyType>(json);
+            var json = map[JobData.Data].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
             var triggerKey = new TriggerKey(data.Name, data.Group);
 
             var jobKey = new JobKey(data.Name, data.Group);
@@ -243,7 +218,7 @@ namespace TodolistScheduleService.Schedulers
                    .Build();
 
                 await _scheduler.RescheduleJob(trigger.Key, newtriggerDaily);
-                Console.WriteLine($"Update {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                Console.WriteLine($"Update {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} everyday.");
 
             }
             else
@@ -262,8 +237,8 @@ namespace TodolistScheduleService.Schedulers
         /// <returns></returns>
         public async Task UpdateWeeklyTrigger(DayOfWeek dayOfWeek, int hour, int minute, IDictionary<string, object> map)
         {
-            var json = map["Data"].ToString();
-            KeyType data = JsonConvert.DeserializeObject<KeyType>(json);
+            var json = map[JobData.Data].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
             var triggerKey = new TriggerKey(data.Name, data.Group);
 
             var jobKey = new JobKey(data.Name, data.Group);
@@ -283,7 +258,7 @@ namespace TodolistScheduleService.Schedulers
                    .Build();
 
                 await _scheduler.RescheduleJob(trigger.Key, newtriggerWeekly);
-                Console.WriteLine($"Update {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                Console.WriteLine($"Update {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} every week.");
 
             }
             else
@@ -300,8 +275,8 @@ namespace TodolistScheduleService.Schedulers
         /// <returns></returns>
         public async Task UpdateMonthlyTrigger(int hour, int minute, IDictionary<string, object> map)
         {
-            var json = map["Data"].ToString();
-            KeyType data = JsonConvert.DeserializeObject<KeyType>(json);
+            var json = map[JobData.Data].ToString();
+            SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
             var triggerKey = new TriggerKey(data.Name, data.Group);
 
             var jobKey = new JobKey(data.Name, data.Group);
@@ -324,7 +299,7 @@ namespace TodolistScheduleService.Schedulers
 
                 // if you don't want that it starts now, pass 'false' for the 'startNow' parameter
                 await _scheduler.RescheduleJob(trigger.Key, newtriggerMonthly);
-                Console.WriteLine($"Update {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                Console.WriteLine($"Update {triggerKey.Name}-{triggerKey.Group} fire at {hour.ToString("D2") }:{minute.ToString("D2")} on the last day of every month.");
 
 
             }
@@ -342,10 +317,13 @@ namespace TodolistScheduleService.Schedulers
         public async Task UnscheduleJob(TriggerKey triggerKey)
         {
             var trigger = await _scheduler.GetTrigger(triggerKey);
+            var jobKey = new JobKey(triggerKey.Name, triggerKey.Group);
             if (trigger != null)
             {
                 await _scheduler.UnscheduleJob(trigger.Key);
-                Console.WriteLine($"UnscheduleJob {triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
+                _triggerKeys.Remove(triggerKey);
+                _jobKeys.Remove(jobKey);
+                Console.WriteLine($"UnscheduleJob {triggerKey.Name}-{triggerKey.Group} at {DateTime.Now.ToString("dd-MM-yyyy HH:mm")}");
             }
             await Task.CompletedTask;
         }
@@ -356,5 +334,32 @@ namespace TodolistScheduleService.Schedulers
                 await _scheduler.Shutdown();
             }
         }
+        public async Task Clear()
+        {
+            await _scheduler.Clear();
+        }
+        public async Task<List<TriggerKey>> GetAllTriggerKey()
+        {
+            var result = new List<TriggerKey>();
+            foreach (var item in _triggerKeys)
+            {
+                var trigger = await _scheduler.GetTrigger(item);
+                if (trigger != null)
+                    result.Add(trigger.Key);
+            }
+            return result;
+        }
+        public async Task<List<JobKey>> GetAllJobKeyAsync()
+        {
+            var result = new List<JobKey>();
+            foreach (var item in _jobKeys)
+            {
+                var job = await _scheduler.GetJobDetail(item);
+                if (job != null)
+                    result.Add(job.Key);
+            }
+            return result;
+        }
+
     }
 }

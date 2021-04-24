@@ -19,4 +19,9 @@ export const environment = {
   hub: 'http://10.4.5.174:85/ec-hub',
   scalingHub: 'http://10.4.5.174:85/ec-hub',
   scalingHubLocal: 'http://localhost:5001/scalingHub',
+	mqtt: {
+		server: 'mqtt.myweb.com',
+		protocol: "wss",
+		port: 1883
+	}
 };

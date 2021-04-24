@@ -12,6 +12,11 @@ export const environment = {
   hub: 'http://10.4.4.224:1009/ec-hub',
   scalingHub: 'http://10.4.4.224:1009/ec-hub',
   scalingHubLocal: 'http://localhost:5001/scalingHub',
+  mqtt: {
+    server: 'localhost',
+    protocol: "ws",
+    port: 1883
+  }
 
   // apiUrlEC: 'http://10.4.4.224:10022/api/',
   // apiUrl: 'https://localhost:5000/api/',

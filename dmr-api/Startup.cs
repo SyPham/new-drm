@@ -32,7 +32,11 @@ namespace DMR_API
             services.AddDatabaseExention(Configuration)
                     .AddRepositoriesExention()
                     .AddServicesExention();
-
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost";
+                options.InstanceName = "IoT";
+            });
             services.AddSignalR();
 
             services.AddLogging();

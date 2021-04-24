@@ -34,8 +34,6 @@ namespace DMR_API._Services.Services
             return await _repoLine.SaveAll();
         }
 
-     
-
         //Lấy danh sách Brand và phân trang
         public async Task<PagedList<LineDto>> GetWithPaginations(PaginationParams param)
         {

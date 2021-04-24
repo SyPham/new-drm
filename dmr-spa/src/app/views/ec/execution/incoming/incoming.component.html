@@ -1,3 +1,6 @@
+<ngx-spinner [fullScreen]="true" type="square-jelly-box" size="medium">
+  <p class="loading">Loading data...</p>
+</ngx-spinner>
 <div class="card">
   <!-- <div class="card-header">
     <h3>{{'INCOMING_LABEL' | translate}}</h3>
@@ -23,7 +26,7 @@
             </div>
             <div class="w3-rest">
               <!-- [autofocusSearch]="true" -->
-              <input [ngClass]="test" name="qrcode" autocomplete="off" autofocusSearch [ngModel]="qrcodeChange"
+              <input [ngClass]="test" name="qrcode" autocomplete="off" (messageEvent)="receiveMessage($event)" autofocusSearch [ngModel]="qrcodeChange"
                 (ngModelChange)='onNgModelChangeScanQRCode($event)' type="text">
             </div>
             <div class="row">

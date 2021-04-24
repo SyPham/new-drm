@@ -1,3 +1,4 @@
+import { async } from '@angular/core/testing';
 import { Component, OnInit, AfterViewInit, ViewChild, Renderer2, ElementRef, QueryList, HostListener, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AlertifyService } from 'src/app/_core/_service/alertify.service';
@@ -14,6 +15,7 @@ import { DropDownListComponent, FilteringEventArgs } from '@syncfusion/ej2-angul
 import { Query } from '@syncfusion/ej2-data/';
 import { EmitType } from '@syncfusion/ej2-base';
 import { BuildingService } from 'src/app/_core/_service/building.service';
+import { NgxSpinnerService } from 'ngx-spinner';
 const BUILDING_LEVEL = 2;
 @Component({
   selector: 'app-incoming',
@@ -49,20 +51,50 @@ export class IncomingComponent implements OnInit, OnDestroy, AfterViewInit {
   filterSettings = { type: 'Excel' };
   subject = new Subject<IScanner>();
   subscription: Subscription[] = [];
+  subjectSpinner = new Subject<boolean>();
 
   buildings: IBuilding[];
   fieldsBuildings: object = { text: 'name', value: 'id' };
   buildingID = 0;
   buildingName = '';
   toggleColor = true;
+  isShow: boolean;
   constructor(
     public modalService: NgbModal,
     private alertify: AlertifyService,
     private datePipe: DatePipe,
+    private spinner: NgxSpinnerService,
     private buildingService: BuildingService,
     public ingredientService: IngredientService,
     private cdr: ChangeDetectorRef
   ) {
+  }
+ receiveMessage(isShow) {
+    const newEvent = isShow;
+    if (newEvent !== this.isShow) {
+    if (isShow === true) {
+      this.spinner.show();
+      console.log('this.isShow === true', isShow, new Date().toISOString());
+      this.isShow = true;
+
+    } else if (isShow === false) {
+      console.log('this.isShow === false', isShow);
+      this.isShow = false;
+      this.spinner.hide();
+      }
+    }
+    // const newEvent = isShow;
+    // if (newEvent !== this.isShow) {
+
+    //   if (newEvent === true) {
+
+    //     this.subjectSpinner.next(true);
+    //   } else if (newEvent === false){
+    //     console.log('this.isShow === false', isShow);
+
+    //     this.subjectSpinner.next(false);
+    //   }
+    // }
   }
   ngAfterViewInit(): void {
     this.cdr.detectChanges();
@@ -71,6 +103,17 @@ export class IncomingComponent implements OnInit, OnDestroy, AfterViewInit {
     this.subscription.forEach(item => item.unsubscribe());
   }
   public ngOnInit(): void {
+    this.subscription.push(this.subjectSpinner.pipe(debounceTime(50)).subscribe( async (show) => {
+      // if (show === true) {
+      //   console.log('this.isShow === true', show);
+      //   this.isShow = true;
+      //   this.spinner.show();
+      // } else if (show === false) {
+      //   console.log('this.isShow === false', show);
+      //   this.isShow = false;
+      //   this.spinner.hide();
+      // }
+    }));
     // this.getIngredientInfo();
     this.getBuilding(() => {
       this.buildingID = +localStorage.getItem('buildingID');

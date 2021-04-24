@@ -13,13 +13,7 @@ import { AuthenticationService } from 'src/app/_core/_service/authentication.ser
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { FunctionSystem } from 'src/app/_core/_model/application-user';
-const ADMIN = 1;
-const ADMIN_COSTING = 5;
-const SUPERVISOR = 2;
-const STAFF = 3;
-const WORKER = 4;
-const WORKER2 = 6;
-const DISPATCHER = 6;
+import { NgxSpinnerService } from 'ngx-spinner';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -48,6 +42,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     private authService: AuthenticationService,
     private permisisonService: PermissionService,
     private roleService: RoleService,
+    private spinner: NgxSpinnerService,
     private cookieService: CookieService,
     private alertifyService: AlertifyService
   ) {
@@ -74,16 +69,6 @@ export class LoginComponent implements OnInit, OnDestroy {
       const uri = decodeURI(this.uri) || '/ec/execution/todolist-2';
       this.router.navigate([uri]);
     }
-    // this.subscription = this.authService.user$.subscribe((x) => {
-    //   if (this.route.snapshot.url[0].path === 'login') {
-    //     const accessToken = localStorage.getItem('access_token');
-    //     const refreshToken = localStorage.getItem('refresh_token');
-    //     if (x && accessToken && refreshToken) {
-    //       const returnUrl = this.route.snapshot.queryParams.returnUrl || '/ec/execution/todolist-2';
-    //       this.router.navigate([returnUrl]);
-    //     }
-    //   } // optional touch-up: if a tab shows login page, then refresh the page to reduce duplicate login
-    // });
   }
   onChangeRemember(args) {
     this.remember = args.target.checked;
@@ -93,11 +78,14 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
     this.busy = true;
-    const returnUrl = this.route.snapshot.queryParams.returnUrl || '/ec/execution/todolist-2';
+    this.spinner.show();
     this.authService
       .login(this.username, this.password)
       .pipe(
-        finalize(() => (this.busy = false))
+        finalize(() => {
+          this.busy = false;
+          this.spinner.hide();
+        })
         )
       .subscribe(
         async () => {

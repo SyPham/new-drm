@@ -139,6 +139,9 @@ export class PlanOutputQuantityComponent implements OnInit {
   created() { }
   onChangeBuilding(args) {
     this.buildingID = args.itemData.id;
+    this.buildingName = args.itemData.name;
+    localStorage.setItem('buildingID', args.itemData.id);
+    this.getAll();
   }
   onFilteringBuilding: EmitType<FilteringEventArgs> = (
     e: FilteringEventArgs
@@ -163,35 +166,47 @@ export class PlanOutputQuantityComponent implements OnInit {
     this.getAll();
   }
   checkRole(): void {
-    // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
-    switch (this.role.id) {
-      case ADMIN:
-      case SUPERVISOR:
-      case STAFF:
-      case WORKER: // Chỉ hiện todolist
-        this.IsAdmin = true;
-        const buildingId = +localStorage.getItem('buildingID');
-        if (buildingId === 0) {
-          this.getBuilding(() => {
-            this.alertify.message('Please select a building!', true);
-          });
-        } else {
-          this.getBuilding(() => {
-            this.buildingID = buildingId;
-            this.getAll();
-            this.getAllLine(this.buildingID);
-          });
-        }
-        break;
-      case DISPATCHER: // Chỉ hiện dispatchlist
-        this.building = JSON.parse(localStorage.getItem('building'));
-        this.getBuilding(() => {
-          this.buildingID = this.building[0].id;
-          this.getAll();
-          this.getAllLine(this.buildingID);
-        });
-        break;
+    const buildingId = +localStorage.getItem('buildingID');
+    if (buildingId === 0) {
+      this.getBuilding(() => {
+        this.alertify.message('Please select a building! <br> Vui lòng chọn 1 tòa nhà!', true);
+      });
+    } else {
+      this.getBuilding(() => {
+        this.buildingID = buildingId;
+        // this.getAll();
+        // this.getStartTimeFromPeriod();
+      });
     }
+    // // Nếu là admin, suppervisor, staff thì hiện cả todo va dispatch
+    // switch (this.role.id) {
+    //   case ADMIN:
+    //   case SUPERVISOR:
+    //   case STAFF:
+    //   case WORKER: // Chỉ hiện todolist
+    //     this.IsAdmin = true;
+    //     const buildingId = +localStorage.getItem('buildingID');
+    //     if (buildingId === 0) {
+    //       this.getBuilding(() => {
+    //         this.alertify.message('Please select a building!', true);
+    //       });
+    //     } else {
+    //       this.getBuilding(() => {
+    //         this.buildingID = buildingId;
+    //         this.getAll();
+    //         this.getAllLine(this.buildingID);
+    //       });
+    //     }
+    //     break;
+    //   case DISPATCHER: // Chỉ hiện dispatchlist
+    //     this.building = JSON.parse(localStorage.getItem('building'));
+    //     this.getBuilding(() => {
+    //       this.buildingID = this.building[0].id;
+    //       this.getAll();
+    //       this.getAllLine(this.buildingID);
+    //     });
+    //     break;
+    // }
   }
   getReport(obj: { startDate: Date, endDate: Date }) {
     this.spinner.show();

@@ -153,7 +153,7 @@ export class ConsumptionComponent extends BaseComponent implements OnInit {
     // pass the filter data source, filter query to updateData method.
     e.updateData(this.buildings as any, query);
   }
-  onSelectBuilding(args) {
+  onChangeBuilding(args) {
     this.buildingID = args.itemData.id;
     localStorage.setItem('buildingID', args.itemData.id);
     this.getAll(this.startDate, this.endDate);
