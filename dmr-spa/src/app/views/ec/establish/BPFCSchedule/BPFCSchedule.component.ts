@@ -40,6 +40,9 @@ const HttpUploadOptions = {
   headers: new HttpHeaders({ Accept: 'application/json' }),
 };
 const ROLE_ADMIN = 1;
+const DONE = 'done';
+const UNDONE = 'undone';
+const ALL = 'all';
 @Component({
   // tslint:disable-next-line:component-selector
   selector: 'app-BPFCSchedule',
@@ -64,7 +67,7 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
   @ViewChild('importModal', { static: true })
   importModal: TemplateRef<any>;
   excelDownloadUrl: string;
-  users: any[];
+  users: any[] = [];
   filterSettings: { type: string };
   modelName: string = null;
   modelNo: string = null;
@@ -136,6 +139,8 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
       id: 'percentageOfDone',
     },
   ];
+  keySearch: string;
+  tab: string;
   constructor(
     private modalNameService: ModalNameService,
     private alertify: AlertifyService,
@@ -149,10 +154,16 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
     private dataService: DataService,
     private http: HttpClient,
     private route: ActivatedRoute,
-  ) { super(); }
+  ) {
+    super();
+    this.Permission(this.route);
+  }
 
   ngOnInit() {
-    this.Permission(this.route);
+    this.getAllUsers();
+    this.tab = this.route.snapshot.params.tab || UNDONE;
+    // this.router.navigate([`/ec/establish/bpfc-schedule/${this.tab}`]);
+    this.onRouteChange();
     const ROLE: IRole = JSON.parse(localStorage.getItem('level'));
     this.role = ROLE;
     this.excelDownloadUrl = `${environment.apiUrlEC}ModelName/ExcelExport`;
@@ -174,8 +185,17 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
         };
       }
     });
-    // this.getAllUsers();
-    // this.getSearchText();
+  }
+
+  onRouteChange() {
+    this.route.data.subscribe(data => {
+      if (this.route.snapshot.params.keySearch !== undefined) {
+        this.keySearch = this.route.snapshot.params.keySearch;
+        const tab = this.route.snapshot.params.tab;
+        this.tab = tab;
+        this.loadData();
+      }
+    });
   }
   ngOnDestroy() {
     this.dataText.unsubscribe();
@@ -209,7 +229,7 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
   detail(data) {
     this.dataService.changeMessage(this.textSearch);
     return this.router.navigate([
-      `/ec/establish/bpfc-schedule/detailv2/${data.id}`,
+      `/ec/establish/bpfc-schedule/${this.tab}/detailv2/${data.id}`,
     ]);
   }
   onChangeArticleNo(args) {
@@ -221,7 +241,7 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
     this.dueDate = args.value as Date;
   }
   createdSearch(args) {
-    this.getAllUsers();
+    this.loadData();
     const gridElement = this.gridObj.element;
     const span = document.createElement('span');
     span.className = 'e-clear-icon';
@@ -236,6 +256,9 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
         iconCss: '',
       });
     this.percentageOfDone.appendTo('#percentageOfDone');
+    if (this.keySearch) {
+      this.gridObj.searchSettings.key = this.keySearch;
+    }
 
   }
 
@@ -470,14 +493,20 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
         break;
       case 'Done':
         this.gridObj.searchSettings.key = '';
+        this.tab = DONE;
+        this.router.navigate([`/ec/establish/bpfc-schedule/${this.tab}`]);
         this.getDone();
         break;
       case 'Undone':
         this.gridObj.searchSettings.key = '';
+        this.tab = UNDONE;
+        this.router.navigate([`/ec/establish/bpfc-schedule/${this.tab}`]);
         this.getUndone();
         break;
       case 'All':
         this.gridObj.searchSettings.key = '';
+        this.tab = ALL;
+        this.router.navigate([`/ec/establish/bpfc-schedule/${this.tab}`]);
         this.getAll();
         break;
       case 'grid_Excel Export':
@@ -520,11 +549,23 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
         this.alertify.success('The excel has been imported into system!');
       });
   }
-
+  loadData() {
+    switch (this.tab) {
+      case UNDONE:
+        this.getUndone();
+        break;
+      case DONE:
+        this.getDone();
+        break;
+      case ALL:
+        this.getAll();
+        break;
+    }
+  }
   getAllUsers() {
     this.userService.getAllUserInfo().subscribe((res: any) => {
       this.users = res;
-      this.getUndone();
+      console.log('getAllUsers', this.users);
     });
   }
   delete(id: number) {
@@ -542,46 +583,26 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
     }
   }
   editTextOfBtn() {
-    this.undoneBtn = new Button(
-      {
-        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
-        iconCss: 'fa fa-remove',
-        content: this.undoneText
-      });
-
-    this.allBtn = new Button(
-      {
-        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
-        iconCss: 'fa fa-list',
-        content: 'All'
-      });
-
-    this.doneBtn = new Button(
-      {
-        cssClass: `e-tbar-btn e-tbtn-txt e-control e-btn e-lib`,
-        iconCss: 'fa fa-check',
-        content: this.doneText
-      });
-    this.doneBtn.appendTo('#Done');
-    this.allBtn.appendTo('#All');
-    this.undoneBtn.appendTo('#Undone');
+    const allBtn = document.getElementById('All') as HTMLButtonElement;
+    const undoneBtn = document.getElementById('Undone') as HTMLButtonElement;
+    const doneBtn = document.getElementById('Done') as HTMLButtonElement;
     if (this.isDone === true) {
-      this.setAttrBtn(this.doneBtn);
+      this.setAttrBtn(doneBtn);
       // reset color
-      this.resetAttrBtn(this.undoneBtn);
-      this.resetAttrBtn(this.allBtn);
+      this.resetAttrBtn(undoneBtn);
+      this.resetAttrBtn(allBtn);
     } else if (this.isDone === false) {
 
-      this.setAttrBtn(this.undoneBtn);
+      this.setAttrBtn(undoneBtn);
       // reset color
-      this.resetAttrBtn(this.doneBtn);
-      this.resetAttrBtn(this.allBtn);
-    } else {
+      this.resetAttrBtn(doneBtn);
+      this.resetAttrBtn(allBtn);
+    } else if (this.isDone === null) {
 
-      this.setAttrBtn(this.allBtn);
+      this.setAttrBtn(allBtn);
       // reset color
-      this.resetAttrBtn(this.doneBtn);
-      this.resetAttrBtn(this.undoneBtn);
+      this.resetAttrBtn(doneBtn);
+      this.resetAttrBtn(undoneBtn);
     }
   }
   getAll() {
@@ -699,7 +720,7 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
   }
   // helper function
 
-  setAttrBtn(btn: Button, styleBtn = {
+  setAttrBtn(btn: HTMLButtonElement, styleBtn = {
     background: '#6c757d',
     boxShadow: '0 0 0 3px rgba(130, 138, 145, 0.5)',
     border: '1px solid #6c757d',
@@ -708,15 +729,15 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
     borderRadius: '4px',
     color: '#fff',
   }) {
-    btn.element.style.background = styleBtn.background;
-    btn.element.style.boxShadow = styleBtn.boxShadow;
-    btn.element.style.border = styleBtn.border;
-    btn.element.style.margin = styleBtn.margin;
-    btn.element.style.borderColor = styleBtn.borderColor;
-    btn.element.style.borderRadius = styleBtn.borderRadius;
-    btn.element.style.color = styleBtn.color;
+    btn.style.background = styleBtn.background;
+    btn.style.boxShadow = styleBtn.boxShadow;
+    btn.style.border = styleBtn.border;
+    btn.style.margin = styleBtn.margin;
+    btn.style.borderColor = styleBtn.borderColor;
+    btn.style.borderRadius = styleBtn.borderRadius;
+    btn.style.color = styleBtn.color;
   }
-  resetAttrBtn(btn: Button, styleBtn = {
+  resetAttrBtn(btn: HTMLButtonElement, styleBtn = {
     background: '#f8f9fa',
     boxShadow: 'none',
     border: 'none',
@@ -725,12 +746,12 @@ export class BPFCScheduleComponent extends BaseComponent implements OnInit, OnDe
     borderRadius: 'none',
     color: '#495057',
   }) {
-    btn.element.style.background = styleBtn.background;
-    btn.element.style.boxShadow = styleBtn.boxShadow;
-    btn.element.style.border = styleBtn.border;
-    btn.element.style.margin = styleBtn.margin;
-    btn.element.style.borderColor = styleBtn.borderColor;
-    btn.element.style.borderRadius = styleBtn.borderRadius;
-    btn.element.style.color = styleBtn.color;
+    btn.style.background = styleBtn.background;
+    btn.style.boxShadow = styleBtn.boxShadow;
+    btn.style.border = styleBtn.border;
+    btn.style.margin = styleBtn.margin;
+    btn.style.borderColor = styleBtn.borderColor;
+    btn.style.borderRadius = styleBtn.borderRadius;
+    btn.style.color = styleBtn.color;
   }
 }
