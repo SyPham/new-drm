@@ -13,6 +13,9 @@ namespace DMR_API.Models
         [MaxLength(50)]
         public string Code { get; set; }
         public string Name { get; set; }
+        public string Url { get; set; }
+        [MaxLength(100)]
+        public string Icon { get; set; }
         public int Sequence { get; set; }
         public DateTime CreatedTime { get; set; }
         public ICollection<FunctionSystem> Functions { get; set; }

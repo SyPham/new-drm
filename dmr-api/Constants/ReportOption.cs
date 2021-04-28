@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace DMR_API.Constants
 {
-    public static class ReportOption
+    public static class RoleCode
     {
-        public static readonly string DoneList = "Done List";
-        public static readonly string Cost = "Cost";
+        public static readonly string SUPPER_ADMIN = "SUPPER_ADMIN";
     }
 }

@@ -15,7 +15,28 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalrServer", "..\Signalr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScalingMachineService", "..\ScalingMachineService\ScalingMachineService.csproj", "{9DE05B9E-16EF-4FB9-98CA-17BF0EC3DE5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetupWeighingScale", "..\SetupWeighingScale\SetupWeighingScale.csproj", "{A486F506-5611-4E3A-B3AC-D4EEFF138A3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetupWeighingScale", "..\SetupWeighingScale\SetupWeighingScale.csproj", "{A486F506-5611-4E3A-B3AC-D4EEFF138A3B}"
+EndProject
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "dmr-spa", "..\dmr-spa\", "{0EDC7926-4EE4-471E-9539-486DE75D0C7D}"
+	ProjectSection(WebsiteProperties) = preProject
+		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
+		Debug.AspNetCompiler.VirtualPath = "/localhost_63083"
+		Debug.AspNetCompiler.PhysicalPath = "..\dmr-spa\"
+		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_63083\"
+		Debug.AspNetCompiler.Updateable = "true"
+		Debug.AspNetCompiler.ForceOverwrite = "true"
+		Debug.AspNetCompiler.FixedNames = "false"
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.VirtualPath = "/localhost_63083"
+		Release.AspNetCompiler.PhysicalPath = "..\dmr-spa\"
+		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_63083\"
+		Release.AspNetCompiler.Updateable = "true"
+		Release.AspNetCompiler.ForceOverwrite = "true"
+		Release.AspNetCompiler.FixedNames = "false"
+		Release.AspNetCompiler.Debug = "False"
+		VWDPort = "63083"
+		SlnRelativePath = "..\dmr-spa\"
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +72,10 @@ Global
 		{A486F506-5611-4E3A-B3AC-D4EEFF138A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A486F506-5611-4E3A-B3AC-D4EEFF138A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A486F506-5611-4E3A-B3AC-D4EEFF138A3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EDC7926-4EE4-471E-9539-486DE75D0C7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EDC7926-4EE4-471E-9539-486DE75D0C7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EDC7926-4EE4-471E-9539-486DE75D0C7D}.Release|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EDC7926-4EE4-471E-9539-486DE75D0C7D}.Release|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

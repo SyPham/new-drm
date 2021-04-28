@@ -198,6 +198,11 @@ export class IncomingComponent implements OnInit, OnDestroy, AfterViewInit {
         // const commonPattern = /(\d+)-(\w+)-([\w\-\d]+)/g;
         const dateAndBatch = /(\d+)-(\w+)-/g;
         const validFormat = res.QRCode.match(dateAndBatch);
+        const array = [];
+        for (const item of res.QRCode.split('    ')) {
+          array.push(item);
+        }
+        console.log(array);
         // Update 08/04/2021 - Leo
         const input = res.QRCode.split('    ') || [];
         const qrcode = input[2].split(":")[1].trim() + ':' + input[0].split(":")[1].trim();

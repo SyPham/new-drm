@@ -22,7 +22,25 @@ const routes: Routes = [
             component: BPFCScheduleComponent
           },
           {
-            path: 'detail',
+            path: ':tab',
+            data: {
+              title: 'bpfc-schedule',
+              breadcrumb: 'BPFC Schedule',
+              functionCode: 'BPFC Schedule'
+            },
+            component: BPFCScheduleComponent
+          },
+          {
+            path: ':tab/:keySearch',
+            data: {
+              title: 'bpfc-schedule',
+              breadcrumb: 'BPFC Schedule',
+              functionCode: 'BPFC Schedule'
+            },
+            component: BPFCScheduleComponent
+          },
+          {
+            path: ':tab/detail',
             data: {
               title: 'Detail',
               breadcrumb: 'Detail'
@@ -39,7 +57,7 @@ const routes: Routes = [
             ]
           },
           {
-            path: 'detailv2',
+            path: ':tab/detailv2',
             data: {
               title: 'Detail',
               breadcrumb: 'Detail'

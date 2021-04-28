@@ -25,7 +25,7 @@ namespace DMR_API.Helpers.Extensions
     public static class IServiceCollectionExtensions
     {
 
-        public static IServiceCollection AddDatabaseExention(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddDatabaseExtention(this IServiceCollection services, IConfiguration configuration)
         {
             // Configure DbContext with Scoped lifetime 
             var appsettings = configuration.GetSection("Appsettings").Get<Appsettings>();
@@ -41,7 +41,7 @@ namespace DMR_API.Helpers.Extensions
             return services;
         }
 
-        public static IServiceCollection AddRepositoriesExention(this IServiceCollection services)
+        public static IServiceCollection AddRepositoriesExtention(this IServiceCollection services)
         {
             services.AddScoped<IAuthRepository, AuthRepository>();
             services.AddScoped<IGlueIngredientRepository, GlueIngredientRepository>();
@@ -113,7 +113,7 @@ namespace DMR_API.Helpers.Extensions
             return services;
         }
 
-        public static IServiceCollection AddServicesExention(this IServiceCollection services)
+        public static IServiceCollection AddServicesExtention(this IServiceCollection services)
         {
             services.AddScoped<IMixingService, MixingService>();
             services.AddScoped<IGlueIngredientService, GlueIngredientService>();
@@ -174,7 +174,7 @@ namespace DMR_API.Helpers.Extensions
             return services;
         }
 
-        public static IServiceCollection AddShedulerExention(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddShedulerExtention(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddQuartz(async q =>
             {
@@ -201,7 +201,7 @@ namespace DMR_API.Helpers.Extensions
         }
 
 
-        public static IServiceCollection AddHttpClientExention(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddHttpClientExtention(this IServiceCollection services, IConfiguration configuration)
         {
             var appsettings = configuration.GetSection("Appsettings").Get<Appsettings>();
             services.AddHttpClient("default", client =>
@@ -214,7 +214,7 @@ namespace DMR_API.Helpers.Extensions
             return services;
         }
 
-        public static IServiceCollection AddAuthenticationWithSwaggerExention(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddAuthenticationWithSwaggerExtention(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddAuthentication(options =>
             {
@@ -256,7 +256,7 @@ namespace DMR_API.Helpers.Extensions
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Electronic Scale", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Digital mixing room system", Version = "2.1.0" });
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -289,7 +289,7 @@ namespace DMR_API.Helpers.Extensions
 
             return services;
         }
-        public static IServiceCollection AddAutoMapperExention(this IServiceCollection services)
+        public static IServiceCollection AddAutoMapperExtention(this IServiceCollection services)
         {
             services.AddAutoMapper(typeof(Startup));
             services.AddScoped<IMapper>(sp =>
@@ -297,6 +297,42 @@ namespace DMR_API.Helpers.Extensions
                 return new Mapper(AutoMapperConfig.RegisterMappings());
             });
             services.AddSingleton(AutoMapperConfig.RegisterMappings());
+            return services;
+        }
+
+        public static IServiceCollection AddCorsExtension(this IServiceCollection services, IConfiguration Configuration)
+        {
+            var appsettings = Configuration.GetSection("Appsettings").Get<Appsettings>();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("CorsPolicy",
+                    builder => builder.WithOrigins(appsettings.CorsPolicy
+                    ) //register for client
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
+
+            return services;
+        }
+
+        public static IServiceCollection AddSpaExtention(this IServiceCollection services)
+        {
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = @"wwwroot/ClientApp";
+            });
+            return services;
+        }
+
+        public static IServiceCollection AddRedisCacheExtention(this IServiceCollection services)
+        {
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = "localhost";
+                options.InstanceName = "IoT";
+            });
             return services;
         }
     }

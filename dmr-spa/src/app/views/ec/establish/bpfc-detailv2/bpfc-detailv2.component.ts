@@ -12,7 +12,7 @@ import {
 import { EmitType } from '@syncfusion/ej2-base/';
 import { FilteringEventArgs } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data/';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import {
   PageSettingsModel,
@@ -338,6 +338,7 @@ export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
   textSearch: string = null;
   dataSearch: any;
   ingredientGroupData = [[], []];
+  tab: any;
   constructor(
     private glueIngredientService: GlueIngredientService,
     private modalNameService: ModalNameService,
@@ -345,6 +346,7 @@ export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
     private alertify: AlertifyService,
     public modalService: NgbModal,
     private route: ActivatedRoute,
+    private router: Router,
     private authService: AuthService,
     private bPFCEstablishService: BPFCEstablishService,
     private modelNoService: ModelNoService,
@@ -364,6 +366,9 @@ export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.BPFCID = this.route.snapshot.params.id;
+    this.tab = this.route.snapshot.params.tab;
+
     this.getModelNames();
     this.getAllUsers();
     this.modelNameID = 0;
@@ -423,7 +428,9 @@ export class BpfcDetailV2Component implements OnInit, AfterViewInit, OnDestroy {
     this.freightrules = { required: true };
     this.editparams = { paramss: { popupHeight: '300px' } };
   }
-
+  back() {
+    this.router.navigate([`/ec/establish/bpfc-schedule/${this.tab}/${this.articleNoLeo}`]);
+  }
   ngOnDestroy() {
     this.dataService.changeMessages(this.textSearch);
     this.dataSearch.unsubscribe();

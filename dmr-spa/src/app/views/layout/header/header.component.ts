@@ -118,48 +118,25 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   }
 
   getMenu() {
-    this.spinner.show();
-    this.permissionService.getMenuByUserPermission(this.userid).subscribe((menus: []) => {
-      this.menus = menus;
-      this.spinner.hide();
-      localStorage.setItem('menus', JSON.stringify(menus));
-    }, (err) => {
-      this.spinner.hide();
-    });
-  }
-  areOtherRoles() {
-    const roles = [this.ADMIN, this.SUPERVISOR, this.STAFF];
-    return roles.includes(this.role.id);
-  }
-  isAdminRole() {
-    if (this.role.id === this.ADMIN) {
-      return true;
+    if (localStorage.getItem('menus') === `undefined`) {
+      this.spinner.show();
+      console.log('Header ------- Begin getMenuByUserPermission');
+      this.permissionService.getMenuByUserPermission(this.userid).subscribe((data: []) => {
+        this.menus = data;
+        localStorage.setItem('menus', JSON.stringify(data));
+        this.spinner.hide();
+
+      }, (err) => {
+        this.spinner.hide();
+      });
+      console.log('Header ------- end getMenuByUserPermission');
+    } else {
+      setTimeout(() => {
+        console.log('Header ------- Begin getlocalstore menu');
+        const menus = JSON.parse(localStorage.getItem('menus')) || [];
+        this.menus = menus;
+      });
     }
-    return false;
-  }
-  isSupervisorRole() {
-    if (this.role.id === this.SUPERVISOR) {
-      return true;
-    }
-    return false;
-  }
-  isDispatcherRole() {
-    if (this.role.id === this.DISPATCHER) {
-      return true;
-    }
-    return false;
-  }
-  isWorkerRole() {
-    if (this.role.id === this.WORKER) {
-      return true;
-    }
-    return false;
-  }
-  isAdminCostingRole() {
-    if (this.role.id === this.ADMIN_COSTING) {
-      return true;
-    }
-    return false;
   }
   home() {
     if (this.role.id === this.STAFF) {

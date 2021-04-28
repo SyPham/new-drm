@@ -50,6 +50,5 @@ export class FooterComponent implements OnInit {
   }
   openModal(ref) {
     this.modalReference = this.modalService.open(ref, { size: 'xl', backdrop: 'static', keyboard: false });
-
   }
 }

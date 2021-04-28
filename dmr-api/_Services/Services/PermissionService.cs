@@ -259,6 +259,7 @@ namespace DMR_API._Services.Services
                             Name = f.Name,
                             Code = f.Code,
                             Url = f.Url,
+                            Icon = f.Icon,
                             ParentId = f.ParentID,
                             SortOrder = f.Sequence,
                             Module = f.Module,
@@ -271,6 +272,8 @@ namespace DMR_API._Services.Services
             return data.GroupBy(x => x.Module).Select(x => new
             {
                 Module = x.Key.Name,
+                Icon = x.Key.Icon,
+                Url = x.Key.Url,
                 Sequence = x.Key.Sequence,
                 Children = x,
                 HasChildren = x.Any()
@@ -411,12 +414,12 @@ namespace DMR_API._Services.Services
                     Name = x.FunctionSystem.Name,
                     ActionName = x.Action.Name,
                     ActionID = x.Action.ID,
-                    ModuleName = x.FunctionSystem.Module.Name,
+                    Module = x.FunctionSystem.Module,
                     ModuleCode = x.FunctionSystem.Module.Code,
                     ModuleNameID = x.FunctionSystem.Module.ID,
                     Code = x.Action.Code,
                 })
-                .Where(x => !Permissions.Contains(x.FunctionCode));
+                .Where(x => !Permissions.Contains(x.FunctionCode)); // Dieu kien nay de khong load nhung chuc nang he thong
           var model =  from t1 in query
                         from t2 in permission.Where(x => roleID.Contains(x.RoleID) && t1.Id == x.FunctionSystemID && x.ActionID== t1.ActionID)
                             .DefaultIfEmpty()
@@ -425,16 +428,16 @@ namespace DMR_API._Services.Services
                             t1.Name ,
                             t1.ActionName,
                             t1.ActionID,
-                            t1.ModuleName,
-                            t1.ModuleNameID,
                             t1.Code,
-                            Permission= t2
+                            t1.Module,
+                            Permission = t2
                         };
             var data = (await model.ToListAsync())
-                        .GroupBy(x => new { x.ModuleName })
+                        .GroupBy(x => x.Module)
                         .Select(x => new
                         {
-                            ModuleName = x.Key.ModuleName,
+                            ModuleName = x.Key.Name,
+                            Sequence = x.Key.Sequence,
                             Fields = new
                             {
                                 DataSource = x.GroupBy(s => new { s.Id, s.Name })
@@ -462,7 +465,7 @@ namespace DMR_API._Services.Services
                                 Child = "childrens"
                             }
                         });
-            return data;
+            return data.OrderBy(x=>x.Sequence).ToList();
         }
     }
 }

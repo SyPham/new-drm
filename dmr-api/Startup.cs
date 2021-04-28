@@ -11,7 +11,6 @@ using Newtonsoft.Json;
 using Microsoft.AspNetCore.CookiePolicy;
 using DMR_API.Helpers.Extensions;
 using dmr_api.Data;
-using DMR_API.SchedulerHelper;
 
 namespace DMR_API
 {
@@ -29,14 +28,12 @@ namespace DMR_API
         {
             var appsettings = Configuration.GetSection("Appsettings").Get<Appsettings>();
 
-            services.AddDatabaseExention(Configuration)
-                    .AddRepositoriesExention()
-                    .AddServicesExention();
-            services.AddStackExchangeRedisCache(options =>
-            {
-                options.Configuration = "localhost";
-                options.InstanceName = "IoT";
-            });
+            services.AddDatabaseExtention(Configuration)
+                    .AddRepositoriesExtention()
+                    .AddServicesExtention();
+
+            services.AddRedisCacheExtention();
+
             services.AddSignalR();
 
             services.AddLogging();
@@ -47,24 +44,20 @@ namespace DMR_API
                                         options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Unspecified;
                                         options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                                     });
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.WithOrigins(appsettings.CorsPolicy
-                    ) //register for client
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-            });
+
+            services.AddCorsExtension(Configuration);
+
             services.AddTransient<DbInitializer>();
             //Auto Mapper
-            services.AddAutoMapperExention();
+            services.AddAutoMapperExtention();
 
-            services.AddAuthenticationWithSwaggerExention(Configuration);
+            services.AddAuthenticationWithSwaggerExtention(Configuration);
 
-            services.AddHttpClientExention(Configuration);
+            services.AddHttpClientExtention(Configuration);
 
-            services.AddShedulerExention(Configuration);
+            services.AddShedulerExtention(Configuration);
+
+            services.AddSpaExtention();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,24 +70,13 @@ namespace DMR_API
                 app.UseDeveloperExceptionPage();
             }
             // Enable middleware to serve generated Swagger as a JSON endpoint.
-            app.UseSwagger();
-
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Electronic Scale");
-            });
-            app.UseCors("CorsPolicy");
-            app.UseCors(x => x
-                           .AllowAnyMethod()
-                           .AllowAnyHeader()
-                           //    .SetIsOriginAllowed(origin => true) // allow any origin
-                           .AllowCredentials()); // allow credentials
+            app.AddSwaggerExtention();
+            app.AddCorsExtention();
             app.UseHttpsRedirection();
             app.UseRouting();
             app.UseDefaultFiles();
             app.UseStaticFiles();
+           
             app.UseAuthentication()
                .UseCookiePolicy(new CookiePolicyOptions
                {
@@ -109,6 +91,10 @@ namespace DMR_API
                 endpoints.MapHub<ECHub>("/ec-hub");
 
             });
+
+            app.UseSpaExtension();
+
+           
         }
     }
 }
