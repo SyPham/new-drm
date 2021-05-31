@@ -23,18 +23,19 @@ namespace TodolistScheduleService.Jobs
             var dataMap = context.JobDetail.JobDataMap;
             var json = dataMap.GetString("Data");
             SendMailParams data = JsonConvert.DeserializeObject<SendMailParams>(json);
+            var query = "";
+            foreach (var email in data.Emails)
+            {
+                query += $"emails={email}&";
+            }
+            var url = $"{data.URL}{data.PathName}?{query}";
 
             try
             {
                 using (var httpClient = new HttpClient())
                 {
-                    var query = "";
-                    foreach (var email in data.Emails)
-                    {
-                        query += $"emails={email}&";
-                    }
+                   
                     var currentDate = DateTime.Now.Date.ToString("MM-dd-yyyy");
-                    var url = $"{data.URL}{data.PathName}?{query}";
                     try
                     {
                         // Thêm header vào HTTP Request
@@ -46,6 +47,8 @@ namespace TodolistScheduleService.Jobs
 
                         if (response.IsSuccessStatusCode)
                         {
+                            logger.LogInformation($"Send mail path: {url}");
+
                             logger.LogInformation($"{data.GetIdentityParams()} Send mail successfully - statusCode {(int)response.StatusCode} {response.ReasonPhrase}");
                             // Đọc nội dung content trả về
                             string htmltext = await response.Content.ReadAsStringAsync();
@@ -53,6 +56,8 @@ namespace TodolistScheduleService.Jobs
                         }
                         else
                         {
+                            logger.LogInformation($"Send mail path: {url}");
+
                             logger.LogError($"Lỗi - statusCode {response.StatusCode} {response.ReasonPhrase}");
                         }
                     }
@@ -64,6 +69,8 @@ namespace TodolistScheduleService.Jobs
             }
             catch (Exception)
             {
+                logger.LogError($"Send mail path: {url}");
+
                 logger.LogError($"{data.GetIdentityParams()}The system can not send emails");
             }
         }

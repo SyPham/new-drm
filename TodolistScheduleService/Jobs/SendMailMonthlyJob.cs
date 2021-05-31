@@ -45,14 +45,18 @@ namespace TodolistScheduleService.Jobs
 
                             if (response.IsSuccessStatusCode)
                             {
-                                logger.LogInformation($"{data.GetIdentityParams()} Send mail successfully - statusCode {(int)response.StatusCode} {response.ReasonPhrase}");
+                            logger.LogInformation($"Send mail path: {url}");
+
+                            logger.LogInformation($"{data.GetIdentityParams()} Send mail successfully - statusCode {(int)response.StatusCode} {response.ReasonPhrase}");
                                 // Đọc nội dung content trả về
                                 string htmltext = await response.Content.ReadAsStringAsync();
 
                             }
                             else
                             {
-                                logger.LogError($"Lỗi - statusCode {response.StatusCode} {response.ReasonPhrase}");
+                            logger.LogInformation($"Send mail path: {url}");
+
+                            logger.LogError($"Lỗi - statusCode {response.StatusCode} {response.ReasonPhrase}");
                             }
                         }
                         catch (Exception e)

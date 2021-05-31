@@ -47,6 +47,8 @@ namespace TodolistScheduleService.JobBase
 
                         if (response.IsSuccessStatusCode)
                         {
+                            logger.LogInformation($"Send mail path: {url}");
+
                             logger.LogInformation($"{data.GetIdentityParams()} Send mail successfully - statusCode {(int)response.StatusCode} {response.ReasonPhrase}");
                             // Đọc nội dung content trả về
                             string htmltext = await response.Content.ReadAsStringAsync();
@@ -54,6 +56,8 @@ namespace TodolistScheduleService.JobBase
                         }
                         else
                         {
+                            logger.LogInformation($"Send mail path: {url}");
+
                             logger.LogError($"Lỗi - statusCode {response.StatusCode} {response.ReasonPhrase}");
                         }
                     }

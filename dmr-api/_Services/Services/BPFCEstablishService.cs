@@ -423,7 +423,7 @@ namespace DMR_API._Services.Services
         }
         private async Task<BPFCEstablish> CheckExistBPFC(BPFCEstablishDto bPFC)
         {
-            return await _repoBPFCEstablish.FindAll().Include(x=>x.ArtProcess).ThenInclude(x=>x.Process).FirstOrDefaultAsync(x => x.ModelNameID == bPFC.ModelNameID && x.ModelNoID == bPFC.ModelNoID && x.ArticleNoID == bPFC.ArticleNoID && x.ArtProcessID == bPFC.ArtProcessID && !x.IsDelete);
+            return await _repoBPFCEstablish.FindAll().Include(x => x.ArtProcess).ThenInclude(x => x.Process).FirstOrDefaultAsync(x => x.ModelNameID == bPFC.ModelNameID && x.ModelNoID == bPFC.ModelNoID && x.ArticleNoID == bPFC.ArticleNoID && x.ArtProcessID == bPFC.ArtProcessID && !x.IsDelete);
         }
         public async Task ImportExcel(List<BPFCEstablishDtoForImportExcel> bPFCEstablishDtos)
         {
@@ -665,10 +665,25 @@ namespace DMR_API._Services.Services
         public async Task<List<BPFCStatusDto>> FilterByApprovedStatus()
         {
             var lists = await _repoBPFCEstablish.FindAll()
-                .Include(x=> x.Glues)
-                .ThenInclude(x=> x.GlueName)
                 .Include(x => x.Glues)
+                .ThenInclude(x => x.GlueName)
                 .Where(x => x.ApprovalStatus == true && x.FinishedStatus == true && !x.IsDelete).ProjectTo<BPFCStatusDto>(_configMapper).OrderByDescending(x => x.ID).ToListAsync();
+
+            //var glues = await _repoBPFCEstablish.FindAll()
+            //    .Include(x => x.ArtProcess)
+            //    .ThenInclude(x => x.Process)
+            //   .Include(x => x.Glues)
+            //   .Where(x => x.ApprovalStatus == true && x.FinishedStatus == true && !x.IsDelete)
+            //   .Where(x => x.ArtProcess.Process.Name == "STF" && x.Glues.Any(x => x.KindID == null))
+            //   .ToListAsync();
+            //glues.ForEach(item =>
+            //{
+            //    item.ApprovalStatus = false;
+            //    item.FinishedStatus = false;
+            //    item.ApprovalBy = 0;
+            //});
+            //_repoBPFCEstablish.UpdateRange(glues);
+            //await _repoBPFCEstablish.SaveAll();
             return lists;
         }
 

@@ -5,7 +5,11 @@
   "projects": {
     "WM": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "skipTests": true
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -13,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "F:\\a_project\\dmr\\dmr-system\\dmr-api\\wwwroot\\ClientApp",
+            "outputPath": "../dmr-api/wwwroot/ClientApp",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
